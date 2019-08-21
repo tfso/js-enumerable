@@ -51,89 +51,58 @@ export class Enumerable<TEntity> implements Iterable<TEntity>, AsyncIterable<TEn
     }
 
     public skip(count: number): this {
+        const evaluate = (() => {
+            let idx = 0
+
+            return (entity: TEntity) => {
+                return idx++ >= count
+            }
+        })()
+
         this.operations.push({
             type: LinqType.Skip,
             count, 
-            evaluator: function*(items: Iterator<TEntity>) {
-                let result: IteratorResult<TEntity>,
-                    idx = 0
-
-                while(!(result = items.next()).done) {
-                    if( idx++ < count)
-                        continue
-
-                    yield result.value
-                }
-            },
-            asyncEvaluator: async function*(items: AsyncIterator<TEntity>) {
-                let result: IteratorResult<TEntity>,
-                    idx = 0
-
-                while(!(result = await Promise.resolve(items.next())).done) {
-                    if( idx++ < count)
-                        continue
-
-                    yield result.value
-                }
-            }
+            evaluator: this.evaluatorHelper(evaluate),
+            asyncEvaluator: this.asyncEvaluatorHelper(evaluate)
         })
 
         return this
     }
 
     public take(count: number): this {
+        const evaluate = (() => {
+            let idx = 0
+
+            return (entity: TEntity) => {
+                return idx++ < count // performance hit, should be able to break?
+            }
+        })()
+
         this.operations.push({
             type: LinqType.Take,
             count,
-            evaluator:  function*(items: Iterator<TEntity>) {
-                let result: IteratorResult<TEntity>,
-                    idx = 0
-    
-                while(!(result = items.next()).done) {
-                    if( idx++ == count)
-                        break
-    
-                    yield result.value
-                }
-            },
-            asyncEvaluator: async function*(items: AsyncIterator<TEntity>) {
-                let result: IteratorResult<TEntity>,
-                    idx = 0
-    
-                while(!(result = await Promise.resolve(items.next())).done) {
-                    if( idx++ == count)
-                        break
-    
-                    yield result.value
-                }
-            }
+            evaluator: this.evaluatorHelper(evaluate),
+            asyncEvaluator: this.asyncEvaluatorHelper(evaluate)
         })
 
         return this
     }
 
     public includes(entity: Partial<TEntity> , fromIndex?: number): this {
+
+        const evaluate: (entity: TEntity) => boolean = (() => {
+            let values = Object.entries(entity)
+
+            return (entity: TEntity) => {
+                return typeof entity == 'object' && values.every(([key, value]) => key in entity && (value == undefined || value == (entity as any)[key]))
+            }
+        })()
+
         this.operations.push({
             type: LinqType.Includes,
             entity,
-            evaluator: function*(items: Iterator<TEntity>) {
-                let result: IteratorResult<TEntity>,
-                    values = Object.entries(entity)
-                
-                while(!(result = items.next()).done) {
-                    if(typeof result.value == 'object' && values.every(([key, value]) => key in result.value && (value == undefined || value == (result.value as any )[key])) )
-                        yield result.value
-                }
-            },
-            asyncEvaluator: async function*(items: AsyncIterator<TEntity>) {
-                let result: IteratorResult<TEntity>,
-                    values = Object.entries(entity)
-                
-                while(!(result = await Promise.resolve(items.next())).done) {
-                    if(typeof result.value == 'object' && values.every(([key, value]) => key in result.value && (value == undefined || value == (result.value as any )[key])) )
-                        yield result.value
-                }
-            }
+            evaluator: this.evaluatorHelper(evaluate),
+            asyncEvaluator: this.asyncEvaluatorHelper(evaluate)
         })
 
         return this
@@ -224,6 +193,32 @@ export class Enumerable<TEntity> implements Iterable<TEntity>, AsyncIterable<TEn
 
         //yield * <any>this.getIterator() //items
     }
+
+    private evaluatorHelper(evaluate: (entity: TEntity) => boolean): (items: Iterator<TEntity>) => IterableIterator<TEntity>  {    
+        const iterator = function * (items: Iterator<TEntity>) {
+            let result: IteratorResult<TEntity>
+
+            while(!(result = items.next()).done) {
+                if(evaluate(result.value))
+                    yield result.value
+            }
+        }
+
+        return iterator
+    }
+
+    private asyncEvaluatorHelper(evaluate: (entity: TEntity) => boolean): (items: AsyncIterator<TEntity>) => AsyncIterableIterator<TEntity>  {    
+        const iterator = async function * (items: AsyncIterator<TEntity>) {
+            let result: IteratorResult<TEntity>
+
+            while(!(result = await Promise.resolve(items.next())).done) {
+                if(evaluate(result.value))
+                    yield result.value
+            }
+        }
+
+        return iterator
+    }    
 
     [Symbol.iterator](): IterableIterator<TEntity> {
         //throw new Error('Enumerable is async iterable but is used as iterable')

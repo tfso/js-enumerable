@@ -56,7 +56,23 @@ describe("When using enumerable", () => {
             chai.expect(total).to.equal(15)
         })        
 
-    
+        it("should async iterate using Enumerable with skip", async () => {
+            let total = 0
+
+            for await(let num of new Enumerable(asyncIterator()).skip(3))
+                total += num
+
+            chai.expect(total).to.equal(12)
+        })        
+
+        it("should async iterate using Enumerable with skip/take", async () => {
+            let total = 0
+
+            for await(let num of new Enumerable(asyncIterator()).skip(2).take(2))
+                total += num
+
+            chai.expect(total).to.equal(18)
+        }) 
     })
 
     describe("as a synchronous iterable", () => {
@@ -91,6 +107,24 @@ describe("When using enumerable", () => {
                 total += num
     
             chai.expect(total).to.equal(15)
+        })
+
+        it("should iterate using Enumerable with skip", async () => {
+            let total = 0
+    
+            for(let num of new Enumerable(iterator()).skip(3))
+                total += num
+    
+            chai.expect(total).to.equal(12)
+        })
+
+        it("should iterate using Enumerable with skip/take", async () => {
+            let total = 0
+    
+            for(let num of new Enumerable(iterator()).skip(2).take(2))
+                total += num
+    
+            chai.expect(total).to.equal(18)
         })
     })
    
