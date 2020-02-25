@@ -32,13 +32,9 @@ class TestRepository extends Repository<ICar, number> {
 }
 
 
-describe("When using repository", () => {
-    
-    beforeEach(() => {
-        
-    })
+describe('When using repository', () => {
 
-    it("should", () => {
+    it('should', () => {
         chai.expect(5).to.equal(5)
 
     })
