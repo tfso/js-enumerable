@@ -78,7 +78,7 @@ export class Enumerable<TEntity extends Record<string, any> | number | Date | st
                 let values = Object.entries(entity)
 
                 return (item) => {
-                    if(typeof item == 'object' && values.every(([key, value]) => key in item && (value == undefined || value == (item as any)[key])))
+                    if(isRecord(item) && values.every(([key, value]) => key in item && (value == undefined || value == item[key])))
                         return 'yield'
                     
                     return 'continue'
@@ -151,5 +151,5 @@ export class Enumerable<TEntity extends Record<string, any> | number | Date | st
 }
 
 function isRecord(value: Record<string, any> | any): value is Record<string, any> {
-    return typeof value == 'object'
+    return value !== null && typeof value == 'object'
 }

@@ -67,7 +67,7 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
     }
 
     protected async * getAsyncIterator() {
-        if((this.items && typeof this.items == 'object' && typeof (this.items as any)[Symbol.asyncIterator] == 'function') == false)
+        if(!isAsyncIterable(this.items))
             throw new TypeError('Enumerable is not async iterable')
 
         async function* iterate(items: AsyncIterableIterator<TEntity>, operators: Array<LinqOperator<TEntity>>, idx: number | null = null): AsyncGenerator<TEntity> {
@@ -109,7 +109,7 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
             }
         }
 
-        let iterator = iterate(this.items instanceof Repository ? this.items.query(this) : (this.items as any)[Symbol.asyncIterator](), this.operators),
+        let iterator = iterate(this.items instanceof Repository ? this.items.query(this) : this.items[Symbol.asyncIterator](), this.operators),
             result: IteratorResult<TEntity>
 
         while (!(result = await Promise.resolve(iterator.next())).done) {
@@ -118,7 +118,7 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
     }
 
     protected * getIterator(): IterableIterator<TEntity> {
-        if((this.items && typeof this.items == 'object' && typeof (this.items as any)[Symbol.iterator] == 'function') == false)
+        if(!isIterable(this.items))
             throw new TypeError('Enumerable is not iterable')
 
         function* iterate(items: IterableIterator<TEntity>, operators: Array<LinqOperator<TEntity>>, idx: number | null = null): Generator<TEntity> {
@@ -141,7 +141,7 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
                 else {
                     generator = operator.iterator(items)
                 }
-            } 
+            }
             else {
                 generator = items
             }
@@ -160,14 +160,12 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
             }
         }
 
-        let iterator = iterate(this.items instanceof Repository ? this.items.query(this) : (this.items as any)[Symbol.iterator](), this.operators),
+        let iterator = iterate(this.items[Symbol.iterator](), this.operators),
             result: IteratorResult<TEntity>
 
         while (!(result = iterator.next()).done) {
             yield result.value
         }
-
-        //yield * <any>this.getIterator() //items
     }
 
     [Symbol.iterator](): IterableIterator<TEntity> {
@@ -178,4 +176,16 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
     [Symbol.asyncIterator](): AsyncIterableIterator<TEntity> {
         return this.getAsyncIterator()
     }
+}
+
+function isRecord(value: Record<string, any> | any): value is Record<string, any> {
+    return value !== null && typeof value == 'object'
+}
+
+function isIterable<T>(value: Iterable<T> | IterableIterator<T> | AsyncIterable<T> | AsyncIterableIterator<T>): value is IterableIterator<T> {
+    return isRecord(value) && typeof (<any>value)[Symbol.iterator] == 'function'
+}
+
+function isAsyncIterable<T>(value: Iterable<T> | IterableIterator<T> | AsyncIterable<T> | AsyncIterableIterator<T>): value is AsyncIterableIterator<T> {
+    return isRecord(value) && typeof (<any>value)[Symbol.asyncIterator] == 'function'
 }
