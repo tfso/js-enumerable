@@ -100,16 +100,20 @@ export class Enumerable<TEntity extends Record<string, any> | number | Date | st
                 let ar = Array.from(items)
 
                 ar.sort((a, b) => {
+                    let left = null, right = null
+
                     if(typeof property == 'string') {
                         if(isRecord(a) && isRecord(b)) {
-                            return a[property] == b[property] ? 0 : a[property] < b[property] ? -1 : 1
+                            left = a[property] 
+                            right = b[property]
                         }
                     }
                     else {
-                        return a == b ? 0 : a < b ? -1 : 1
+                        left = a
+                        right = b
                     }
 
-                    return 0
+                    return left >= right && left <= right ? 0 : left < right ? -1 : 1 // using >= && <= instead of == fixes comparisons for dates
                 })
 
                 yield* ar
@@ -121,16 +125,21 @@ export class Enumerable<TEntity extends Record<string, any> | number | Date | st
                     ar.push(item)
 
                 ar.sort((a, b) => {
+                    let left = null, 
+                        right = null
+
                     if(typeof property == 'string') {
                         if(isRecord(a) && isRecord(b)) {
-                            return a[property] == b[property] ? 0 : a[property] < b[property] ? -1 : 1
+                            left = a[property] 
+                            right = b[property]
                         }
                     }
                     else {
-                        return a == b ? 0 : a < b ? -1 : 1
+                        left = a
+                        right = b
                     }
 
-                    return 0
+                    return left >= right && left <= right ? 0 : left < right ? -1 : 1 // using >= && <= instead of == fixes comparisons for dates
                 })
 
                 yield* ar 
