@@ -47,7 +47,11 @@
 			"ts-node/register",
 			"./src/test/setup/mocha-require.js"
 		],
-		"mocha.parallelTests": 10,
+		"mocha.parallelTests": 5,
+		"mocha.env": {
+			"NODE_ENV": "development",
+			"TS_NODE_TRANSPILE_ONLY": "1"
+		},
 		"mocha.runTestsOnSave": "false",
 		"mocha.sideBarOptions": {
 			"default": {

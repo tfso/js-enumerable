@@ -1,23 +1,22 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-      "target": "es6",
-      "lib": [
-        "es2018",
-        "dom",
-        "esnext.asynciterable"
-      ],
-      "downlevelIteration": true,
-      "skipLibCheck": true,
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "noImplicitAny": true,
-      "declaration": true,
-      "sourceMap": true,
-      "outDir": "lib"
+        "target": "es5",
+        "lib": [
+            "es2018",
+            "dom",
+            "esnext.asynciterable"
+        ],
+        "downlevelIteration": true,
+        "skipLibCheck": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "declaration": true,
+        "sourceMap": true,
+        "outDir": "lib"
     },
     "include": [
-      "src"
+        "src"
     ]
-  }
-  
+}
