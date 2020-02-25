@@ -82,6 +82,15 @@ describe("When using enumerable", () => {
 
             chai.expect(total).to.equal(18)
         })
+
+        it("should async iterate using Enumerable with orderBy", async () => {
+            let ar = []
+            
+            for await(let num of new Enumerable(asyncIterator()).orderBy())
+                ar.push(num)
+
+            chai.expect(ar).to.deep.equal([1, 5, 7, 10, 11])
+        })
     })
 
     describe("as a synchronous iterable", () => {
@@ -143,6 +152,13 @@ describe("When using enumerable", () => {
                 total += num
     
             chai.expect(total).to.equal(18)
+        })
+
+        it("should iterate using Enumerable with orderBy", () => {
+            
+            let ar = Array.from(new Enumerable(iterator()).orderBy())
+
+            chai.expect(ar).to.deep.equal([1, 5, 7, 10, 11])
         })
     })
    

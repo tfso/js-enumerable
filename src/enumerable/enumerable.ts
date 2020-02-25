@@ -1,7 +1,7 @@
 import Base from './base'
 import { LinqOperator, LinqType } from './operator'
 
-export class Enumerable<TEntity> extends Base<TEntity> {
+export class Enumerable<TEntity extends Record<string, any> | number | Date | string> extends Base<TEntity> {
     constructor(items?: Array<TEntity>)
     constructor(items?: Iterable<TEntity>)
     constructor(items?: AsyncIterable<TEntity>)
@@ -10,7 +10,7 @@ export class Enumerable<TEntity> extends Base<TEntity> {
     }
 
     public skip(count: number): this {
-        this.operations.push({ type: LinqType.Skip, count, evaluate: () => {
+        this.operators.push({ type: LinqType.Skip, count, evaluate: () => {
             let idx = 0
 
             return (item) => {
@@ -25,7 +25,7 @@ export class Enumerable<TEntity> extends Base<TEntity> {
     }
 
     public take(count: number): this {
-        this.operations.push({ type: LinqType.Take, count, evaluate: () => {
+        this.operators.push({ type: LinqType.Take, count, evaluate: () => {
             let idx = 0
 
             return (item) => {
@@ -40,7 +40,7 @@ export class Enumerable<TEntity> extends Base<TEntity> {
     }
 
     public slice(begin: string | number, end?: number): this {
-        this.operations.push({
+        this.operators.push({
             type: LinqType.Slice, begin, end, evaluate: () => {
                 let idx = 0,
                     skip = typeof begin === 'string' ? 0 : begin
@@ -63,7 +63,7 @@ export class Enumerable<TEntity> extends Base<TEntity> {
     }
 
     public includes(entity: Partial<TEntity> , fromIndex?: number): this {
-        this.operations.push({ type: LinqType.Includes, entity, evaluate: () => {
+        this.operators.push({ type: LinqType.Includes, entity, evaluate: () => {
             let values = Object.entries(entity)
 
             return (item) => {
@@ -76,4 +76,60 @@ export class Enumerable<TEntity> extends Base<TEntity> {
 
         return this
     }
+
+    //public orderBy(property: (it: TEntity) => void): this
+    public orderBy(property: keyof TEntity): this
+    public orderBy(property: string): this
+    public orderBy(): this
+    public orderBy(property?: any) {
+        this.operators.push({ 
+            type: LinqType.OrderBy, 
+            property, 
+            iterator: function* (items) {
+                let ar = Array.from(items)
+
+                ar.sort((a, b) => {
+                    if(typeof property == 'string') {
+                        if(isRecord(a) && isRecord(b)) {
+                            return a[property] == b[property] ? 0 : a[property] < b[property] ? -1 : 1;
+                        }
+                    }
+                    else {
+                        return a == b ? 0 : a < b ? -1 : 1;
+                    }
+
+                    return 0
+                })
+
+                yield* ar;
+            },
+            asyncIterator: async function* (items) {
+                let ar: Array<TEntity> = [];
+                
+                for await(let item of items)
+                    ar.push(item);
+
+                ar.sort((a, b) => {
+                    if(typeof property == 'string') {
+                        if(isRecord(a) && isRecord(b)) {
+                            return a[property] == b[property] ? 0 : a[property] < b[property] ? -1 : 1;
+                        }
+                    }
+                    else {
+                        return a == b ? 0 : a < b ? -1 : 1;
+                    }
+
+                    return 0
+                })
+
+                yield* ar; 
+            }
+        })
+
+        return this
+    }
+}
+
+function isRecord(value: Record<string, any> | any): value is Record<string, any> {
+    return typeof value == 'object'
 }

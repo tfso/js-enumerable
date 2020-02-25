@@ -6,16 +6,24 @@ export interface IEnumerable<TEntity> extends Iterable<TEntity>, AsyncIterable<T
     from(items: AsyncIterable<TEntity>) : this
 
     skip(count: number): this
+    
     take(count: number): this
+    
     slice(begin: string | number, end?: number): this
+
     includes(entity: Partial<TEntity> , fromIndex?: number): this
+    
+    //orderBy(property: (it: TEntity) => void): this
+    orderBy(property: keyof TEntity): this
+    orderBy(property: string): this
+    orderBy(): this
 }
 
-export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
+export default abstract class Base<TEntity extends any> implements IEnumerable<TEntity> {
     private iterableName: string | null = null
     private items: Iterable<TEntity> | AsyncIterable<TEntity> | null = null
     
-    protected operations: Array<LinqOperator<TEntity>> = []
+    protected operators: Array<LinqOperator<TEntity>> = []
 
     public constructor(items?: Array<TEntity>)
     public constructor(items?: Iterable<TEntity>)
@@ -26,9 +34,17 @@ export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
     }
 
     abstract skip(count: number): this
+    
     abstract take(count: number): this
+    
     abstract slice(begin: string | number, end?: number): this
+    
     abstract includes(entity: Partial<TEntity> , fromIndex?: number): this
+    
+    //abstract orderBy(property: (it: TEntity) => void): this
+    abstract orderBy(property: keyof TEntity): this
+    abstract orderBy(property: string): this
+    abstract orderBy(): this
     
     public get name(): string {
         if (this.iterableName != null)
@@ -54,21 +70,33 @@ export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
         if((this.items && typeof this.items == 'object' && typeof (this.items as any)[Symbol.asyncIterator] == 'function') == false)
             throw new TypeError('Enumerable is not async iterable')
 
-        async function* iterate(items: Iterator<TEntity>, operations: Array<LinqOperator<TEntity>>, idx: number | null = null): AsyncGenerator<TEntity> {
+        async function* iterate(items: AsyncIterableIterator<TEntity>, operators: Array<LinqOperator<TEntity>>, idx: number | null = null): AsyncGenerator<TEntity> {
             if(idx == null)
-                idx = operations.length
+                idx = operators.length
 
-            let generator: AsyncIterator<TEntity> | Iterator<TEntity>
+            let operator = idx > 0 ? operators[idx - 1] : null,
+                evaluate = (item: TEntity) => 'yield',
+                generator: AsyncIterableIterator<TEntity>
 
-            switch(idx) {
-                case 0: generator = items; break
-                default: generator = iterate(items, operations, idx - 1)
+            if(operator) {
+                if('evaluate' in operator){
+                    switch(idx) {
+                        case 0: generator = items; break
+                        default: generator = iterate(items, operators, idx - 1)
+                    }
+
+                    evaluate = operator.evaluate()
+                }
+                else {
+                    generator = operator.asyncIterator(items)
+                }
+            } 
+            else {
+                generator = items
             }
-
-            let op = idx > 0 ? operations[idx - 1].evaluate() : (item: TEntity) => 'yield'
             
             while(!(result = await Promise.resolve(generator!.next())).done) {
-                let state = op(result.value)
+                let state = evaluate(result.value)
 
                 if(state == 'break')
                     break
@@ -80,7 +108,7 @@ export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
             }
         }
 
-        let iterator = iterate(this.items instanceof Repository ? this.items.query(this) : (this.items as any)![Symbol.asyncIterator](), this.operations),
+        let iterator = iterate(this.items instanceof Repository ? this.items.query(this) : (this.items as any)![Symbol.asyncIterator](), this.operators),
             result: IteratorResult<TEntity>
 
         while(!(result = await Promise.resolve(iterator.next())).done ) {
@@ -92,21 +120,33 @@ export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
         if((this.items && typeof this.items == 'object' && typeof (this.items as any)[Symbol.iterator] == 'function') == false)
             throw new TypeError('Enumerable is not iterable')
 
-        function* iterate(items: Iterator<TEntity>, operations: Array<LinqOperator<TEntity>>, idx: number | null = null): Generator<TEntity> {
+        function* iterate(items: IterableIterator<TEntity>, operators: Array<LinqOperator<TEntity>>, idx: number | null = null): Generator<TEntity> {
             if(idx == null)
-                idx = operations.length
+                idx = operators.length
 
-            let generator: Iterator<TEntity>
+            let operator = idx > 0 ? operators[idx - 1] : null,
+                evaluate = (item: TEntity) => 'yield',
+                generator: IterableIterator<TEntity>
 
-            switch(idx) {
-                case 0: generator = items; break
-                default: generator = iterate(items, operations, idx - 1)
+            if(operator) {
+                if('evaluate' in operator){
+                    switch(idx) {
+                        case 0: generator = items; break
+                        default: generator = iterate(items, operators, idx - 1)
+                    }
+
+                    evaluate = operator.evaluate()
+                }
+                else {
+                    generator = operator.iterator(items)
+                }
+            } 
+            else {
+                generator = items
             }
-
-            let op = idx > 0 ? operations[idx - 1].evaluate() : (item: TEntity) => 'yield'
-            
+        
             while(!(result = generator!.next()).done) {
-                let state = op(result.value)
+                let state = evaluate(result.value)
 
                 if(state == 'break')
                     break
@@ -118,7 +158,7 @@ export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
             }
         }
 
-        let iterator = iterate(this.items instanceof Repository ? this.items.query(this) : (this.items as any)![Symbol.iterator](), this.operations),
+        let iterator = iterate(this.items instanceof Repository ? this.items.query(this) : (this.items as any)![Symbol.iterator](), this.operators),
             result: IteratorResult<TEntity>
 
         while(!(result = iterator.next()).done ) {
