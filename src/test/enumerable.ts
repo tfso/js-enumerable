@@ -54,7 +54,7 @@ describe("When using enumerable", () => {
                 total += num
 
             chai.expect(total).to.equal(15)
-        })        
+        })
 
         it("should async iterate using Enumerable with skip", async () => {
             let total = 0
@@ -63,7 +63,7 @@ describe("When using enumerable", () => {
                 total += num
 
             chai.expect(total).to.equal(12)
-        })        
+        })
 
         it("should async iterate using Enumerable with skip/take", async () => {
             let total = 0
@@ -72,7 +72,16 @@ describe("When using enumerable", () => {
                 total += num
 
             chai.expect(total).to.equal(18)
-        }) 
+        })
+
+        it("should async iterate using Enumerable with slice", async () => {
+            let total = 0
+
+            for await(let num of new Enumerable(asyncIterator()).slice(2, 4))
+                total += num
+
+            chai.expect(total).to.equal(18)
+        })
     })
 
     describe("as a synchronous iterable", () => {
@@ -91,7 +100,7 @@ describe("When using enumerable", () => {
             chai.expect(total).to.equal(34)
         })
     
-        it("should iterate using Enumerable", async () => {
+        it("should iterate using Enumerable", () => {
             let total = 0
     
             for(let num of new Enumerable(iterator()))
@@ -100,7 +109,7 @@ describe("When using enumerable", () => {
             chai.expect(total).to.equal(34)
         })
     
-        it("should iterate using Enumerable with take", async () => {
+        it("should iterate using Enumerable with take", () => {
             let total = 0
     
             for(let num of new Enumerable(iterator()).take(2))
@@ -109,7 +118,7 @@ describe("When using enumerable", () => {
             chai.expect(total).to.equal(15)
         })
 
-        it("should iterate using Enumerable with skip", async () => {
+        it("should iterate using Enumerable with skip", () => {
             let total = 0
     
             for(let num of new Enumerable(iterator()).skip(3))
@@ -118,10 +127,19 @@ describe("When using enumerable", () => {
             chai.expect(total).to.equal(12)
         })
 
-        it("should iterate using Enumerable with skip/take", async () => {
+        it("should iterate using Enumerable with skip/take", () => {
             let total = 0
     
             for(let num of new Enumerable(iterator()).skip(2).take(2))
+                total += num
+    
+            chai.expect(total).to.equal(18)
+        })
+
+        it("should iterate using Enumerable with slice", () => {
+            let total = 0
+    
+            for(let num of new Enumerable(iterator()).slice(2, 4))
                 total += num
     
             chai.expect(total).to.equal(18)

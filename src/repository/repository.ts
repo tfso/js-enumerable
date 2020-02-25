@@ -1,7 +1,7 @@
 import { Enumerable } from '../enumerable/index'
 
 export interface IRepository<TEntity, TEntityId> extends AsyncIterable<TEntity> {
-    query(...options: any[]): AsyncIterableIterator<TEntity>
+    query(linq?: Enumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity>
 
     create(item: Partial<TEntity>): Promise<TEntity> 
     read(id?: TEntityId): Promise<TEntity>
