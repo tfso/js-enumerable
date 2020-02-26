@@ -1,2 +1,2 @@
-export { Enumerable, IEnumerable } from './enumerable'
+export { Enumerable, IEnumerable } from './linq'
 export { Repository, IRepository } from './repository'

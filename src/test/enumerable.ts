@@ -1,4 +1,4 @@
-import { Enumerable } from '../enumerable'
+import { Enumerable } from '../linq'
 
 function * iterator() {
     yield 5

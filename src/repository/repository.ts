@@ -1,4 +1,4 @@
-import { Enumerable } from '../enumerable/index'
+import { Enumerable } from './../linq'
 
 export interface IRepository<TEntity, TEntityId> extends AsyncIterable<TEntity> {
     query(linq?: Enumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity>
