@@ -1,0 +1,35 @@
+{
+    "extends": [
+        "tfso/typescript"
+    ],
+    "rules": {
+        "@typescript-eslint/consistent-type-assertions": ["error", {
+            "assertionStyle": "angle-bracket",
+            "objectLiteralTypeAssertions": "allow"
+        }],
+        "@typescript-eslint/no-unused-vars": "off",
+        "prefer-const": "off",
+        "prefer-rest-params": "off",
+        "brace-style": ["warn", "stroustrup", { "allowSingleLine": true }],
+        "keyword-spacing": [
+            "warn",
+            {
+                "after": true,
+                "overrides": {
+                    "if": { "after": false },
+                    "catch": { "after": false },
+                    "for": { "after": false },
+                    "switch": { "after": false }
+                }
+            }
+        ]
+    },
+    "overrides": [
+        {
+            "files": ["test/**/*.ts"],
+            "rules": {
+                "quotes": "off"
+            }
+        }
+    ]
+}

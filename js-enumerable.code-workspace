@@ -1,0 +1,77 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"name": "js-enumerable"
+		}
+	],
+	"settings": {
+		"launch": {
+			"verison": "0.2.0",
+			"configurations": [
+				{
+					"name": "Run in Chrome with server",
+					"type": "chrome",
+					"request": "launch",
+					"url": "http://localhost:5000",
+					"webRoot": "${workspaceFolder}"
+				},
+				{
+					"name": "Run mocha",
+					"type": "node",
+					"request": "launch",
+					"program": "${workspaceFolder:api}/node_modules/mocha/bin/_mocha",
+					"stopOnEntry": false,
+					"args": ["--no-timeouts", "--compilers", "ts:ts-node/register", "${workspaceFolder:api}/test/*.ts"],
+					"cwd": "${workspaceFolder:api}",
+					"protocol": "inspector"
+				}
+			]
+		},
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/.idea": true,
+			"**/.vs": true,
+			"**/.vscode": true,
+			"**/.nyc_output": true,
+			"node_modules": true,
+			"lib": true,
+			"coverage": true
+		},
+		"mocha.files.glob": "src/test/*.ts",
+		"mocha.requires": [
+			"ts-node/register",
+			"./src/test/setup/mocha-require.ts"
+		],
+		"mocha.parallelTests": 5,
+		"mocha.env": {
+			"NODE_ENV": "development",
+			"TS_NODE_TRANSPILE_ONLY": "1"
+		},
+		"mocha.runTestsOnSave": "false",
+		"mocha.sideBarOptions": {
+			"default": {
+				"lens": true, // -> enable/disable lens
+				"decoration": true, // -> enable/disable decoration
+				"autoUpdateTime": 2000 // -> set timeout between each decorations and lens updates during test writing
+			}
+		},
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": false
+		},
+		"eslint.validate": [
+			"typescript",
+    		"typescriptreact"
+		],
+		"typescript.tsdk": "node_modules\\typescript\\lib"
+	},
+	"extensions": {
+		"recommendations": [
+			"maty.vscode-mocha-sidebar", "eamodio.toggle-excluded-files"
+		]
+	}
+}
