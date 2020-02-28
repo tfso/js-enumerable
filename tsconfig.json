@@ -3,8 +3,8 @@
     "compilerOptions": {
         "target": "es6",
         "lib": [
-            "es2018",
             "dom",
+            "es2018",
             "esnext.asynciterable"
         ],
         "downlevelIteration": true,

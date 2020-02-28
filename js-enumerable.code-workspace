@@ -45,7 +45,7 @@
 		"mocha.files.glob": "src/test/*.ts",
 		"mocha.requires": [
 			"ts-node/register",
-			"./src/test/setup/mocha-require.js"
+			"./src/test/setup/mocha-require.ts"
 		],
 		"mocha.parallelTests": 5,
 		"mocha.env": {
