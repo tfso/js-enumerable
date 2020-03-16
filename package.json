@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "test": "node node_modules/mocha/bin/_mocha --require lib/test/setup/mocha-require.js --recursive lib/test/*.js",
+    "test": "node node_modules/mocha/bin/_mocha --require lib/test/setup/mocha-require.js --require ts-node/register --recursive src/test/**/*.ts",
     "lint": "node node_modules/eslint/bin/eslint --ignore-pattern lib/ --ext .ts ./",
     "build": "tsc && webpack",
     "browserify": "browserify src/test/index.ts -p [ tsify --noImplicitAny ] > lib/mocha-bundle.js"

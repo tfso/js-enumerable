@@ -1,5 +1,5 @@
 ﻿import * as assert from 'assert'
-import * as Expr from '../linq/peg/expressionvisitor'
+import * as Expr from '../../linq/peg/expressionvisitor'
 
 describe('When using ExpressionVisitor', () => {
     let visitor: Expr.ExpressionVisitor,

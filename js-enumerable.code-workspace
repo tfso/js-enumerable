@@ -42,7 +42,7 @@
 			"lib": true,
 			"coverage": true
 		},
-		"mocha.files.glob": "src/test/*.ts",
+		"mocha.files.glob": "src/test/**/*.ts",
 		"mocha.requires": [
 			"ts-node/register",
 			"./src/test/setup/mocha-require.ts"
