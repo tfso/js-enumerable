@@ -170,14 +170,13 @@ export class ReducerVisitor extends ExpressionVisitor {
         return new LogicalExpression(expression.operator, left, right)
     }
 
-    public evaluate(expression: IExpression, it?: Record<string, any>): IExpression 
-    public evaluate(expression: IExpression, it: Record<string, any> = null): IExpression {
+    public evaluate(expression: IExpression, it?: Record<string, any> | number | string): IExpression 
+    public evaluate(expression: IExpression, it: Record<string, any> | number | string = null): IExpression {
         if(expression == null)
             return null
 
         let value: any = null
             
-
         switch(expression.type) {
             case ExpressionType.Literal: 
                 break
@@ -187,7 +186,7 @@ export class ReducerVisitor extends ExpressionVisitor {
 
                 if(it != null) {
                     // this object
-                    if(typeof it == 'object' && identifier.name in it && (value = it[identifier.name]) !== undefined) {
+                    if(isRecord(it) && identifier.name in it && (value = it[identifier.name]) !== undefined) {
                         if(value == null)
                             return new LiteralExpression(null)
 
@@ -211,6 +210,9 @@ export class ReducerVisitor extends ExpressionVisitor {
                         }
 
                         return new LiteralExpression(value)
+                    }
+                    else if(['number', 'string'].includes(typeof it)) {
+                        return new LiteralExpression(it)
                     }
                 }
 
@@ -344,3 +346,6 @@ export class ReducerVisitor extends ExpressionVisitor {
     //}
 }
 
+function isRecord(value: Record<string, any> | any): value is Record<string, any> {
+    return value !== null && typeof value == 'object' && value.getTime === undefined
+}

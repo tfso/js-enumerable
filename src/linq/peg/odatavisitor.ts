@@ -203,9 +203,9 @@ export class ODataVisitor extends ReducerVisitor {
         return new MethodExpression(expression.name, parameters, caller)
     }
 
-    public static evaluate(expression: string, it?: Record<string, any>): any
-    public static evaluate(expression: IExpression, it?: Record<string, any>): any
-    public static evaluate(expression: IExpression | string, it: Record<string, any> = null): any {
+    public static evaluate(expression: string, it?: Record<string, any> | number | Date | string): any
+    public static evaluate(expression: IExpression, it?: Record<string, any> | number | Date | string): any
+    public static evaluate(expression: IExpression | string, it: Record<string, any> | number | Date | string = null): any {
         let reducer = new ODataVisitor(),
             result: IExpression
 

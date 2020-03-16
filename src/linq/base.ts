@@ -13,6 +13,9 @@ export interface IEnumerable<TEntity> extends Iterable<TEntity>, AsyncIterable<T
 
     includes(entity: Partial<TEntity>, fromIndex?: number): this
     
+    where(predicate: string): this
+    where(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): this
+
     //orderBy(property: (it: TEntity) => void): this
     orderBy(property: keyof TEntity): this
     orderBy(property: string): this
@@ -40,6 +43,9 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
     abstract slice(begin: string | number, end?: number): this
     
     abstract includes(entity: Partial<TEntity>, fromIndex?: number): this
+
+    abstract where(predicate: string): this
+    abstract where(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): this
     
     //abstract orderBy(property: (it: TEntity) => void): this
     abstract orderBy(property: keyof TEntity): this

@@ -1,6 +1,6 @@
 {
   "name": "js-enumerable",
-  "version": "0.1.0",
+  "version": "0.0.2",
   "description": "",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -8,6 +8,7 @@
     "test": "node node_modules/mocha/bin/_mocha --require lib/test/setup/mocha-require.js --require ts-node/register --recursive src/test/**/*.ts",
     "lint": "node node_modules/eslint/bin/eslint --ignore-pattern lib/ --ext .ts ./",
     "build": "tsc && webpack",
+    "publish": "cross-env-shell \"npm run build && npm run test && publish-to-git --tag $npm_package_version\"",
     "browserify": "browserify src/test/index.ts -p [ tsify --noImplicitAny ] > lib/mocha-bundle.js"
   },
   "author": "Nicolai Gjærum",
@@ -35,6 +36,8 @@
     "babel-loader": "^8.0.6",
     "babelify": "^10.0.0",
     "webpack": "^4.41.6",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "publish-to-git": "github:tfso/publish-to-git",
+    "cross-env": "^7.0.0"
   }
 }
