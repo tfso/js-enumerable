@@ -207,7 +207,7 @@ export class Enumerable<TEntity extends Record<string, any> | number | Date | st
             asyncIterator: async function* (items) {
                 let ar: Array<TEntity> = []
                 
-                for await (let item of items)
+                for await(let item of items)
                     ar.push(item)
 
                 ar.sort((a, b) => {

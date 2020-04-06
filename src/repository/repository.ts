@@ -1,7 +1,7 @@
-import { Enumerable } from './../linq'
+import { IEnumerable } from './../linq'
 
 export interface IRepository<TEntity, TEntityId> extends AsyncIterable<TEntity> {
-    query(linq?: Enumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity>
+    query(linq?: IEnumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity>
 
     create(item: Partial<TEntity>): Promise<TEntity> 
     read(id?: TEntityId): Promise<TEntity>
@@ -10,7 +10,7 @@ export interface IRepository<TEntity, TEntityId> extends AsyncIterable<TEntity> 
 }
 
 export abstract class Repository<TEntity, TEntityId> implements IRepository<TEntity, TEntityId>, AsyncIterable<TEntity> {
-    abstract query(linq?: Enumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity>
+    abstract query(linq?: IEnumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity>
 
     abstract async create(item: Partial<TEntity>): Promise<TEntity>
     abstract async read(id?: TEntityId): Promise<TEntity>
@@ -21,7 +21,7 @@ export abstract class Repository<TEntity, TEntityId> implements IRepository<TEnt
         throw new TypeError('Repository is async iterable but it used as iterable')
     }
 
-    [Symbol.asyncIterator](linq?: Enumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity> {
+    [Symbol.asyncIterator](linq?: IEnumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity> {
         return this.query(linq, meta)
     }
 }

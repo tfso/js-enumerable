@@ -201,12 +201,14 @@ export class ReducerVisitor extends ExpressionVisitor {
                                     break
 
                                 if(Array.isArray(value) == true)
-                                    break
+                                    break // hmm, literal value as array?
 
-                                // fall through
+                                value = null
+                                break
 
                             default:
                                 value = null
+                                break
                         }
 
                         return new LiteralExpression(value)

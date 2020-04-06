@@ -40,43 +40,43 @@ export abstract class Expression implements IExpression {
 
         switch(this.type) {
             case ExpressionType.Literal:
-                expression = visitor.visitLiteral(<ILiteralExpression><Record<string, any>> this); break
+                expression = visitor.visitLiteral(<ILiteralExpression><Record<string, any>>this); break
 
             case ExpressionType.Compound:
-                expression = visitor.visitCompound(<ICompoundExpression><Record<string, any>> this); break
+                expression = visitor.visitCompound(<ICompoundExpression><Record<string, any>>this); break
 
             case ExpressionType.Identifier:
-                expression = visitor.visitIdentifier(<IIdentifierExpression><Record<string, any>> this); break
+                expression = visitor.visitIdentifier(<IIdentifierExpression><Record<string, any>>this); break
 
             case ExpressionType.Member:
-                expression = visitor.visitMember(<IMemberExpression><Record<string, any>> this); break
+                expression = visitor.visitMember(<IMemberExpression><Record<string, any>>this); break
 
             case ExpressionType.Method:
-                expression = visitor.visitMethod(<IMethodExpression><Record<string, any>> this); break
+                expression = visitor.visitMethod(<IMethodExpression><Record<string, any>>this); break
 
             case ExpressionType.Unary:
-                expression = visitor.visitUnary(<IUnaryExpression><Record<string, any>> this); break
+                expression = visitor.visitUnary(<IUnaryExpression><Record<string, any>>this); break
 
             case ExpressionType.Binary:
-                expression = visitor.visitBinary(<IBinaryExpression><Record<string, any>> this); break
+                expression = visitor.visitBinary(<IBinaryExpression><Record<string, any>>this); break
 
             case ExpressionType.Logical:
-                expression = visitor.visitLogical(<ILogicalExpression><Record<string, any>> this); break
+                expression = visitor.visitLogical(<ILogicalExpression><Record<string, any>>this); break
 
             case ExpressionType.Conditional:
-                expression = visitor.visitConditional(<IConditionalExpression><Record<string, any>> this); break
+                expression = visitor.visitConditional(<IConditionalExpression><Record<string, any>>this); break
 
             case ExpressionType.Array:
-                expression = visitor.visitArray(<IArrayExpression><Record<string, any>> this); break
+                expression = visitor.visitArray(<IArrayExpression><Record<string, any>>this); break
 
             case ExpressionType.Index:
-                expression = visitor.visitIndex(<IIndexExpression><Record<string, any>> this); break
+                expression = visitor.visitIndex(<IIndexExpression><Record<string, any>>this); break
 
             case ExpressionType.TemplateLiteral:
-                expression = visitor.visitTemplateLiteral(<ITemplateLiteralExpression><Record<string, any>> this); break
+                expression = visitor.visitTemplateLiteral(<ITemplateLiteralExpression><Record<string, any>>this); break
 
             case ExpressionType.Object:
-                expression = visitor.visitObject(<IObjectExpression><Record<string, any>> this); break
+                expression = visitor.visitObject(<IObjectExpression><Record<string, any>>this); break
         }
 
         // remove it from stack

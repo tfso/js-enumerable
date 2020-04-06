@@ -19,7 +19,9 @@
                     "if": { "after": false },
                     "catch": { "after": false },
                     "for": { "after": false },
-                    "switch": { "after": false }
+                    "switch": { "after": false },
+                    "this": { "before": false },
+                    "await": { "after": false }
                 }
             }
         ]
