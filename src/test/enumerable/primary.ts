@@ -1,10 +1,9 @@
-
-import { Enumerable, IEnumerable } from './../linq'
+import { Enumerable, IEnumerable } from '../../linq'
 
 /* eslint-disable-next-line */
 if(jsEnumerable == null) {
     /* eslint-disable-next-line */
-    var jsEnumerable: { Enumerable: typeof Enumerable } = require('./../linq/enumerable')
+    var jsEnumerable: { Enumerable: typeof Enumerable } = require('./../../linq/enumerable')
 }
 
 function * iterator() {
@@ -23,7 +22,7 @@ async function * asyncIterator() {
     yield 1
 }
 
-describe('When using enumerable', () => {
+describe('When using enumerable for primary types', () => {
     describe('as an asynchronous iterable', () => {
 
         it('should async iterate normally', async () => {
@@ -34,7 +33,7 @@ describe('When using enumerable', () => {
             chai.expect(firstResult instanceof Promise).to.be.true
             chai.expect(firstValue).to.equal(5)
 
-            for await (let num of asyncIterator())
+            for await(let num of asyncIterator())
                 total += num
 
             chai.expect(total).to.equal(34)
@@ -43,7 +42,7 @@ describe('When using enumerable', () => {
         it('should async iterate using Enumerable', async () => {
             let total = 0
 
-            for await (let num of new jsEnumerable.Enumerable(asyncIterator()))
+            for await(let num of new jsEnumerable.Enumerable(asyncIterator()))
                 total += num
 
             chai.expect(total).to.equal(34)
@@ -52,7 +51,7 @@ describe('When using enumerable', () => {
         it('should async iterate using take', async () => {
             let total = 0
             
-            for await (let num of new jsEnumerable.Enumerable(asyncIterator()).take(2))
+            for await(let num of new jsEnumerable.Enumerable(asyncIterator()).take(2))
                 total += num
 
             chai.expect(total).to.equal(15)
@@ -61,7 +60,7 @@ describe('When using enumerable', () => {
         it('should async iterate using skip', async () => {
             let total = 0
 
-            for await (let num of new jsEnumerable.Enumerable(asyncIterator()).skip(3))
+            for await(let num of new jsEnumerable.Enumerable(asyncIterator()).skip(3))
                 total += num
 
             chai.expect(total).to.equal(12)
@@ -70,7 +69,7 @@ describe('When using enumerable', () => {
         it('should async iterate using skip/take', async () => {
             let total = 0
             
-            for await (let num of new jsEnumerable.Enumerable(asyncIterator()).skip(2).take(2))
+            for await(let num of new jsEnumerable.Enumerable(asyncIterator()).skip(2).take(2))
                 total += num
 
             chai.expect(total).to.equal(18)
@@ -79,7 +78,7 @@ describe('When using enumerable', () => {
         it('should async iterate using slice', async () => {
             let total = 0
 
-            for await (let num of new jsEnumerable.Enumerable(asyncIterator()).slice(2, 4))
+            for await(let num of new jsEnumerable.Enumerable(asyncIterator()).slice(2, 4))
                 total += num
 
             chai.expect(total).to.equal(18)
@@ -88,7 +87,7 @@ describe('When using enumerable', () => {
         it('should async iterate using where (javascript)', async () => {
             let ar = []
             
-            for await (let num of new jsEnumerable.Enumerable(asyncIterator()).where(it => it >= 7))
+            for await(let num of new jsEnumerable.Enumerable(asyncIterator()).where(it => it >= 7))
                 ar.push(num)
 
             chai.expect(ar).to.deep.equal([10, 7, 11])
@@ -97,7 +96,7 @@ describe('When using enumerable', () => {
         it('should async iterate using where (odata)', async () => {
             let ar = []
             
-            for await (let num of new jsEnumerable.Enumerable(asyncIterator()).where('this ge 7'))
+            for await(let num of new jsEnumerable.Enumerable(asyncIterator()).where('this ge 7'))
                 ar.push(num)
 
             chai.expect(ar).to.deep.equal([10, 7, 11])
@@ -106,7 +105,7 @@ describe('When using enumerable', () => {
         it('should async iterate using orderBy', async () => {
             let ar = []
             
-            for await (let num of new jsEnumerable.Enumerable(asyncIterator()).orderBy())
+            for await(let num of new jsEnumerable.Enumerable(asyncIterator()).orderBy())
                 ar.push(num)
 
             chai.expect(ar).to.deep.equal([1, 5, 7, 10, 11])
@@ -174,7 +173,7 @@ describe('When using enumerable', () => {
             chai.expect(total).to.equal(18)
         })
 
-        it('should async iterate using where (javascript)', () => {
+        it('should iterate using where (javascript)', () => {
             let ar = []
             
             for(let num of new jsEnumerable.Enumerable(iterator()).where(it => it >= 7))
@@ -183,7 +182,7 @@ describe('When using enumerable', () => {
             chai.expect(ar).to.deep.equal([10, 7, 11])
         })
 
-        it('should async iterate using where (odata)', () => {
+        it('should iterate using where (odata)', () => {
             let ar = []
             
             for(let num of new jsEnumerable.Enumerable(iterator()).where('this ge 7'))

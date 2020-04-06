@@ -1,5 +1,6 @@
 import './basic'
-import './enumerable'
+import './enumerable/primary'
+import './enumerable/record'
 import './repository'
 
 import './expressionvisitor/array'

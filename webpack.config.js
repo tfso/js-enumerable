@@ -4,7 +4,7 @@ const webpack = require('webpack');
 module.exports = {
     entry: {
         lib: ['@babel/polyfill', './src/index.ts'],
-        mocha: ['@babel/polyfill', './src/test/enumerable.ts']
+        mocha: ['@babel/polyfill', './src/test/enumerable/primary.ts', './src/test/enumerable/record.ts']
     },
     optimization: {
         minimize: true
