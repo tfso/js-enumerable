@@ -43,12 +43,9 @@ jobs:
           scope: tfso
       - name: publish
         run: |
-          npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN
-          npm config set scope "<@tfso>"
-          npm config list
           npm ci
           npm run build
-          npm publish --access public
+          npm publish --@tfso:registry=https://registry.npmjs.org/
         env:
           CI: true
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
