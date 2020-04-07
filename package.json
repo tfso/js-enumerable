@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "test": "node node_modules/mocha/bin/_mocha --require lib/test/setup/mocha-require.js --require ts-node/register --recursive src/test/**/*.ts",
+    "test": "tsc && node node_modules/mocha/bin/_mocha --require lib/test/setup/mocha-require.js --recursive lib/test/**/*.js",
     "lint": "node node_modules/eslint/bin/eslint --ignore-pattern lib/ --ext .ts ./",
     "build": "tsc && webpack",
     "publish": "cross-env-shell \"npm run build && npm run test && publish-to-git --tag $npm_package_version\"",
