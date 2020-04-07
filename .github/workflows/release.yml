@@ -38,31 +38,31 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-          scope: "@tfso"
+          scope: tfso
       - name: publish
         run: |
           npm ci
           npm run build
-          npm publish
+          npm publish --@tfso:registry=https://registry.npmjs.org/
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-  publish-gpr:
-    name: publish npm to github
-    if: "!github.event.release.prerelease" # https://developer.github.com/v3/activity/events/types/#releaseevent
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-          registry-url: https://npm.pkg.github.com/
-          scope: "@tfso"  
-      - name: publish
-        run: |
-          npm ci
-          npm run build
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  # publish-gpr:
+  #   name: publish npm to github
+  #   if: "!github.event.release.prerelease" # https://developer.github.com/v3/activity/events/types/#releaseevent
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 12
+  #         registry-url: https://npm.pkg.github.com/
+  #         scope: "@tfso"  
+  #     - name: publish
+  #       run: |
+  #         npm ci
+  #         npm run build
+  #         npm publish
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
