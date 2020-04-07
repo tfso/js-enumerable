@@ -48,7 +48,7 @@ jobs:
 
   publish-gpr:
     name: publish npm to github
-    if: "github.event.release.release"
+    if: "!github.event.release.prerelease"
     needs: build
     runs-on: ubuntu-latest
     steps:
