@@ -1,0 +1,5 @@
+.github
+.eslintrc.json
+js-enumerable.code-workspace
+tsconfig.json
+webpack.config.js
