@@ -32,8 +32,10 @@ jobs:
   #       with:
   #         node-version: 12
   #         registry-url: https://registry.npmjs.org/
-  #     - run: npm ci
-  #     - run: npm publish
+  #     - name: publish
+  #       run: |
+  #         npm ci
+  #         npm publish
   #       env:
   #         NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
@@ -48,7 +50,8 @@ jobs:
         with:
           node-version: 12
           registry-url: https://npm.pkg.github.com/
-          scope: "@tfso"   
+          scope: "@tfso"  
+      - name: publish
         run: |
           npm ci
           npm publish
