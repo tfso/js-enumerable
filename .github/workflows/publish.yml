@@ -1,0 +1,53 @@
+on:
+  release:
+    types: [published]
+
+name: publish npm
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: build code
+        uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: build project
+        run: |
+          npm ci
+          npm test
+          npm run lint
+          npm run build
+
+ publish-npm:
+   name: publish npm
+   needs: build
+   runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v2
+     - uses: actions/setup-node@v1
+       with:
+         node-version: 12
+         registry-url: https://registry.npmjs.org/
+     - run: npm ci
+     - run: npm publish
+       env:
+         NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+  publish-gpr:
+    name: publish npm to github
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://npm.pkg.github.com/
+      - run: npm ci
+      - run: npm config set registry https://npm.pkg.github.com/
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
