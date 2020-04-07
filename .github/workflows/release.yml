@@ -18,6 +18,8 @@ jobs:
           npm run lint
           npm run build
           zip -r artifact lib src package.json index.html LICENSE README.md
+        env:
+          CI: true
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
@@ -41,10 +43,14 @@ jobs:
           scope: tfso
       - name: publish
         run: |
+          npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN
+          npm config set scope "<@tfso>"
+          npm config list
           npm ci
           npm run build
-          npm publish --@tfso:registry=https://registry.npmjs.org/
+          npm publish --access public
         env:
+          CI: true
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
   # publish-gpr:
