@@ -27,28 +27,29 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
 
-  # publish-npm:
-  #   name: publish npm
-  #   if: "github.event.release.release"
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 12
-  #         registry-url: https://registry.npmjs.org/
-  #     - name: publish
-  #       run: |
-  #         npm ci
-  #         npm run build
-  #         npm publish
-  #       env:
-  #         NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+  publish-npm:
+    name: publish npm
+    if: "!github.event.release.prerelease"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+          scope: "@tfso"
+      - name: publish
+        run: |
+          npm ci
+          npm run build
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
   publish-gpr:
     name: publish npm to github
-    if: "!github.event.release.prerelease"
+    if: "!github.event.release.prerelease" # https://developer.github.com/v3/activity/events/types/#releaseevent
     needs: build
     runs-on: ubuntu-latest
     steps:
