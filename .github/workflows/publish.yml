@@ -1,6 +1,6 @@
 on:
   release:
-    types: [published]
+    types: [published, edited] # prerelease is triggered by published, but editing a prerelease to release isn't triggering published.
 
 name: publish npm
 
