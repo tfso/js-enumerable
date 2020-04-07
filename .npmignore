@@ -3,3 +3,8 @@
 js-enumerable.code-workspace
 tsconfig.json
 webpack.config.js
+
+lib/linq/peg/parser/*.d.ts
+lib/linq/peg/parser/*.map
+lib/test
+src/test
