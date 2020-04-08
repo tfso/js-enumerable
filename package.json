@@ -1,6 +1,6 @@
 {
   "name": "@tfso/js-enumerable",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "",
   "main": "lib/index.js",
   "typings": "lib/index",
