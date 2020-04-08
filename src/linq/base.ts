@@ -20,6 +20,12 @@ export interface IEnumerable<TEntity> extends Iterable<TEntity>, AsyncIterable<T
     orderBy(property: keyof TEntity): this
     orderBy(property: string): this
     orderBy(): this
+
+    first(): TEntity | null
+    firstAsync(): Promise<TEntity | null>
+
+    toArray(): Array<TEntity>
+    toArrayAsync(): Promise<Array<TEntity>>
 }
 
 export default abstract class Base<TEntity extends any> implements IEnumerable<TEntity> {
@@ -70,6 +76,42 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
         }
 
         return this
+    }
+
+    public first(): TEntity {
+        let result = this.getIterator().next()
+        
+        if(result.done == false)
+            return result.value
+
+        return null
+    }
+
+    public async firstAsync(items?: Array<TEntity>): Promise<TEntity> {
+        let result = await this.getAsyncIterator().next()
+        
+        if(result.done == false)
+            return result.value
+
+        return null
+    }
+
+    public toArray() {
+        let result: Array<TEntity> = []
+
+        for(let item of this.getIterator()) 
+            result.push(item)
+
+        return result
+    }
+
+    public async toArrayAsync() {
+        let result: Array<TEntity> = []
+
+        for await(let item of this.getAsyncIterator())
+            result.push(item)
+
+        return result
     }
 
     protected async * getAsyncIterator() {
