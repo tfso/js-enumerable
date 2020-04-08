@@ -26,7 +26,7 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
     private iterableName: string | null = null
     private items: Iterable<TEntity> | AsyncIterable<TEntity> | null = null
     
-    protected operators: Array<LinqOperator<TEntity>> = []
+    public operators: Array<LinqOperator<TEntity>> = []
 
     public constructor(items?: Array<TEntity>)
     public constructor(items?: Iterable<TEntity>)
@@ -115,7 +115,7 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
             }
         }
 
-        let iterator = iterate(this.items instanceof Repository ? this.items.query(this) : this.items[Symbol.asyncIterator](), this.operators),
+        let iterator = iterate(this.items instanceof Repository ? this.items[Symbol.asyncIterator](this) : this.items[Symbol.asyncIterator](), this.operators),
             result: IteratorResult<TEntity>
 
         while (!(result = await Promise.resolve(iterator.next())).done) {

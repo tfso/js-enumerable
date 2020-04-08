@@ -1,27 +1,38 @@
 import { IEnumerable } from './../linq'
 
-export interface IRepository<TEntity, TEntityId> extends AsyncIterable<TEntity> {
-    query(linq?: IEnumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity>
+export interface IRepository<TEntity extends Record<string, any>, TEntityId> extends AsyncIterable<TEntity> {
+    query(enumerable?: IEnumerable<TEntity>, meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterableIterator<TEntity>
 
-    create(item: Partial<TEntity>): Promise<TEntity> 
+    create(item: Partial<TEntity>, meta?: Partial<{ etag: string }>): Promise<TEntity> 
     read(id?: TEntityId): Promise<TEntity>
-    update(entity: Partial<TEntity>): Promise<TEntity>
-    delete(id: TEntityId): Promise<boolean>
+    update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity>
+    delete(id: TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
+
+    getIterable(meta?: Partial<{ continuationToken: string }>): AsyncIterable<TEntity>
 }
 
-export abstract class Repository<TEntity, TEntityId> implements IRepository<TEntity, TEntityId>, AsyncIterable<TEntity> {
-    abstract query(linq?: IEnumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity>
+export abstract class Repository<TEntity extends Record<string, any>, TEntityId> implements IRepository<TEntity, TEntityId>, AsyncIterable<TEntity> {
+    
+    abstract query(enumerable?: IEnumerable<TEntity>, meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterableIterator<TEntity>
 
-    abstract async create(item: Partial<TEntity>): Promise<TEntity>
+    abstract async create(item: Partial<TEntity>, meta?: Partial<{ etag: string }>): Promise<TEntity>
     abstract async read(id?: TEntityId): Promise<TEntity>
-    abstract async update(item: Partial<TEntity>): Promise<TEntity>
-    abstract async delete(id: TEntityId): Promise<boolean>
+    abstract async update(item: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity>
+    abstract async delete(id: TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
 
-    [Symbol.iterator](...options: any[]): IterableIterator<Promise<TEntity>> {
+    public getIterable(meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterable<TEntity> {
+        return Object.assign(Object.create(Object.getPrototypeOf(this)), this, {
+            [Symbol.asyncIterator]: (enumerable?: IEnumerable<TEntity>) => {
+                return this.query(enumerable, meta)
+            }
+        })
+    }
+
+    [Symbol.iterator](...options: any[]): IterableIterator<TEntity> {
         throw new TypeError('Repository is async iterable but it used as iterable')
     }
 
-    [Symbol.asyncIterator](linq?: IEnumerable<TEntity>, meta?: Partial<{ continuationToken: string }>): AsyncIterableIterator<TEntity> {
-        return this.query(linq, meta)
+    [Symbol.asyncIterator](enumerable?: IEnumerable<TEntity>, meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterableIterator<TEntity> {
+        return this.query(enumerable, meta)
     }
 }
