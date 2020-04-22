@@ -8,8 +8,11 @@
     "test": "tsc && node node_modules/mocha/bin/_mocha --require lib/test/setup/mocha-require.js --recursive lib/test/**/*.js",
     "lint": "node node_modules/eslint/bin/eslint --ignore-pattern lib/ --ext .ts ./",
     "build": "tsc && webpack -p",
+    "postinstall": "tsc",
+    "preversion": "npm test",
+    "version": "npm run build",
+    "postversion": "git push --tags",
     "analyze": "webpack -p --profile --json > ./stats.json && webpack-bundle-analyzer ./stats.json",
-    "publish-to-git": "cross-env-shell \"npm run build && npm run test && publish-to-git --tag $npm_package_version\"",
     "browserify": "browserify src/test/index.ts -p [ tsify --noImplicitAny ] > lib/mocha-bundle.js"
   },
   "author": "Nicolai Gjærum",
