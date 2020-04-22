@@ -1,5 +1,10 @@
 import { Enumerable } from './../linq'
-import { Repository } from './../repository/repository'
+
+/* eslint-disable-next-line */
+if(jsEnumerable == null) {
+    /* eslint-disable-next-line */
+    var jsEnumerable: { Enumerable: typeof Enumerable } = require('./../index')
+}
 
 import { RepositoryMock } from './setup/repository'
 
@@ -26,7 +31,7 @@ describe('When using repository', () => {
     ])
 
     it('should be able to iterate', async () => {
-        let ar = await new Enumerable(repository).toArrayAsync()
+        let ar = await new jsEnumerable.Enumerable(repository).toArrayAsync()
 
         chai.expect(ar.length).to.equal(8)
     })
@@ -34,7 +39,7 @@ describe('When using repository', () => {
     it('should iterate using take', async () => {
         let total = 0
 
-        for await(let car of new Enumerable(repository).take(2))
+        for await(let car of new jsEnumerable.Enumerable(repository).take(2))
             total += car.year
 
         chai.expect(total).to.equal(2016 + 2010)

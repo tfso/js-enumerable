@@ -12,7 +12,8 @@ module.exports = {
             'core-js/modules/es.symbol.async-iterator',
             'core-js/modules/es.symbol',
             './src/test/enumerable/primary.ts', 
-            './src/test/enumerable/record.ts'
+            './src/test/enumerable/record.ts',
+            './src/test/repository.ts'
         ]
     },
     optimization: {
