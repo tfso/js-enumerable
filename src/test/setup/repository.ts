@@ -1,3 +1,4 @@
+import { IEnumerable } from './../../linq'
 import { Repository } from './../../repository'
 
 export class RepositoryMock<Entity, EntityId> extends Repository<Entity, EntityId> {
@@ -5,7 +6,7 @@ export class RepositoryMock<Entity, EntityId> extends Repository<Entity, EntityI
         super()
     }
 
-    public async * query(...options: any[]): AsyncIterableIterator<Entity> {
+    public async * query(enumerable?: IEnumerable<Entity>, meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterableIterator<Entity> {
         yield * this.data
     }
 
