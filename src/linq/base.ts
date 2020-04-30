@@ -1,34 +1,9 @@
 import { LinqOperator, LinqType } from './operator'
 import { Repository } from './../repository/repository'
 
-export interface IEnumerable<TEntity> extends Iterable<TEntity>, AsyncIterable<TEntity> {
-    from(items: Iterable<TEntity>): this
-    from(items: AsyncIterable<TEntity>): this
+import { IEnumerable, BaseEntityType } from './types'
 
-    skip(count: number): this
-    
-    take(count: number): this
-    
-    slice(begin: string | number, end?: number): this
-
-    includes(entity: Partial<TEntity>, fromIndex?: number): this
-    
-    where(predicate: string): this
-    where(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): this
-
-    //orderBy(property: (it: TEntity) => void): this
-    orderBy(property: keyof TEntity): this
-    orderBy(property: string): this
-    orderBy(): this
-
-    first(): TEntity | null
-    firstAsync(): Promise<TEntity | null>
-
-    toArray(): Array<TEntity>
-    toArrayAsync(): Promise<Array<TEntity>>
-}
-
-export default abstract class Base<TEntity extends any> implements IEnumerable<TEntity> {
+export default abstract class Base<TEntity extends BaseEntityType> implements IEnumerable<TEntity> {
     private iterableName: string | null = null
     private items: Iterable<TEntity> | AsyncIterable<TEntity> | null = null
     
@@ -78,7 +53,7 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
         return this
     }
 
-    public first(): TEntity {
+    public first(): TEntity | null {
         let result = this.getIterator().next()
         
         if(result.done == false)
@@ -87,7 +62,7 @@ export default abstract class Base<TEntity extends any> implements IEnumerable<T
         return null
     }
 
-    public async firstAsync(items?: Array<TEntity>): Promise<TEntity> {
+    public async firstAsync(items?: Array<TEntity>): Promise<TEntity | null> {
         let result = await this.getAsyncIterator().next()
         
         if(result.done == false)

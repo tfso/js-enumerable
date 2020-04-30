@@ -1,4 +1,4 @@
 export { Enumerable } from './enumerable'
-export { IEnumerable } from './base'
+export { IEnumerable } from './types'
 
 export { LinqType } from './operator'

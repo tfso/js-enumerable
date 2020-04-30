@@ -1,4 +1,4 @@
-import { IExpression } from './peg/interface/iexpression'
+import { IExpression } from './../peg/interface/iexpression'
 
 export enum LinqType { Includes, Skip, Take, Slice, Where, OrderBy }
 
