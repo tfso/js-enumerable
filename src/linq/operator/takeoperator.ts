@@ -7,12 +7,7 @@ export function takeOperator(count: number): LinqOperator {
         evaluate: () => {
             let idx = 0
 
-            return (item) => {
-                if(idx++ == count)
-                    return 'break'
-
-                return 'yield'
-            }
+            return (item) => ({ type: idx++ == count ? 'break' : 'yield' })
         } 
     }
 }

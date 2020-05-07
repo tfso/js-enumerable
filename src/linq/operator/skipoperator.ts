@@ -7,12 +7,7 @@ export function skipOperator(count: number): LinqOperator {
         evaluate: () => {
             let idx = 0
 
-            return (item) => {
-                if(idx++ < count)
-                    return 'continue'
-            
-                return 'yield'
-            }
+            return (item) => ({ type: idx++ < count ? 'continue' : 'yield' })
         }
     }
 }

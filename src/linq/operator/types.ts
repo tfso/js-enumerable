@@ -9,11 +9,11 @@ type LinqOperatorIncludes<T extends any = any> = { type: LinqType.Includes, enti
 type LinqOperatorWhere<T extends any = any> = { type: LinqType.Where, expression: IExpression }
 type LinqOperatorOrderBy<T extends any = any> = { type: LinqType.OrderBy, property: undefined | keyof T | string }
 
-type LinqEvaluator<T extends any = any> = {
-    evaluate: () => { (item: T): 'continue' | 'yield' | 'break' }
+type LinqEvaluator<T extends any> = {
+    evaluate: () => { (item: T): { type: 'continue' | 'break' | 'yield', value?: T } }
 }
 
-type LingIterator<T extends any = any> = {
+type LingIterator<T extends any> = {
     iterator: (items: Iterable<T>) => IterableIterator<T>
     asyncIterator: (items: AsyncIterable<T>) => AsyncIterableIterator<T>
 }

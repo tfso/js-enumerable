@@ -1,9 +1,5 @@
 import Base from './base'
-import { LinqType, skipOperator, takeOperator, sliceOperator } from './operator'
-
-import { includeOperator } from './operator/includeoperator'
-import { whereOperator } from './operator/whereoperator'
-import { orderByOperator } from './operator/orderbyoperator'
+import { LinqType, skipOperator, takeOperator, sliceOperator, includeOperator, orderByOperator, whereOperator } from './operator'
 
 export class Enumerable<TEntity extends Record<string, any> | number | Date | string> extends Base<TEntity> {
     constructor(items?: Array<TEntity>)

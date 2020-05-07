@@ -13,12 +13,12 @@ export function sliceOperator(begin: string | number, end?: number): LinqOperato
                 idx++
 
                 if(idx <= skip)
-                    return 'continue'
+                    return { type: 'continue' }
                 
                 if(end && idx > end)
-                    return 'break'
+                    return { type: 'break' }
 
-                return 'yield'
+                return { type: 'yield' }
             }
         }
     }

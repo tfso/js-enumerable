@@ -6,7 +6,7 @@ export interface IRepository<TEntity extends Record<string, any>, TEntityId> ext
     create(item: Partial<TEntity>, meta?: Partial<{ etag: string }>): Promise<TEntity> 
     read(id?: TEntityId): Promise<TEntity>
     update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity>
-    delete(id: TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
+    delete(id: TEntity | TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
 
     getIterable(meta?: Partial<{ continuationToken: string }>): AsyncIterable<TEntity>
 }

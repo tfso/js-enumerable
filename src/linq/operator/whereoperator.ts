@@ -36,7 +36,7 @@ export function whereOperator<TEntity extends BaseEntityType>(): LinqOperator<TE
     return { type: LinqType.Where,
         expression,
         evaluate: () => {
-            return (item) => validate(item) == true ? 'yield' : 'continue'
+            return (item) => ({ type: validate(item) == true ? 'yield' : 'continue', value: item })
         }
     }
 }

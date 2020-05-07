@@ -98,7 +98,7 @@ export default abstract class Base<TEntity extends BaseEntityType> implements IE
                 idx = operators.length
 
             let operator = idx > 0 ? operators[idx - 1] : null,
-                evaluate = (item: TEntity) => 'yield',
+                evaluate: { (item: TEntity): { type: string, value?: TEntity } } = (item: TEntity) => ({ type: 'yield' }),
                 generator: AsyncIterableIterator<TEntity>
 
             if(operator) {
@@ -113,7 +113,7 @@ export default abstract class Base<TEntity extends BaseEntityType> implements IE
                 else {
                     generator = operator.asyncIterator(items)
                 }
-            } 
+            }
             else {
                 generator = items
             }
@@ -122,13 +122,13 @@ export default abstract class Base<TEntity extends BaseEntityType> implements IE
             while (!(result = await Promise.resolve(generator.next())).done) {
                 let state = evaluate(result.value)
 
-                if(state == 'break')
+                if(state.type == 'break')
                     break
 
-                if(state == 'continue')
+                if(state.type == 'continue')
                     continue
 
-                yield result.value
+                yield state.value ?? result.value
             }
         }
 
@@ -149,7 +149,7 @@ export default abstract class Base<TEntity extends BaseEntityType> implements IE
                 idx = operators.length
 
             let operator = idx > 0 ? operators[idx - 1] : null,
-                evaluate = (item: TEntity) => 'yield',
+                evaluate: { (item: TEntity): { type: string, value?: TEntity } } = (item: TEntity) => ({ type: 'yield' }),
                 generator: IterableIterator<TEntity>
 
             if(operator) {
@@ -173,13 +173,13 @@ export default abstract class Base<TEntity extends BaseEntityType> implements IE
             while (!(result = generator.next()).done) {
                 let state = evaluate(result.value)
 
-                if(state == 'break')
+                if(state.type == 'break')
                     break
 
-                if(state == 'continue')
+                if(state.type == 'continue')
                     continue
 
-                yield result.value
+                yield state.value ?? result.value
             }
         }
 

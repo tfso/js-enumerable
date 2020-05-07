@@ -8,12 +8,7 @@ export function includeOperator<TEntity extends BaseEntityType>(entity: Partial<
         evaluate: () => {
             let values = Object.entries(entity)
 
-            return (item) => {
-                if(isRecord(item) && values.every(([key, value]) => key in item && (value == undefined || value == item[key])))
-                    return 'yield'
-                
-                return 'continue'
-            }
+            return (item) => ({ type: isRecord(item) && values.every(([key, value]) => key in item && (value == undefined || value == item[key])) ? 'yield' : 'continue' })
         } 
     }
 }
