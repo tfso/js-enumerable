@@ -1,6 +1,6 @@
 export type RecordSafe<R = Record<string, any>> = R extends Date | number | string ? never : R
 
-export type Entity = RecordSafe |  Date | number | string
+export type Entity = RecordSafe | Date | number | string
 
 export type EntityRecord<T = Entity> = T extends RecordSafe<T> ? T : never
 
