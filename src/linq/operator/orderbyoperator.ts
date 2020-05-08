@@ -1,7 +1,7 @@
 import { LinqOperator, LinqType } from './types'
-import { BaseEntityType, isRecord } from '../types'
+import { Entity, isRecord } from '../types'
 
-export function orderByOperator<TEntity extends BaseEntityType>(property?: keyof TEntity | string): LinqOperator<TEntity> {
+export function orderByOperator<TEntity extends Entity>(property?: keyof TEntity | string): LinqOperator<TEntity> {
     return { 
         type: LinqType.OrderBy, 
         property, 

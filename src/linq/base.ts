@@ -1,9 +1,9 @@
 import { LinqOperator, LinqType } from './operator'
 import { Repository } from './../repository/repository'
 
-import { IEnumerable, BaseEntityType } from './types'
+import { IEnumerable, Entity, EntityRecord } from './types'
 
-export default abstract class Base<TEntity extends BaseEntityType> implements IEnumerable<TEntity> {
+export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
     private iterableName: string | null = null
     private items: Iterable<TEntity> | AsyncIterable<TEntity> | null = null
     
@@ -32,6 +32,10 @@ export default abstract class Base<TEntity extends BaseEntityType> implements IE
     abstract orderBy(property: keyof TEntity): this
     abstract orderBy(property: string): this
     abstract orderBy(): this
+
+    abstract select<TRecord extends EntityRecord<TEntity>, TResult extends Record<string, any>>(selector: (it: TRecord) => TResult): IEnumerable<TResult>
+    abstract select<TRecord extends EntityRecord<TEntity>, TResult extends Pick<TRecord, K>, K extends keyof TRecord>(...keys: Array<K>): IEnumerable<TResult>
+    abstract select<TRecord extends EntityRecord<TEntity>, TResult extends Partial<TRecord>>(list: string): IEnumerable<TResult>
     
     public get name(): string {
         if(this.iterableName != null)

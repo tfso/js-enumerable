@@ -1,13 +1,13 @@
 import { LinqOperator, LinqType } from './types'
-import { BaseEntityType } from '../types'
+import { Entity } from '../types'
 
 import { ReducerVisitor } from './../peg/reducervisitor'
 import { IExpression } from './../peg/expressionvisitor'
 import { ODataVisitor } from './../peg/odatavisitor'
 
-export function whereOperator<TEntity extends BaseEntityType>(predicate: string): LinqOperator<TEntity>
-export function whereOperator<TEntity extends BaseEntityType>(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): LinqOperator<TEntity>
-export function whereOperator<TEntity extends BaseEntityType>(): LinqOperator<TEntity> {
+export function whereOperator<TEntity extends Entity>(predicate: string): LinqOperator<TEntity>
+export function whereOperator<TEntity extends Entity>(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): LinqOperator<TEntity>
+export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
     let predicate: any = arguments[0],
         parameters: Array<any> = [],
         expression: IExpression,

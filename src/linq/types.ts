@@ -1,6 +1,10 @@
-export type BaseEntityType = Record<string, any> | number | Date | string
+export type RecordSafe<R = Record<string, any>> = R extends Date | number | string ? never : R
 
-export interface IEnumerable<TEntity extends BaseEntityType> extends Iterable<TEntity>, AsyncIterable<TEntity> {
+export type Entity = RecordSafe |  Date | number | string
+
+export type EntityRecord<T = Entity> = T extends RecordSafe<T> ? T : never
+
+export interface IEnumerable<TEntity extends Entity> extends Iterable<TEntity>, AsyncIterable<TEntity> {
     from(items: Iterable<TEntity>): this
     from(items: AsyncIterable<TEntity>): this
 
@@ -25,8 +29,12 @@ export interface IEnumerable<TEntity extends BaseEntityType> extends Iterable<TE
 
     toArray(): Array<TEntity>
     toArrayAsync(): Promise<Array<TEntity>>
+
+    select<TRecord extends EntityRecord<TEntity>, TResult extends Record<string, any>>(selector: (it: TRecord) => TResult): IEnumerable<TResult>
+    select<TRecord extends EntityRecord<TEntity>, TResult extends Pick<TRecord, K>, K extends keyof TRecord>(...keys: Array<K>): IEnumerable<TResult>
+    select<TRecord extends EntityRecord<TEntity>, TResult extends Partial<TRecord>>(list: string): IEnumerable<TResult>
 }
 
-export function isRecord(value: Record<string, any> | any): value is Record<string, any> {
+export function isRecord(value: RecordSafe | any): value is RecordSafe {
     return value !== null && typeof value == 'object'
 }

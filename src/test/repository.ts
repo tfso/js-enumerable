@@ -56,14 +56,45 @@ describe('When using repository', () => {
     })
 
     it('should work with random query', async () => {
-        let car = await new jsEnumerable.Enumerable(repository).where(it => it.id ==  3 + 3).firstAsync()
+        let car = await new jsEnumerable.Enumerable(repository)
+            .where(it => it.id == 3 + 3)
+            .firstAsync()
 
         chai.expect(car?.id).to.equal(6)
     })
 
     it('should work with random query using input param', async () => {
-        let car = await new jsEnumerable.Enumerable(repository).where((it, id) => it.id == id, 6).firstAsync()
+        let car = await new jsEnumerable.Enumerable(repository)
+            .where((it, id) => it.id == id, 6)
+            .firstAsync()
 
         chai.expect(car?.id).to.equal(6)
+    })
+
+    it('should work with select using keys', async () => {
+        let car = await new jsEnumerable.Enumerable(repository)
+            .where((it, id) => it.id == 6)
+            .select('id', 'location')
+            .firstAsync()
+
+        chai.expect(car).to.deep.equal({ id: 6, location: 'BREVIK' })
+    })
+
+    it('should work with select using selector', async () => {
+        let car = await new jsEnumerable.Enumerable(repository)
+            .where(it => it.id == 6)
+            .select(({ id, type: { make } }) => ({ id, make }))
+            .firstAsync()
+
+        chai.expect(car).to.deep.equal({ id: 6, make: 'HONDA' })
+    })
+
+    it('should work with select using string', async () => {
+        let car = await new jsEnumerable.Enumerable(repository)
+            .where(it => it.id == 6)
+            .select('id,type/make')
+            .firstAsync()
+
+        chai.expect(car).to.deep.equal({ id: 6, type: { make: 'HONDA' } })
     })
 })

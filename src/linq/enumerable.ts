@@ -1,7 +1,9 @@
 import Base from './base'
 import { LinqType, skipOperator, takeOperator, sliceOperator, includeOperator, orderByOperator, whereOperator } from './operator'
+import { Entity, EntityRecord, isRecord } from './types'
+import { selectOperator } from './operator/selectoperator'
 
-export class Enumerable<TEntity extends Record<string, any> | number | Date | string> extends Base<TEntity> {
+export class Enumerable<TEntity> extends Base<TEntity> {
     constructor(items?: Array<TEntity>)
     constructor(items?: Iterable<TEntity>)
     constructor(items?: AsyncIterable<TEntity>)
@@ -91,6 +93,27 @@ export class Enumerable<TEntity extends Record<string, any> | number | Date | st
     public orderBy(): this
     public orderBy(property?: keyof TEntity | string) {
         this.operators.push(orderByOperator(property))
+
+        return this
+    }
+    
+    /**
+     * Returns a new shape based on the selector function returning the new shape
+     * @param selector the selector function
+     */
+    public select<TRecord extends EntityRecord<TEntity>, TResult extends Record<string, any>>(selector: (it: TRecord) => TResult): Enumerable<TResult>
+    /**
+     * Returns a partial record based on the property keys
+     * @param keys a list of property keys
+     */
+    public select<TRecord extends EntityRecord<TEntity>, TResult extends Pick<TRecord, K>, K extends keyof TRecord>(...keys: Array<K>): Enumerable<TResult>
+    /**
+     * Returns a partial record based on the property keys in OData format, where child record is separated by /, eg: 'id,parent/child'
+     * @param list OData select list
+     */
+    public select<TRecord extends EntityRecord<TEntity>, TResult extends Partial<TRecord>>(list: string): Enumerable<TResult>
+    public select(...args: any[]) {
+        this.operators.push(selectOperator(...args))
 
         return this
     }
