@@ -1,4 +1,5 @@
 import { Enumerable, IEnumerable } from './../linq'
+import { LinqType } from '../linq/operator'
 
 /* eslint-disable-next-line */
 if(jsEnumerable == null) {
@@ -39,6 +40,115 @@ describe('When using repository', () => {
         { id: 7, location: 'HEISTAD', year: 2013, type: { make: 'TOYOTA', model: 'YARIS' } },
         { id: 8, location: 'LARVIK', year: 2009, type: { make: 'HONDA', model: 'CIVIC' } }
     )
+
+    describe('analyzing where operator', () => {
+
+        it('should intersect expression properties that is only and\'ed', () => {
+            let enumerable = new jsEnumerable.Enumerable(repository).where(car => car.year == 2015 && car.location.toUpperCase() == 'NO' && car.id > 5),
+                operator = enumerable.operators.pop(),
+                count = 0
+            
+            chai.expect(operator.type).to.equal(LinqType.Where)
+            
+            if(operator.type == LinqType.Where) {
+                let list = operator.intersection
+                for(let expression of list) {
+
+                    switch(expression.property) {
+                        case 'year':
+                            chai.expect(expression.value).to.equal(2015)
+                            chai.expect(expression.operator).to.equal('==')
+                            break
+
+                        case 'location':
+                            chai.expect(expression.value).to.equal('NO')
+                            chai.expect(expression.operator).to.equal('==')
+                            break
+
+                        case 'id':
+                            chai.expect(expression.value).to.equal(5)
+                            chai.expect(expression.operator).to.equal('>')
+                            break
+
+                        default:
+                            chai.assert(false, `unexpected property "${expression.property}"`)
+                            break
+                    }
+
+                    count++
+                }
+            }
+
+            chai.expect(count).to.equal(3)
+        })
+    
+        it('should interesect expression properties that is common', () => {
+            let enumerable = new jsEnumerable.Enumerable(repository).where(car => (car.year == 2015 && car.location == 'NO') || car.year == 2015 || (car.location == 'SE' && car.year == 2015)),
+                operator = enumerable.operators.pop(),
+                count = 0
+            
+            chai.expect(operator.type).to.equal(LinqType.Where)
+            
+            if(operator.type == LinqType.Where) {
+                for(let expression of operator.intersection) {
+
+                    switch(expression.property) {
+                        case 'year':
+                            chai.expect(expression.value).to.equal(2015)
+                            chai.expect(expression.operator).to.equal('==')
+                            break
+
+                        default:
+                            chai.assert(false, `unexpected property "${expression.property}"`)
+                            break
+                    }
+
+                    count++
+                }
+            }
+
+            chai.expect(count).to.equal(1)
+        })
+
+        it('should interesect expression properties that is common but inverted', () => {
+            let enumerable = new jsEnumerable.Enumerable(repository).where(car => (car.year >= 2015 && car.location == 'NO') || 2015 <= car.year || (car.location == 'SE' && car.year >= 2015)),
+                operator = enumerable.operators.pop(),
+                count = 0
+            
+            chai.expect(operator.type).to.equal(LinqType.Where)
+            
+            if(operator.type == LinqType.Where) {
+                for(let expression of operator.intersection) {
+
+                    switch(expression.property) {
+                        case 'year':
+                            chai.expect(expression.value).to.equal(2015)
+                            chai.expect(expression.operator).to.equal('>=')
+                            break
+
+                        default:
+                            chai.assert(false, `unexpected property "${expression.property}"`)
+                            break
+                    }
+
+                    count++
+                }
+            }
+
+            chai.expect(count).to.equal(1)
+        })
+
+        it('should not interesect expression properties that is not common', () => {
+            let enumerable = new jsEnumerable.Enumerable(repository).where(car => (car.year > 2015 && car.location == 'NO') || car.year == 2015 || (car.location == 'SE' && car.year == 2015)),
+                operator = enumerable.operators.pop()
+            
+            chai.expect(operator.type).to.equal(LinqType.Where)
+
+            if(operator.type == LinqType.Where) {
+                chai.expect(Array.from(operator.intersection).length).to.equal(0)
+            }
+        })
+    })
 
     it('should be able to iterate', async () => {
         let ar = await new jsEnumerable.Enumerable(repository).toArrayAsync()

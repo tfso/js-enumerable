@@ -8,7 +8,7 @@ import { IMemberExpression } from '../interface/imemberexpression'
 import { IMethodExpression } from '../interface/imethodexpression'
 import { IUnaryExpression } from '../interface/iunaryexpression'
 import { IBinaryExpression } from '../interface/ibinaryexpression'
-import { ILogicalExpression } from '../interface/ilogicalexpression'
+import { ILogicalExpression, LogicalOperatorType } from '../interface/ilogicalexpression'
 import { IConditionalExpression } from '../interface/iconditionalexpression'
 import { IArrayExpression } from '../interface/iarrayexpression'
 import { IIndexExpression } from '../interface/iindexexpression'
@@ -88,6 +88,67 @@ export abstract class Expression implements IExpression {
 
     public abstract equal(expression: IExpression): boolean
     public abstract toString(): string
+
+    public get intersection(): IExpression[] {
+        let intersection: Array<IExpression>
+
+        intersection = Array.from(visit(this)).reduce((acc, curr, idx) => {
+            return Array.from(curr).filter((expr) => {
+                return !acc || acc.some(intersect => expr.equal(intersect))
+            })
+        }, intersection)
+
+        return intersection ?? []
+    }
+
+    public get union(): IExpression[] {
+        let union: Array<IExpression>
+
+        union = Array.from(visit(this)).reduce((acc, curr, idx) => {
+            return (acc || []).concat(Array.from(curr))
+        }, union)
+
+        return union ?? []
+    }
+}
+
+function * visit(expression: IExpression): Iterable<IterableIterator<IExpression>> {
+    if(isLogicalExpression(expression)) {
+        if(expression.operator == LogicalOperatorType.Or) {
+            yield* visit(expression.left)
+            yield* visit(expression.right)
+        }
+        else {
+            yield visitLeaf(expression)
+        }
+    }
+    else {
+        yield visitLeaf(expression)
+    }
+}
+
+function * visitLeaf(expression: IExpression): IterableIterator<IExpression> {
+    if(isLogicalExpression(expression)) {
+        switch(expression.operator) {
+            case LogicalOperatorType.Or:
+                break
+
+            case LogicalOperatorType.And:
+                yield* visitLeaf(expression.left)
+                yield* visitLeaf(expression.right)
+                
+                break
+
+            default:
+                yield expression
+
+                break
+        }
+    }
+}
+
+function isLogicalExpression(expression: IExpression): expression is ILogicalExpression {
+    return expression.type == ExpressionType.Logical
 }
 
 export { IExpression, ExpressionType }

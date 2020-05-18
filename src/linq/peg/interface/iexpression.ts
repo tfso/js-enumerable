@@ -7,5 +7,8 @@ export interface IExpression {
     accept<T extends IExpressionVisitor>(visitor: T): IExpression
     equal(expression: IExpression): boolean
 
+    readonly intersection: IExpression[]
+    readonly union: IExpression[]
+
     toString(): string
 }

@@ -6,7 +6,7 @@ type LinqOperatorSkip = { type: LinqType.Skip, count: number }
 type LinqOperatorTake = { type: LinqType.Take, count: number }
 type LinqOperatorSlice = { type: LinqType.Slice, begin: number | string, end?: number }
 type LinqOperatorIncludes<T extends any = any> = { type: LinqType.Includes, entity: Partial<T> }
-type LinqOperatorWhere<T extends any = any> = { type: LinqType.Where, expression: IExpression }
+type LinqOperatorWhere<T extends any = any> = { type: LinqType.Where, expression: IExpression, readonly intersection: IterableIterator<{ property: string, operator: '==' | '!=' | '>' | '>=' | '<' | '<=', value: any }> }
 type LinqOperatorOrderBy<T extends any = any> = { type: LinqType.OrderBy, property: undefined | keyof T | string }
 type LinqOperatorSelect = { type: LinqType.Select }
 

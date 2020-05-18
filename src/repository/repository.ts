@@ -3,8 +3,8 @@ import { IEnumerable } from './../linq'
 export interface IRepository<TEntity extends Record<string, any>, TEntityId> extends AsyncIterable<TEntity> {
     query(enumerable?: IEnumerable<TEntity>, meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterableIterator<TEntity>
 
-    create(item: Partial<TEntity>, meta?: Partial<{ etag: string }>): Promise<TEntity> 
-    read(id?: TEntityId): Promise<TEntity>
+    create(item: Partial<TEntity>, meta?: Partial<{ etag: string }>): Promise<TEntity | null> 
+    read(id?: TEntityId): Promise<TEntity | null>
     update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity>
     delete(id: TEntity | TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
 
@@ -15,8 +15,8 @@ export abstract class Repository<TEntity extends Record<string, any>, TEntityId>
     
     abstract query(enumerable?: IEnumerable<TEntity>, meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterableIterator<TEntity>
 
-    abstract async create(item: Partial<TEntity>, meta?: Partial<{ etag: string }>): Promise<TEntity>
-    abstract async read(id?: TEntityId): Promise<TEntity>
+    abstract async create(item: Partial<TEntity>, meta?: Partial<{ etag: string }>): Promise<TEntity | null>
+    abstract async read(id?: TEntityId): Promise<TEntity | null>
     abstract async update(item: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity>
     abstract async delete(id: TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
 
