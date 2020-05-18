@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "test": "tsc && node node_modules/mocha/bin/_mocha --require lib/test/setup/mocha-require.js --recursive lib/test/**/*.js",
+    "test": "tsc && node node_modules/mocha/bin/_mocha --require ts-node/register --require lib/test/setup/mocha-require.js --recursive src/test/**/*.ts",
     "lint": "node node_modules/eslint/bin/eslint --ignore-pattern lib/ --ext .ts ./",
     "build": "tsc && webpack -p",
     "postinstall": "tsc",
