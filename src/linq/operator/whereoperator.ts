@@ -61,7 +61,8 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
                 yield {
                     property: getPropertyName(leaf.left).name.join('.'),
                     operator: getOperator(leaf),
-                    value: getPropertyValue(leaf.right)
+                    value: getPropertyValue(leaf.right),
+                    wildcard: getWildcard(leaf.right)
                 }
             }
         }
@@ -98,10 +99,39 @@ function getPropertyValue(expression: IExpression): any {
             return (<IArrayExpression>expression).elements.map(expr => getPropertyValue(expr))
 
         case ExpressionType.Literal:
-            return (<ILiteralExpression>expression).value
+            switch(typeof (<ILiteralExpression>expression).value) {
+                case 'string':
+                    return (<ILiteralExpression>expression).value.replace(/\[\[*\]\]/gi, '')
+
+                default:
+                    return (<ILiteralExpression>expression).value
+            }
 
         case ExpressionType.Object:
             return null
+    }
+}
+
+function getWildcard(expression: IExpression): 'none' | 'left' | 'right' | 'both' {
+    switch(expression.type) {
+        case ExpressionType.Literal:
+            let value = (<ILiteralExpression>expression).value
+
+            if(typeof value == 'string') {
+                let match = /^(\[\[*\]\])?.*(\[\[*\]\])?$/.exec(value)
+                if(match) {
+                    if(match[1] && match[2])
+                        return 'both'
+                    else if(match[1])
+                        return 'left'
+                    else if(match[2])
+                        return 'right'                   
+                }
+            }
+            // fallthrough
+
+        default:
+            return 'none'
     }
 }
 
@@ -190,7 +220,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                                     right = visitLeaf(type, it, expression.parameters[1]).next()
 
                                 if(right.value?.type == ExpressionType.Literal) {
-                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`*${(<ILiteralExpression>right.value).value}*`))
+                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`[[*]]${(<ILiteralExpression>right.value).value}[[*]]`))
                                 }
 
                                 yield expression
@@ -202,7 +232,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                                     right = visitLeaf(type, it, expression.parameters[1]).next()
 
                                 if(right.value?.type == ExpressionType.Literal) {
-                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`*${(<ILiteralExpression>right.value).value}`))
+                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`[[*]]${(<ILiteralExpression>right.value).value}`))
                                 }
 
                                 yield expression
@@ -213,7 +243,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                                     right = visitLeaf(type, it, expression.parameters[1]).next()
 
                                 if(right.value?.type == ExpressionType.Literal) {
-                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`${(<ILiteralExpression>right.value).value}*`))
+                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`${(<ILiteralExpression>right.value).value}[[*]]`))
                                 }
 
                                 yield expression
@@ -238,8 +268,6 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
         }
     }
 }
-
-
 
 function isLogicalExpression(expression: IExpression): expression is ILogicalExpression {
     return expression.type == ExpressionType.Logical
