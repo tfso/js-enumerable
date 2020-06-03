@@ -1,5 +1,43 @@
 import { LinqOperator, LinqType } from './types'
-import { Entity, EntityRecord } from '../types'
+import { Entity, EntityRecord } from './../types'
+
+export function selectOperator<T extends EntityRecord<Entity>, TResult extends Partial<T>>(...args: any[]): LinqOperator<TResult> {
+    let selector: (entity: T) => TResult
+
+    if(args.length > 1) {
+        selector = ((keys: string[]) => {
+            return (entity: T) => <TResult>reselect(keys, entity)
+        })(args)
+    }
+    else {
+        switch(typeof args[0]) {
+            case 'function':
+                selector = args[0]
+
+                break
+
+            case 'string':
+                selector = ((keys: string[]) => {
+                    return (entity: T) => <TResult>reselect(keys, entity)
+                })(args[0].split(','))
+
+                break
+            default:
+                throw new Error(`Unexpected argument of type "${typeof args[0]}" for select operator`)
+        }
+    }
+
+    return {
+        type: LinqType.Select,
+        evaluate: () => {
+            return (item) => ({
+                type: 'yield',
+                value: selector(<any>item)
+            })
+        }
+    }
+}
+
 
 function reselect(keys: string[], object: Record<string, any>): Record<string, any> {
     if(!keys || keys.length == 0)
@@ -27,41 +65,4 @@ function reselect(keys: string[], object: Record<string, any>): Record<string, a
     }
 
     return remapped 
-}
-
-export function selectOperator<TRecord extends EntityRecord<Entity>, TResult extends Partial<TRecord>>(...args: any[]): LinqOperator<TResult> {
-    let selector: (entity: TRecord) => TResult
-
-    if(args.length > 1) {
-        selector = ((keys: string[]) => {
-            return (entity: TRecord) => <TResult>reselect(keys, entity)
-        })(args)
-    }
-    else {
-        switch(typeof args[0]) {
-            case 'function':
-                selector = args[0]
-
-                break
-
-            case 'string':
-                selector = ((keys: string[]) => {
-                    return (entity: TRecord) => <TResult>reselect(keys, entity)
-                })(args[0].split(','))
-
-                break
-            default:
-                throw new Error(`Unexpected argument of type "${typeof args[0]}" for select operator`)
-        }
-    }
-
-    return {
-        type: LinqType.Select,
-        evaluate: () => {
-            return (item) => ({
-                type: 'yield',
-                value: selector(<any>item)
-            })
-        }
-    }
 }

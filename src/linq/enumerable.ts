@@ -1,6 +1,6 @@
 import Base from './base'
 import { skipOperator, takeOperator, sliceOperator, includeOperator, orderByOperator, whereOperator, selectOperator } from './operator'
-import { EntityRecord } from './types'
+import { Entity, EntityRecord } from './types'
 
 export class Enumerable<TEntity> extends Base<TEntity> {
     constructor(items?: Array<TEntity>)
@@ -112,7 +112,7 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      */
     public select<TRecord extends EntityRecord<TEntity>, TResult extends Partial<TRecord>>(list: string): Enumerable<TResult>
     public select(...args: any[]) {
-        this.operators.push(selectOperator(...args))
+        this.operators.push(<any>selectOperator(...args))
 
         return this
     }

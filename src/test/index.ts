@@ -1,3 +1,6 @@
+import 'core-js/modules/es.symbol.async-iterator'
+import 'core-js/modules/es.symbol'
+
 import './basic'
 import './enumerable/primary'
 import './enumerable/record'

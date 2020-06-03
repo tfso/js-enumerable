@@ -1,6 +1,7 @@
 import { LinqOperator, LinqType } from './types'
+import { Entity } from './../types'
 
-export function takeOperator(count: number): LinqOperator {
+export function takeOperator<T extends Entity>(count: number): LinqOperator<T> {
     return { 
         type: LinqType.Take,
         count,

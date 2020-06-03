@@ -1,7 +1,7 @@
 import { LinqOperator, LinqType } from './types'
-import { Entity, isRecord } from '../types'
+import { Entity, isRecord } from './../types'
 
-export function includeOperator<TEntity extends Entity>(entity: Partial<TEntity>): LinqOperator<TEntity> {
+export function includeOperator<T extends Entity>(entity: Partial<T>): LinqOperator<T> {
     return { 
         type: LinqType.Includes,
         entity,

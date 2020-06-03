@@ -1,7 +1,7 @@
 import { LinqOperator, LinqType } from './types'
-import { Entity, isRecord } from '../types'
+import { Entity, isRecord } from './../types'
 
-export function orderByOperator<TEntity extends Entity>(property?: keyof TEntity | string): LinqOperator<TEntity> {
+export function orderByOperator<T extends Entity>(property?: keyof T | string): LinqOperator<T> {
     return { 
         type: LinqType.OrderBy, 
         property, 
@@ -28,7 +28,7 @@ export function orderByOperator<TEntity extends Entity>(property?: keyof TEntity
             yield* ar
         },
         asyncIterator: async function* (items) {
-            let ar: Array<TEntity> = []
+            let ar: Array<T> = []
             
             for await(let item of items)
                 ar.push(item)

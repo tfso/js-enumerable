@@ -1,6 +1,7 @@
 import { LinqOperator, LinqType } from './types'
+import { Entity } from './../types'
 
-export function sliceOperator(begin: string | number, end?: number): LinqOperator {
+export function sliceOperator<T extends Entity>(begin: string | number, end?: number): LinqOperator<T> {
     return {
         type: LinqType.Slice,
         begin,
