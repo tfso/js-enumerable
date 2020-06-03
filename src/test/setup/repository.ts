@@ -1,7 +1,7 @@
 import { IEnumerable } from './../../linq'
 import { Repository } from './../../repository'
 
-export class RepositoryMock<Entity, EntityId> extends Repository<Entity, EntityId> {
+export abstract class RepositoryMock<Entity, EntityId> extends Repository<Entity, EntityId> {
     public constructor(public getEntityId: (entity: Partial<Entity>) => EntityId, public readonly data: Array<Entity>) {
         super()
     }
@@ -10,7 +10,7 @@ export class RepositoryMock<Entity, EntityId> extends Repository<Entity, EntityI
         yield * this.data
     }
 
-    public async create(entity: Entity): Promise<Entity> {
+    public async create(entity: Entity) {
         if(await this.read(this.getEntityId(entity)) != null)
             throw new Error('409 Duplicate')
 
