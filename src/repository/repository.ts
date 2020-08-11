@@ -5,12 +5,15 @@ export interface IRepository<TEntity extends Record<string, any>, TEntityId> ext
     query<T extends TEntity>(enumerable?: IEnumerable<T>, meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterableIterator<T>
 
     create(entity: TEntity, meta?: Partial<{ etag: string }>): Promise<TEntity | null>
+    create(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>): Promise<TEntity | null>
     create<T extends TEntity>(entity: T, meta?: Partial<{ etag: string }>): Promise<T | null>
 
     read(id?: TEntityId): Promise<TEntity | null>
 
-    update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity | boolean>
-    update<T extends TEntity>(entity: Partial<T>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof T>): Promise<T | boolean>
+    update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity>
+    update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<boolean>
+    update<T extends TEntity>(entity: Partial<T>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof T>): Promise<T>
+    update<T extends TEntity>(entity: Partial<T>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof T>): Promise<boolean>
 
     delete(id: TEntity | TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
 

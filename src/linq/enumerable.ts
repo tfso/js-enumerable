@@ -39,7 +39,7 @@ export class Enumerable<TEntity> extends Base<TEntity> {
     /**
      * Bypasses all elements before beginning and returns the remaining elements
      * Note: If the beginning is not an index it's up to the repository to handle slicing.
-     * @param token a token that indicates where to begin extraction
+     * @param token a token (bookmark) that indicates where to begin extraction
      */
     public slice(token: string): this
     public slice(begin: string | number, end?: number): this {
