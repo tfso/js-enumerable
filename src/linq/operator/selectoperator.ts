@@ -46,7 +46,7 @@ function reselect(keys: string[], object: Record<string, any>): Record<string, a
     let remapped: Record<string, any> = {},
         groups: { [key: string]: string[] } = {}
 
-    for(let key of keys) {
+    for(let key of keys.map(k => k.trim())) {
         let match = /([^/]+)\/(.*)/i.exec(key)
 
         if(match) {
