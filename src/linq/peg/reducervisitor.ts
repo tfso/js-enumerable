@@ -38,7 +38,7 @@ export class ReducerVisitor extends ExpressionVisitor {
             vars = null
 
         if(param.length > 0) {
-            if(Array.isArray(this._lambdaExpression) && this._lambdaExpression.parameters.length > 0) {
+            if(this._lambdaExpression?.parameters.length > 0) {
                 vars = this._lambdaExpression.parameters.reduce<Record<string, any>>((res, val, index) => {
                     if(index > 0 && index <= param.length)
                         res[val] = param[index - 1]

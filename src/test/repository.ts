@@ -82,7 +82,7 @@ describe('When using repository', () => {
             chai.expect(count).to.equal(3)
         })
     
-        it('should interesect expression properties that is common', () => {
+        it('should intersect expression properties that is common', () => {
             let enumerable = new jsEnumerable.Enumerable(repository).where(car => (car.year == 2015 && car.location == 'NO') || car.year == 2015 || (car.location == 'SE' && car.year == 2015)),
                 operator = enumerable.operators.pop(),
                 count = 0
@@ -110,7 +110,7 @@ describe('When using repository', () => {
             chai.expect(count).to.equal(1)
         })
 
-        it('should interesect expression properties that is common but inverted', () => {
+        it('should intersect expression properties that is common but inverted', () => {
             let enumerable = new jsEnumerable.Enumerable(repository).where(car => (car.year >= 2015 && car.location == 'NO') || 2015 <= car.year || (car.location == 'SE' && car.year >= 2015)),
                 operator = enumerable.operators.pop(),
                 count = 0
@@ -138,7 +138,7 @@ describe('When using repository', () => {
             chai.expect(count).to.equal(1)
         })
 
-        it('should not interesect expression properties that is not common', () => {
+        it('should not intersect expression properties that is not common', () => {
             let enumerable = new jsEnumerable.Enumerable(repository).where(car => (car.year > 2015 && car.location == 'NO') || car.year == 2015 || (car.location == 'SE' && car.year == 2015)),
                 operator = enumerable.operators.pop()
             
@@ -147,6 +147,44 @@ describe('When using repository', () => {
             if(operator.type == LinqType.Where) {
                 chai.expect(Array.from(operator.intersection).length).to.equal(0)
             }
+        })
+
+        it('should intersect expression properties that is using input params', () => {
+            let enumerable = new jsEnumerable.Enumerable(repository).where((car, year, location, id) => car.year == year && car.location.toUpperCase() == location && car.id > id, 2015, 'NO', 5),
+                operator = enumerable.operators.pop(),
+                count = 0
+            
+            chai.expect(operator.type).to.equal(LinqType.Where)
+            
+            if(operator.type == LinqType.Where) {
+                let list = operator.intersection
+                for(let expression of list) {
+                    switch(expression.property) {
+                        case 'year':
+                            chai.expect(expression.value).to.equal(2015)
+                            chai.expect(expression.operator).to.equal('==')
+                            break
+
+                        case 'location':
+                            chai.expect(expression.value).to.equal('NO')
+                            chai.expect(expression.operator).to.equal('==')
+                            break
+
+                        case 'id':
+                            chai.expect(expression.value).to.equal(5)
+                            chai.expect(expression.operator).to.equal('>')
+                            break
+
+                        default:
+                            chai.assert(false, `unexpected property "${expression.property}"`)
+                            break
+                    }
+
+                    count++
+                }
+            }
+
+            chai.expect(count).to.equal(3)
         })
     })
 
@@ -183,7 +221,7 @@ describe('When using repository', () => {
 
     it('should work with select using keys', async () => {
         let car = await new jsEnumerable.Enumerable(repository)
-            .where((it, id) => it.id == 6)
+            .where(it => it.id == 6)
             .select('id', 'location')
             .firstAsync()
 
@@ -206,5 +244,15 @@ describe('When using repository', () => {
             .firstAsync()
 
         chai.expect(car).to.deep.equal({ id: 6, type: { make: 'HONDA' } })
+    })
+
+    describe('as CRUD', () => {
+
+        it('should be able to update', () => {
+
+            repository.update({  })
+
+        })
+
     })
 })
