@@ -109,6 +109,24 @@ describe('When using enumerable for record type', () => {
 
             chai.expect(ar).to.deep.equal([1990, 1999, 2004, 2009, 2019])
         })
+
+        it('should async iterate using select with property keys', async () => {
+            let car = await new jsEnumerable.Enumerable(asyncIterator()).select('make', 'year').firstAsync()
+
+            chai.expect(car).to.deep.equal({ make: 'Toyota', year: 1990 })
+        })
+
+        it('should async iterate using select with selector', async () => {
+            let car = await new jsEnumerable.Enumerable(asyncIterator()).select(({ make, year }) => ({ make, year })).firstAsync()
+
+            chai.expect(car).to.deep.equal({ make: 'Toyota', year: 1990 })
+        })
+
+        it('should async iterate using select with string', async () => {
+            let car = await new jsEnumerable.Enumerable(asyncIterator()).select('make, year').firstAsync()
+
+            chai.expect(car).to.deep.equal({ make: 'Toyota', year: 1990 })
+        })
     })
 
     describe('as a synchronous iterable', () => {
