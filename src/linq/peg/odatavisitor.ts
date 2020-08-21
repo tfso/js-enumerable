@@ -10,7 +10,6 @@ import { ILogicalExpression, LogicalExpression, LogicalOperatorType } from './ex
 import { IConditionalExpression } from './expression/conditionalexpression'
 import { IArrayExpression, ArrayExpression } from './expression/arrayexpression'
 
-import { LambdaExpression } from './expression/lambdaexpression'
 import { ReducerVisitor } from './reducervisitor'
 
 export class ODataVisitor extends ReducerVisitor {
@@ -18,8 +17,8 @@ export class ODataVisitor extends ReducerVisitor {
         super()
     }
     
-    public visitOData(filter: string): IExpression {
-        return super.visitOData(filter)
+    public parseOData(filter: string): IExpression {
+        return super.parseOData(filter)
     }
 
     public get it(): string {
@@ -210,7 +209,7 @@ export class ODataVisitor extends ReducerVisitor {
             result: IExpression
 
         if(typeof expression == 'string')
-            expression = reducer.visitOData(expression)
+            expression = reducer.parseOData(expression)
 
         result = reducer.evaluate(expression, it)
 

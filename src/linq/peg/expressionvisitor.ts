@@ -17,9 +17,7 @@ import { IConditionalExpression, ConditionalExpression } from './expression/cond
 import { IArrayExpression, ArrayExpression } from './expression/arrayexpression'
 import { ITemplateLiteralExpression, TemplateLiteralExpression } from './expression/templateliteralexpression'
 import { IObjectExpression, ObjectExpression, IObjectProperty } from './expression/objectexpression'
-
-import { LambdaExpression } from './expression/lambdaexpression'
-
+import { ILambdaExpression, LambdaExpression } from './expression/lambdaexpression'
 
 export class ExpressionStack implements IExpressionStack {
     private items: Array<IExpression>;
@@ -58,8 +56,8 @@ export class ExpressionStack implements IExpressionStack {
 }
 
 export class ExpressionVisitor implements IExpressionVisitor {
-    protected _lambdaExpression: LambdaExpression;
-    private _expressionStack: ExpressionStack;
+    protected _rawExpression: { expression: string, parameters: Array<string>, fn: ((...args: Array<any>) => any) }
+    private _expressionStack: ExpressionStack
 
     constructor() {
         this._expressionStack = new ExpressionStack()
@@ -69,7 +67,7 @@ export class ExpressionVisitor implements IExpressionVisitor {
         return this._expressionStack
     }
 
-    public visitOData(filter: string): IExpression {
+    public parseOData(filter: string): IExpression {
         let ast = ODataParser.parse(filter)
         try {
             if(ast) {
@@ -83,7 +81,7 @@ export class ExpressionVisitor implements IExpressionVisitor {
         return null
     }
 
-    public visitLambdaExpression(expression: string): IExpression {
+    public parseLambdaExpression(expression: string): IExpression {
         if(expression) {
             let ast = JavascriptParser.parse(expression)
             try {
@@ -99,14 +97,45 @@ export class ExpressionVisitor implements IExpressionVisitor {
         return null
     }
 
-    public visitLambda(predicate: (it: any, ...param: Array<any>) => any): IExpression {
-        let expression = (this._lambdaExpression = new LambdaExpression(predicate)).expression
+    public parseLambda(predicate: (it: any, ...param: Array<any>) => any): IExpression {
+        let regexs = [
+            /^\(?\s*([^)]*?)\s*\)?\s*(?:=>)+\s*(.*)$/i, //  arrow function; (item) => 5 + 1
+            /^(?:function\s*)?\(\s*([^)]*?)\s*\)\s*(?:=>)?\s*\{\s*.*?(?:return)\s*(.*?)\;?\s*\}\s*$/i // () => { return 5 + 1 } or function() { return 5 + 1 }
+        ]
 
-        return this.visitLambdaExpression(expression)
+        let raw = predicate.toString(),
+            parameters: Array<string>,
+            expression: string
+
+        for(let regex of regexs) {
+            let match: RegExpMatchArray
+
+            if((match = raw.match(regex)) !== null) {
+                parameters = match[1].split(',').map((el) => el.trim())
+                expression = match[2].replace(/_this/gi, 'this')
+
+                break
+            }
+        }
+
+        this._rawExpression = {
+            fn: predicate,
+            parameters,
+            expression
+        }
+
+        return this.parseLambdaExpression(expression)
     }
 
     public visit(expression: IExpression): IExpression {
         return expression.accept(this)
+    }
+
+    public visitLambda(expression: ILambdaExpression): IExpression {
+        expression.parameters = expression.parameters.map((element) => element.accept(this))
+        expression.expression = expression.expression.accept(this)
+
+        return expression
     }
 
     public visitLiteral(expression: ILiteralExpression): IExpression {
@@ -207,6 +236,9 @@ export class ExpressionVisitor implements IExpressionVisitor {
         let child: IExpression
 
         switch(expression.type) {
+            case 'LambdaExpression':
+                return new LambdaExpression(Array.isArray(expression.arguments) ? expression.arguments.map((arg) => this.transform(arg)) : [], this.transform(expression.expression))
+
             case 'Identifier':
                 return new IdentifierExpression(expression.name)
 

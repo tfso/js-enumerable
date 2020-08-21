@@ -14,6 +14,7 @@ import { IArrayExpression } from '../interface/iarrayexpression'
 import { IIndexExpression } from '../interface/iindexexpression'
 import { ITemplateLiteralExpression } from '../interface/itemplateliteralexpression'
 import { IObjectExpression } from '../interface/iobjectexpression'
+import { ILambdaExpression } from '../interface/ilambdaexpression'
 
 import { IExpressionVisitor } from '../interface/iexpressionvisitor'
 
@@ -39,6 +40,9 @@ export abstract class Expression implements IExpression {
         visitor.stack.push(this)
 
         switch(this.type) {
+            case ExpressionType.Lambda:
+                expression = visitor.visitLambda(<ILambdaExpression><Record<string, any>>this); break
+                
             case ExpressionType.Literal:
                 expression = visitor.visitLiteral(<ILiteralExpression><Record<string, any>>this); break
 

@@ -16,8 +16,6 @@
     IObjectExpression, ObjectExpression, IObjectProperty 
 } from './expressionvisitor'
 
-import { LambdaExpression } from './expression/lambdaexpression'
-
 export class ReducerVisitor extends ExpressionVisitor {
     private _parentExpressionStack: Array<IExpression> = [];
     private _it: string = null;
@@ -30,16 +28,16 @@ export class ReducerVisitor extends ExpressionVisitor {
         return this._it
     }
 
-    public visitLambda(predicate: (it: Record<string, any>, ...param: Array<any>) => any, ...param: Array<any>): IExpression {
+    public parseLambda(predicate: (it: Record<string, any>, ...param: Array<any>) => any, ...param: Array<any>): IExpression {
         //this._isSolvable = true; // reset it as checks for solvability is done for each visit
         this._it = null // do not involve "this" at the moment, since evalute is using "ReducerVisitor.it" to find out the named "this" scope.
 
-        let expr = super.visitLambda(predicate),
+        let expr = super.parseLambda(predicate),
             vars = null
 
         if(param.length > 0) {
-            if(this._lambdaExpression?.parameters.length > 0) {
-                vars = this._lambdaExpression.parameters.reduce<Record<string, any>>((res, val, index) => {
+            if(this._rawExpression?.parameters.length > 0) {
+                vars = this._rawExpression.parameters.reduce<Record<string, any>>((res, val, index) => {
                     if(index > 0 && index <= param.length)
                         res[val] = param[index - 1]
 
@@ -50,7 +48,7 @@ export class ReducerVisitor extends ExpressionVisitor {
 
         expr = this.evaluate.call(this, expr, vars)
 
-        this._it = this._lambdaExpression != null && this._lambdaExpression.parameters.length > 0 ? this._lambdaExpression.parameters[0] : null
+        this._it = this._rawExpression != null && this._rawExpression.parameters.length > 0 ? this._rawExpression.parameters[0] : null
 
         return expr
     }

@@ -82,7 +82,7 @@ export class TemplateLiteralVisitor extends JavascriptVisitor {
             result: IExpression
 
         if(typeof expression == 'function')
-            expression = reducer.visitLambda(expression)
+            expression = reducer.parseLambda(expression)
 
         result = reducer.evaluate(expression, it)
 

@@ -22,7 +22,7 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
 
     switch(typeof predicate) {
         case 'string':
-            expression = new ODataVisitor().visitOData(predicate)
+            expression = new ODataVisitor().parseOData(predicate)
             validate = (entity: TEntity) => ODataVisitor.evaluate(expression, entity) === true
             it = ''
 
@@ -31,7 +31,7 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
         case 'function':
             let visitor = new ReducerVisitor()
 
-            expression = visitor.visitLambda(predicate, ...parameters)
+            expression = visitor.parseLambda(predicate, ...parameters)
             validate = (entity: TEntity) => predicate.apply({}, [entity].concat(parameters))
             it = visitor.it
 

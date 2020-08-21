@@ -11,7 +11,7 @@ describe('When using ExpressionVisitor', () => {
         })
 
         it('it should handle toString', () => {
-            let expr = visitor.visitLambda(() => `My number is ${5} and the next is ${5+1}`)
+            let expr = visitor.parseLambda(() => `My number is ${5} and the next is ${5+1}`)
             
             assert.equal(expr.toString(), '`My number is ${5} and the next is ${5 + 1}`')
         })

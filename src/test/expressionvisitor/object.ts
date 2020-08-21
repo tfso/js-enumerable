@@ -11,9 +11,9 @@ describe('When using ExpressionVisitor', () => {
         })
 
         it('it should handle toString', () => {
-            assert.equal(visitor.visitLambda(() => <object>{ 'key': 123, 'value': 'abc' }).toString(), '{"key": 123, "value": "abc"}')
-            assert.equal(visitor.visitLambda(() => <object>{ key: 123, value: 'abc' }).toString(), '{"key": 123, "value": "abc"}')
-            assert.equal(visitor.visitLambda(() => <object>{ 0: 123, 1: 'abc' }).toString(), '{"0": 123, "1": "abc"}')
+            assert.equal(visitor.parseLambda(() => <object>{ 'key': 123, 'value': 'abc' }).toString(), '{"key": 123, "value": "abc"}')
+            assert.equal(visitor.parseLambda(() => <object>{ key: 123, value: 'abc' }).toString(), '{"key": 123, "value": "abc"}')
+            assert.equal(visitor.parseLambda(() => <object>{ 0: 123, 1: 'abc' }).toString(), '{"0": 123, "1": "abc"}')
         })
     })
 })

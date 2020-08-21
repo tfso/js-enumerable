@@ -1,47 +1,31 @@
-﻿export class LambdaExpression {
+﻿import { ILambdaExpression } from './../interface/ilambdaexpression'
+import { IExpression, Expression, ExpressionType } from './expression'
+
+export class LambdaExpression extends Expression implements ILambdaExpression {
     private _expression: string;
-    private _parameters: Array<string>;
-    private _lambdaFn: ((...it: Array<any>) => any);
+    private _parameters: Array<string> 
 
-    constructor(lambda: (...it: Array<any>) => any) {
-        this.parseExpression(this._lambdaFn = lambda)
+    constructor(public parameters: Array<IExpression>, public expression: IExpression) {
+        super(ExpressionType.Lambda)
     }
 
-    public get expression(): string {
-        return this._expression
-    }
-
-    public get parameters(): Array<string> {
-        return this._parameters
-    }
-
-    public get lambda(): ((...it: Array<any>) => any) {
-        return this._lambdaFn
-    }
-
-    /**
-    * decompilation of a predicate expression extracting the actual expression
-    * @param predicate
-    * @return string
-    */
-    private parseExpression(lambda: (...it: Array<any>) => any): void {
-        let regexs = [
-            /^\(?\s*([^)]*?)\s*\)?\s*(?:=>)+\s*(.*)$/i, //  arrow function; (item) => 5 + 1
-            /^(?:function\s*)?\(\s*([^)]*?)\s*\)\s*(?:=>)?\s*\{\s*.*?(?:return)\s*(.*?)\;?\s*\}\s*$/i // () => { return 5 + 1 } or function() { return 5 + 1 }
-        ]
-
-        let raw = lambda.toString()
-
-        regexs.forEach((regex) => {
-            let match: RegExpMatchArray
-
-            if((match = raw.match(regex)) !== null) {
-                this._parameters = match[1].split(',').map((el) => el.trim())
-                this._expression = match[2].replace(/_this/gi, 'this')
-
-                return false
+    public equal(expression: ILambdaExpression): boolean {
+        if(this.type == expression.type && this.parameters.length == expression.parameters.length) {
+            for(let i = 0; i < this.parameters.length; i++) {
+                if(this.parameters[i].equal(expression.parameters[i]) == false)
+                    return false
             }
-            return true
-        })
+
+            if(this.expression.type == expression.expression.type && this.expression.equal(expression.expression))
+                return true
+        }
+
+        return false
+    }
+
+    public toString() {
+        return `(${(this.parameters || []).map(param => param.toString).join(', ')}) => ${this.expression.toString()}`
     }
 }
+
+export { ILambdaExpression }
