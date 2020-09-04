@@ -126,6 +126,9 @@ function * visit(expression: IExpression): Iterable<IterableIterator<IExpression
             yield visitLeaf(expression)
         }
     }
+    else if(isLambdaExpression(expression)) {
+        yield* visit(expression.expression)
+    }
     else {
         yield visitLeaf(expression)
     }
@@ -153,6 +156,10 @@ function * visitLeaf(expression: IExpression): IterableIterator<IExpression> {
 
 function isLogicalExpression(expression: IExpression): expression is ILogicalExpression {
     return expression.type == ExpressionType.Logical
+}
+
+function isLambdaExpression(expression: IExpression): expression is ILambdaExpression {
+    return expression.type == ExpressionType.Lambda
 }
 
 export { IExpression, ExpressionType }

@@ -223,6 +223,9 @@ describe('When using ExpressionVisitor', () => {
         describe('Lambda expression', () => {
             it('should return a logical operation', () => {
                 expr = visitor.parseLambda(() => 5 && 2)
+                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).left.type == Expr.ExpressionType.Literal, 'Expected a literal at left side')
@@ -234,12 +237,18 @@ describe('When using ExpressionVisitor', () => {
             it('should handle logical operation for and', () => {
                 expr = visitor.parseLambda(() => 5 && 2)
 
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
+
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
                 assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.And, 'Expected a binary operation of and')
             })
 
             it('should handle logical operation for or', () => {
                 expr = visitor.parseLambda(() => 5 || 2)
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
                 assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.Or, 'Expected a binary operation of or')
@@ -247,6 +256,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle logical operation for equal', () => {
                 expr = visitor.parseLambda(() => <number>5 == <number>2)
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
                 assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.Equal, 'Expected a binary operation of equal')
@@ -254,6 +266,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle logical operation for not equal', () => {
                 expr = visitor.parseLambda(() => <number>5 != <number>2)
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
                 assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.NotEqual, 'Expected a binary operation of not equal')
@@ -261,6 +276,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle logical operation for greater than', () => {
                 expr = visitor.parseLambda(() => 5 > 2)
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
                 assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.Greater, 'Expected a binary operation of greather than')
@@ -268,6 +286,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle logical operation for greater or equal than', () => {
                 expr = visitor.parseLambda(() => 5 >= 2)
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
                 assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.GreaterOrEqual, 'Expected a binary operation of greater or equal than')
@@ -275,6 +296,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle logical operation for lesser', () => {
                 expr = visitor.parseLambda(() => 5 < 2)
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
                 assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.Lesser, 'Expected a binary operation of lesser')
@@ -282,15 +306,18 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle logical operation for lesser and equal', () => {
                 expr = visitor.parseLambda(() => 5 <= 2)
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
                 assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.LesserOrEqual, 'Expected a binary operation of lesser or equal than')
             })
 
             it('it should handle toString', () => {
-                assert.equal(visitor.parseLambda(() => true && true).toString(), '(true && true)')
-                assert.equal(visitor.parseLambda(() => false || true && true).toString(), 'false || (true && true)')
-                assert.equal(visitor.parseLambda(() => false && true || true && true).toString(), '(false && true) || (true && true)')
+                assert.equal(visitor.parseLambda(() => true && true).toString(), '() => (true && true)')
+                assert.equal(visitor.parseLambda(() => false || true && true).toString(), '() => false || (true && true)')
+                assert.equal(visitor.parseLambda(() => false && true || true && true).toString(), '() => (false && true) || (true && true)')
             })
         })
     })

@@ -241,6 +241,9 @@ describe('When using ExpressionVisitor', () => {
             it('should return a binary operation', () => {
                 expr = visitor.parseLambda(() => 5 + 2)
 
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
+
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).left.type == Expr.ExpressionType.Literal, 'Expected a literal at left side')
                 assert.ok((<Expr.IBinaryExpression>expr).right.type == Expr.ExpressionType.Literal, 'Expected a lteral at right side')
@@ -251,12 +254,18 @@ describe('When using ExpressionVisitor', () => {
             it('should handle binary operation for addition', () => {
                 expr = visitor.parseLambda(() => 5 + 2)
 
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
+
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Addition, 'Expected a binary operation of addition')
             })
 
             it('should handle binary operation for addition for negative number', () => {
                 expr = visitor.parseLambda(() => 5 + -2)
+
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Addition, 'Expected a binary operation of addition')
@@ -266,6 +275,9 @@ describe('When using ExpressionVisitor', () => {
             it('should handle binary operation for addition for positive number', () => {
                 expr = visitor.parseLambda(() => 5 + +2)
 
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
+
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Addition, 'Expected a binary operation of addition')
                 assert.ok((<Expr.IBinaryExpression>expr).right.type == Expr.ExpressionType.Literal, 'Expected a literal at right side of addition')
@@ -274,12 +286,18 @@ describe('When using ExpressionVisitor', () => {
             it('should handle binary operation for subtraction', () => {
                 expr = visitor.parseLambda(() => 5 - 2)
 
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
+
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Subtraction, 'Expected a binary operation of subtraction')
             })
 
             it('should handle binary operation for subtraction for negative number', () => {
                 expr = visitor.parseLambda(() => 5 - -2)
+                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Subtraction, 'Expected a binary operation of subtraction')
@@ -288,6 +306,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle binary operation for subtraction for positive number', () => {
                 expr = visitor.parseLambda(() => 5 - +2)
+                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Subtraction, 'Expected a binary operation of subtraction')
@@ -297,12 +318,18 @@ describe('When using ExpressionVisitor', () => {
             it('should handle binary operation for multiplication', () => {
                 expr = visitor.parseLambda(() => 5 * 2)
 
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
+
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Multiplication, 'Expected a binary operation of multiplication')
             })
 
             it('should handle binary operation for division', () => {
                 expr = visitor.parseLambda(() => 5 / 2)
+                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Division, 'Expected a binary operation of division')
@@ -310,6 +337,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle binary operation for modulus', () => {
                 expr = visitor.parseLambda(() => 5 % 2)
+                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Modulus, 'Expected a binary operation of modulus')
@@ -317,6 +347,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle binary operation for and', () => {
                 expr = visitor.parseLambda(() => 5 & 2)
+                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.And, 'Expected a binary operation of and')
@@ -324,6 +357,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle binary operation for or', () => {
                 expr = visitor.parseLambda(() => 5 | 2)
+                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Or, 'Expected a binary operation of or')
@@ -331,6 +367,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle binary operation for left shift', () => {
                 expr = visitor.parseLambda(() => 5 << 2)
+            
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.LeftShift, 'Expected a binary operation of left shift')
@@ -338,6 +377,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle binary operation for right shift', () => {
                 expr = visitor.parseLambda(() => 5 >> 2)
+                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.RightShift, 'Expected a binary operation of right shift')
@@ -345,6 +387,9 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle binary operation for zero-fill right shift', () => {
                 expr = visitor.parseLambda(() => 5 >>> 2)
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.RightShift, 'Expected a binary operation of right shift')
@@ -352,21 +397,24 @@ describe('When using ExpressionVisitor', () => {
 
             it('should handle binary operation for exlusive or', () => {
                 expr = visitor.parseLambda(() => 5 ^ 2)
+                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
                 assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.ExclusiveOr, 'Expected a binary operation of exclusive or')
             })
 
             it('should handle toString', () => {
-                assert.equal(visitor.parseLambda(() => 5 + 2).toString(), '5 + 2')
-                assert.equal(visitor.parseLambda(() => 5 + +2).toString(), '5 + 2')
-                assert.equal(visitor.parseLambda(() => 5 + -2).toString(), '5 + -2')
-                assert.equal(visitor.parseLambda(() => 5 - 2).toString(), '5 - 2')
-                assert.equal(visitor.parseLambda(() => 5 - +2).toString(), '5 - 2')
-                assert.equal(visitor.parseLambda(() => 5 - -2).toString(), '5 - -2')
+                assert.equal(visitor.parseLambda(() => 5 + 2).toString(), '() => 5 + 2')
+                assert.equal(visitor.parseLambda(() => 5 + +2).toString(), '() => 5 + 2')
+                assert.equal(visitor.parseLambda(() => 5 + -2).toString(), '() => 5 + -2')
+                assert.equal(visitor.parseLambda(() => 5 - 2).toString(), '() => 5 - 2')
+                assert.equal(visitor.parseLambda(() => 5 - +2).toString(), '() => 5 - 2')
+                assert.equal(visitor.parseLambda(() => 5 - -2).toString(), '() => 5 - -2')
 
-                assert.equal(visitor.parseLambda(() => 5 + 2 * 4).toString(), '5 + (2 * 4)')
-                assert.equal(visitor.parseLambda(() => (5 + 2) * 4).toString(), '(5 + 2) * 4')
+                assert.equal(visitor.parseLambda(() => 5 + 2 * 4).toString(), '() => 5 + (2 * 4)')
+                assert.equal(visitor.parseLambda(() => (5 + 2) * 4).toString(), '() => (5 + 2) * 4')
             })
         })
     })

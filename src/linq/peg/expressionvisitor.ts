@@ -81,50 +81,53 @@ export class ExpressionVisitor implements IExpressionVisitor {
         return null
     }
 
-    public parseLambdaExpression(expression: string): IExpression {
-        if(expression) {
-            let ast = JavascriptParser.parse(expression)
-            try {
-                if(ast) {
-                    return this.visit(this.transform(ast))
+    public parseLambda(lambda: string): IExpression
+    public parseLambda(lambda: (it: any, ...param: Array<any>) => any): IExpression
+    public parseLambda(): IExpression {
+        let lambda: string
+
+        switch(typeof arguments[0]) {
+            case 'string':
+                lambda = arguments[0]
+                break
+
+            case 'function':
+                let regexs = [
+                    /^\(?\s*([^)]*?)\s*\)?\s*(?:=>)+\s*(.*)$/i, //  arrow function; (item) => 5 + 1
+                    /^(?:function\s*)?\(\s*([^)]*?)\s*\)\s*(?:=>)?\s*\{\s*.*?(?:return)\s*(.*?)\;?\s*\}\s*$/i // () => { return 5 + 1 } or function() { return 5 + 1 }
+                ]
+
+                let raw = arguments[0].toString(),
+                    parameters: Array<string>,
+                    expression: string
+    
+                for(let regex of regexs) {
+                    let match: RegExpMatchArray
+        
+                    if((match = raw.match(regex)) !== null) {
+                        parameters = match[1].split(',').map((el) => el.trim())
+                        expression = match[2].replace(/_this/gi, 'this')
+        
+                        break
+                    }
                 }
+
+                lambda = `(${parameters.join(', ')}) => ${expression}`
+
+                break
+        }
+
+        let ast = JavascriptParser.parse(lambda)
+        try {
+            if(ast) {
+                return this.visit(this.transform(ast))
             }
-            catch(ex) {
-                throw new Error(ex.message)
-            }
+        }
+        catch(ex) {
+            throw new Error(ex.message)
         }
 
         return null
-    }
-
-    public parseLambda(predicate: (it: any, ...param: Array<any>) => any): IExpression {
-        let regexs = [
-            /^\(?\s*([^)]*?)\s*\)?\s*(?:=>)+\s*(.*)$/i, //  arrow function; (item) => 5 + 1
-            /^(?:function\s*)?\(\s*([^)]*?)\s*\)\s*(?:=>)?\s*\{\s*.*?(?:return)\s*(.*?)\;?\s*\}\s*$/i // () => { return 5 + 1 } or function() { return 5 + 1 }
-        ]
-
-        let raw = predicate.toString(),
-            parameters: Array<string>,
-            expression: string
-
-        for(let regex of regexs) {
-            let match: RegExpMatchArray
-
-            if((match = raw.match(regex)) !== null) {
-                parameters = match[1].split(',').map((el) => el.trim())
-                expression = match[2].replace(/_this/gi, 'this')
-
-                break
-            }
-        }
-
-        this._rawExpression = {
-            fn: predicate,
-            parameters,
-            expression
-        }
-
-        return this.parseLambdaExpression(expression)
     }
 
     public visit(expression: IExpression): IExpression {
@@ -439,6 +442,7 @@ export class ExpressionVisitor implements IExpressionVisitor {
 //export { IArrayExpression, IBinaryExpression, ICompoundExpression, IConditionalExpression, IIdentifierExpression, ILiteralExpression, ILogicalExpression, IMemberExpression, IMethodExpression, IUnaryExpression }
 
 export { IExpression, Expression, ExpressionType } from './expression/expression'
+export { ILambdaExpression, LambdaExpression } from './expression/lambdaexpression'
 export { ILiteralExpression, LiteralExpression } from './expression/literalexpression'
 export { ICompoundExpression } from './expression/compoundexpression'
 export { IIdentifierExpression, IdentifierExpression } from './expression/identifierexpression'

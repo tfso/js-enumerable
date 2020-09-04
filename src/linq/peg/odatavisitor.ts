@@ -1,4 +1,4 @@
-﻿import { IExpression, Expression, ExpressionType } from './expression/expression'
+import { IExpression, Expression, ExpressionType } from './expression/expression'
 import { ILiteralExpression, LiteralExpression } from './expression/literalexpression'
 import { ICompoundExpression } from './expression/compoundexpression'
 import { IIdentifierExpression, IdentifierExpression } from './expression/identifierexpression'
@@ -11,6 +11,7 @@ import { IConditionalExpression } from './expression/conditionalexpression'
 import { IArrayExpression, ArrayExpression } from './expression/arrayexpression'
 
 import { ReducerVisitor } from './reducervisitor'
+import { LambdaExpression, ILambdaExpression } from './expression/lambdaexpression'
 
 export class ODataVisitor extends ReducerVisitor {
     constructor() {
@@ -21,15 +22,10 @@ export class ODataVisitor extends ReducerVisitor {
         return super.parseOData(filter)
     }
 
-    public get it(): string {
-        return ''
-    }
-
     public visitMethod(expression: IMethodExpression): IExpression {
         let parameters = expression.parameters.map((arg) => arg.accept(this)),
-            caller: IExpression = undefined,
+            caller: IExpression = expression.caller?.accept(this) ?? undefined,
             name: string = undefined
-
         
         let params: Array<any>
 
@@ -201,19 +197,18 @@ export class ODataVisitor extends ReducerVisitor {
 
         return new MethodExpression(expression.name, parameters, caller)
     }
-
-    public static evaluate(expression: string, it?: Record<string, any> | number | Date | string): any
-    public static evaluate(expression: IExpression, it?: Record<string, any> | number | Date | string): any
-    public static evaluate(expression: IExpression | string, it: Record<string, any> | number | Date | string = null): any {
+    
+    public static evaluate(expression: string, scope?: Record<string, any> | number | Date | string, scopeName?: string): any
+    public static evaluate(expression: IExpression, scope?: Record<string, any> | number | Date | string, scopeName?: string): any
+    public static evaluate(expression: IExpression | string, scope: Record<string, any> | number | Date | string = null, scopeName: string = null): any {
         let reducer = new ODataVisitor(),
             result: IExpression
 
         if(typeof expression == 'string')
             expression = reducer.parseOData(expression)
 
-        result = reducer.evaluate(expression, it)
+        result = reducer.evaluate(expression, scope, scopeName)
 
         return result.type == ExpressionType.Literal ? (<ILiteralExpression>result).value : undefined
     }
-
 }

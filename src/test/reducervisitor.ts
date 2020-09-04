@@ -36,6 +36,9 @@ describe('When using Reducer for ExpressionVisitor', () => {
     it('should reduce expresion to a minimal expression', () => {
         let expr = reducer.parseLambda((it) => it.unknown == 2 + 3)
 
+        if(expr.type == Expr.ExpressionType.Lambda) 
+            expr = (<Expr.ILambdaExpression>expr).expression
+
         assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a logical expression')
         assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.Equal, 'Expected a logical expression with operator equal')
         assert.ok((<Expr.ILogicalExpression>expr).left.type == Expr.ExpressionType.Member, 'Expected a member expression at left side')
@@ -61,7 +64,7 @@ describe('When using Reducer for ExpressionVisitor', () => {
     it('should have a solvable expression using nullable variable', () => {
         let reduced = reducer.parseLambda((it, mynullvar) => it.number == mynullvar, null),
             expr = reducer.evaluate(reduced, vars)
-
+            
         //assert.ok(reducer.isSolvable == true, "Expected a solvable expression");
         assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal expression')
         assert.ok((<Expr.ILiteralExpression>expr).value == false, 'Expected the literal value to be false')
@@ -101,12 +104,18 @@ describe('When using Reducer for ExpressionVisitor', () => {
     it('should have a solvable expression using named parameters', () => {
         let expr = reducer.parseLambda((myobject: any, num: number, letter: string) => myobject.number == 2 + 3 && num == 5 && letter == 'a', 5, 'a')
 
+        if(expr.type == Expr.ExpressionType.Lambda) 
+            expr = (<Expr.ILambdaExpression>expr).expression
+
         //assert.ok(reducer.isSolvable == true, "Expected a solvable expression");
         assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a logical expression')
     })
 
     it('should have a solvable expression (simple) using named parameters', () => {
         let expr = reducer.parseLambda((myobject: any, num: number) => myobject.number == num, 5)
+
+        if(expr.type == Expr.ExpressionType.Lambda) 
+            expr = (<Expr.ILambdaExpression>expr).expression
 
         //assert.ok(reducer.isSolvable == true, "Expected a solvable expression");
         assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a logical expression')

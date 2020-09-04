@@ -2,7 +2,7 @@ import { LinqOperator, LinqType } from './types'
 import { Entity } from '../types'
 
 import { ReducerVisitor } from './../peg/reducervisitor'
-import { IExpression, ExpressionType, ILogicalExpression, LogicalOperatorType, IMethodExpression, IMemberExpression, IIdentifierExpression, ILiteralExpression, IArrayExpression } from './../peg/expressionvisitor'
+import { IExpression, ExpressionType, ILogicalExpression, LogicalOperatorType, IMethodExpression, IMemberExpression, IIdentifierExpression, ILiteralExpression, IArrayExpression, ILambdaExpression } from './../peg/expressionvisitor'
 import { ODataVisitor } from './../peg/odatavisitor'
 
 import { LogicalExpression } from './../peg/expression/logicalexpression'
@@ -15,7 +15,7 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
         parameters: Array<any> = [],
         expression: IExpression,
         validate: (entity: TEntity) => boolean,
-        it: string
+        scopeName: string
 
     if(arguments.length >= 2)
         parameters = Array.from(arguments).slice(1)
@@ -24,7 +24,7 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
         case 'string':
             expression = new ODataVisitor().parseOData(predicate)
             validate = (entity: TEntity) => ODataVisitor.evaluate(expression, entity) === true
-            it = ''
+            scopeName = ''
 
             break
 
@@ -32,9 +32,15 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
             let visitor = new ReducerVisitor()
 
             expression = visitor.parseLambda(predicate, ...parameters)
-            validate = (entity: TEntity) => predicate.apply({}, [entity].concat(parameters))
-            it = visitor.it
 
+            if(isLambdaExpression(expression)) {
+                if(expression.parameters[0].type == ExpressionType.Identifier) {
+                    scopeName = (<IIdentifierExpression>expression.parameters[0]).name
+                }
+            }
+            
+            validate = (entity: TEntity) => predicate.apply({}, [entity].concat(parameters))
+            
             break
 
         default:
@@ -48,7 +54,7 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
             return (item) => ({ type: validate(item) == true ? 'yield' : 'continue', value: item })
         },
         get intersection() {
-            return visitIntersection(typeof predicate == 'string' ? 'odata' : 'javascript', it, expression)
+            return visitIntersection(typeof predicate == 'string' ? 'odata' : 'javascript', scopeName, expression)
         }
     }
 }
@@ -275,4 +281,8 @@ function isLogicalExpression(expression: IExpression): expression is ILogicalExp
 
 function isMethodExpression(expression: IExpression): expression is IMethodExpression {
     return expression.type == ExpressionType.Method
+}
+
+function isLambdaExpression(expression: IExpression): expression is ILambdaExpression {
+    return expression.type == ExpressionType.Lambda
 }

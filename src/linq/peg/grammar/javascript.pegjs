@@ -52,19 +52,27 @@ ArrowExpression
     {
     	return {
         	type: 'LambdaExpression',
-          arguments: [args],
-          expression: expr
+          	arguments: [args],
+          	expression: expr
+        }
+    }
+    / LPAR __ RPAR __ ARROW __ expr:Expression
+    {
+    	return {
+        	type: 'LambdaExpression',
+          	arguments: [],
+          	expression: expr
         }
     }
 	/ LPAR args:(first:Identifier rest:((COMMA __) Identifier)* { return buildList(first, rest, 1); }) RPAR __ ARROW __ expr:ConditionalExpression
     {
     	return {
         	type: 'LambdaExpression',
-          arguments: args,
-          expression: expr
+          	arguments: args,
+          	expression: expr
         }
     }
-  / Expression
+    / Expression
 
 Expression
     = ConditionalExpression

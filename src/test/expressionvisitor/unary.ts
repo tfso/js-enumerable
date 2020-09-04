@@ -13,6 +13,10 @@ describe('When using ExpressionVisitor', () => {
         it('it should return a unary operation', () => {
             expr = visitor.parseLambda((a: number) => !a)
 
+                            
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
+
             assert.ok(expr.type == Expr.ExpressionType.Unary, 'Expected a UnaryExpression')
             assert.ok((<Expr.IUnaryExpression>expr).argument.type == Expr.ExpressionType.Identifier, 'Expected a identifier as argument')
             assert.ok((<Expr.IIdentifierExpression>(<Expr.IUnaryExpression>expr).argument).name == 'a', 'Expected identifier \'a\' as argument')
@@ -20,6 +24,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation for negative', () => {
             expr = visitor.parseLambda((a: number) => -a)
+            
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Unary, 'Expected a UnaryExpression')
             assert.ok((<Expr.IUnaryExpression>expr).operator == Expr.UnaryOperatorType.Negative, 'Expected a unary operation for negative')
@@ -28,6 +35,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation for positive', () => {
             expr = visitor.parseLambda((a: number) => +a)
+                        
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Unary, 'Expected a UnaryExpression')
             assert.ok((<Expr.IUnaryExpression>expr).operator == Expr.UnaryOperatorType.Positive, 'Expected a unary operation for positive')
@@ -36,6 +46,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation for invert', () => {
             expr = visitor.parseLambda((a: number) => !a)
+                        
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Unary, 'Expected a UnaryExpression')
             assert.ok((<Expr.IUnaryExpression>expr).operator == Expr.UnaryOperatorType.Invert, 'Expected a unary operation for inverting')
@@ -44,6 +57,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation for complement', () => {
             expr = visitor.parseLambda((a: number) => ~a)
+                        
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Unary, 'Expected a UnaryExpression')
             assert.ok((<Expr.IUnaryExpression>expr).operator == Expr.UnaryOperatorType.Complement, 'Expected a unary operation for complement')
@@ -52,6 +68,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation for prefixed increment', () => {
             expr = visitor.parseLambda((a: number) => ++a)
+                        
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Unary, 'Expected a UnaryExpression')
             assert.ok((<Expr.IUnaryExpression>expr).operator == Expr.UnaryOperatorType.Increment, 'Expected a unary operation for increment')
@@ -60,6 +79,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation for postfixed increment', () => {
             expr = visitor.parseLambda((a: number) => a++)
+                        
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Unary, 'Expected a UnaryExpression')
             assert.ok((<Expr.IUnaryExpression>expr).operator == Expr.UnaryOperatorType.Increment, 'Expected a unary operation for increment')
@@ -68,6 +90,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation for prefixed decrement', () => {
             expr = visitor.parseLambda((a: number) => --a)
+                        
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Unary, 'Expected a UnaryExpression')
             assert.ok((<Expr.IUnaryExpression>expr).operator == Expr.UnaryOperatorType.Decrement, 'Expected a unary operation for decrement')
@@ -76,6 +101,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation for postfixed decrement', () => {
             expr = visitor.parseLambda((a: number) => a--)
+                        
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Unary, 'Expected a UnaryExpression')
             assert.ok((<Expr.IUnaryExpression>expr).operator == Expr.UnaryOperatorType.Decrement, 'Expected a unary operation for decrement')
@@ -84,6 +112,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation increment in binary operation', () => {
             expr = visitor.parseLambda((a: number) => 5 - a++)
+                        
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
             assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Subtraction, 'Expected binary operation for subtraction')
@@ -95,6 +126,9 @@ describe('When using ExpressionVisitor', () => {
 
         it('it should handle unary operation decrement in binary operation', () => {
             expr = visitor.parseLambda((a: number) => 5 - a--)
+                        
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
             assert.ok((<Expr.IBinaryExpression>expr).operator == Expr.BinaryOperatorType.Subtraction, 'Expected binary operation for subtraction')
@@ -105,15 +139,15 @@ describe('When using ExpressionVisitor', () => {
         })
 
         it('it should handle toString', () => {
-            assert.equal(visitor.parseLambda((a: number) => 5 - a--).toString(), '5 - a--')
-            assert.equal(visitor.parseLambda((a: number) => !a).toString(), '!a')
-            assert.equal(visitor.parseLambda((a: number) => -a).toString(), '-a')
-            assert.equal(visitor.parseLambda((a: number) => +a).toString(), '+a')
-            assert.equal(visitor.parseLambda((a: number) => ~a).toString(), '~a')
-            assert.equal(visitor.parseLambda((a: number) => ++a).toString(), '++a')
-            assert.equal(visitor.parseLambda((a: number) => --a).toString(), '--a')
-            assert.equal(visitor.parseLambda((a: number) => a++).toString(), 'a++')
-            assert.equal(visitor.parseLambda((a: number) => a--).toString(), 'a--')
+            assert.equal(visitor.parseLambda((a: number) => 5 - a--).toString(), '(a) => 5 - a--')
+            assert.equal(visitor.parseLambda((a: number) => !a).toString(), '(a) => !a')
+            assert.equal(visitor.parseLambda((a: number) => -a).toString(), '(a) => -a')
+            assert.equal(visitor.parseLambda((a: number) => +a).toString(), '(a) => +a')
+            assert.equal(visitor.parseLambda((a: number) => ~a).toString(), '(a) => ~a')
+            assert.equal(visitor.parseLambda((a: number) => ++a).toString(), '(a) => ++a')
+            assert.equal(visitor.parseLambda((a: number) => --a).toString(), '(a) => --a')
+            assert.equal(visitor.parseLambda((a: number) => a++).toString(), '(a) => a++')
+            assert.equal(visitor.parseLambda((a: number) => a--).toString(), '(a) => a--')
         })
     })
 })
