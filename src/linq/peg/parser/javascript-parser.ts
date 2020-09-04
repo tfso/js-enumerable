@@ -148,16 +148,16 @@ let parser = /*
          function(args, expr) {
                return {
                    type: 'LambdaExpression',
-                     arguments: [args],
-                     expression: expr
+                   arguments: [args],
+                   expression: expr
                  }
              },
          function(first, rest) { return buildList(first, rest, 1); },
          function(args, expr) {
                return {
                    type: 'LambdaExpression',
-                     arguments: args,
-                     expression: expr
+                   arguments: args,
+                   expression: expr
                  }
              },
          function(test, left, right) {
@@ -483,8 +483,8 @@ let parser = /*
        ],
 
        peg$bytecode = [
-         peg$decode(";\""),
-         peg$decode("%;7/M#;6/D$;S/;$;6/2$;\"/)$8%: %\"$ )(%'#($'#(#'#(\"'#&'#.\xD5 &%;c/\xCB#%;7/\x85#$%%;X/,#;6/#$+\")(\"'#&'#/,#;7/#$+\")(\"'#&'#0I*%%;X/,#;6/#$+\")(\"'#&'#/,#;7/#$+\")(\"'#&'#&/)$8\":!\"\"! )(\"'#&'#/V$;v/M$;6/D$;S/;$;6/2$;\"/)$8':\"'\"% )(''#(&'#(%'#($'#(#'#(\"'#&'#"),
+         peg$decode(";!"),
+         peg$decode("%;7/M#;6/D$;S/;$;6/2$;\"/)$8%: %\"$ )(%'#($'#(#'#(\"'#&'#.\xDB &%;c/\xCB#%;7/\x85#$%%;X/,#;6/#$+\")(\"'#&'#/,#;7/#$+\")(\"'#&'#0I*%%;X/,#;6/#$+\")(\"'#&'#/,#;7/#$+\")(\"'#&'#&/)$8\":!\"\"! )(\"'#&'#/V$;v/M$;6/D$;S/;$;6/2$;\"/)$8':\"'\"% )(''#(&'#(%'#($'#(#'#(\"'#&'#.# &;\""),
          peg$decode("%;#/r#;6/i$;y/`$;6/W$;\"/N$;6/E$;W/<$;6/3$;\"/*$8):#)#($ )()'#(('#(''#(&'#(%'#($'#(#'#(\"'#&'#.# &;#"),
          peg$decode("%;$/\x85#$%%;o/,#;6/#$+\")(\"'#&'#/,#;$/#$+\")(\"'#&'#0I*%%;o/,#;6/#$+\")(\"'#&'#/,#;$/#$+\")(\"'#&'#&/)$8\":$\"\"! )(\"'#&'#"),
          peg$decode("%;%/\x85#$%%;V/,#;6/#$+\")(\"'#&'#/,#;%/#$+\")(\"'#&'#0I*%%;V/,#;6/#$+\")(\"'#&'#/,#;%/#$+\")(\"'#&'#&/)$8\":%\"\"! )(\"'#&'#"),
@@ -581,6 +581,8 @@ let parser = /*
        peg$maxFailPos       = 0,
        peg$maxFailExpected  = [],
        peg$silentFails      = 0,
+
+       peg$resultsCache = {},
 
        peg$result;
 
@@ -729,6 +731,15 @@ let parser = /*
          ends  = [],
          stack = [],
          params, i;
+
+     var key    = peg$currPos * 90 + index,
+         cached = peg$resultsCache[key];
+
+     if (cached) {
+       peg$currPos = cached.nextPos;
+
+       return cached.result;
+     }
 
      while (true) {
        while (ip < end) {
@@ -981,6 +992,8 @@ let parser = /*
          break;
        }
      }
+
+     peg$resultsCache[key] = { nextPos: peg$currPos, result: stack[0] };
 
      return stack[0];
    }

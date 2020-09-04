@@ -45,10 +45,10 @@
 
 /* ---- Syntactic Grammar ----- */
 
-Start = Expression
+Start = ArrowExpression
 
 ArrowExpression
-	= args:Identifier __ ARROW __ expr:ConditionalExpression
+	= args:Identifier __ ARROW __ expr:Expression
     {
     	return {
         	type: 'LambdaExpression',
@@ -64,6 +64,7 @@ ArrowExpression
           expression: expr
         }
     }
+  / Expression
 
 Expression
     = ConditionalExpression
