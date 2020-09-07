@@ -1,4 +1,4 @@
-import * as assert from 'assert'
+﻿import * as assert from 'assert'
 import * as Expr from './../linq/peg/expressionvisitor'
 import { ODataVisitor } from './../linq/peg/odatavisitor'
 
@@ -187,5 +187,69 @@ describe('When using OData for ExpressionVisitor', () => {
 
         assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
         assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
+    })
+
+    it('should evaluate any operator using primary array where it is true', () => {
+        let reduced = reducer.parseOData('array/any(e: e gt 21)'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+        assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
+    })
+
+    it('should evaluate any operator using record array where it is true', () => {
+        let reduced = reducer.parseOData('arrayobject/any(e: e/age gt 21)'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+        assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
+    })
+
+    it('should evaluate any operator using primary array where it is false', () => {
+        let reduced = reducer.parseOData('array/any(e: e gt 50)'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+        assert.ok((<Expr.ILiteralExpression>expr).value == false, 'Expected a literal of value true')
+    })
+
+    it('should evaluate any operator using record array where it is false', () => {
+        let reduced = reducer.parseOData('arrayobject/any(e: e/age gt 50)'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+        assert.ok((<Expr.ILiteralExpression>expr).value == false, 'Expected a literal of value true')
+    })
+
+    it('should evaluate all operator using primary array where it is true', () => {
+        let reduced = reducer.parseOData('array/all(e: e gt 10)'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+        assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
+    })
+
+    it('should evaluate all operator using record array where it is true', () => {
+        let reduced = reducer.parseOData('arrayobject/all(e: e/age gt 10)'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+        assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
+    })
+
+    it('should evaluate all operator using primary array where it is false', () => {
+        let reduced = reducer.parseOData('array/all(e: e gt 21)'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+        assert.ok((<Expr.ILiteralExpression>expr).value == false, 'Expected a literal of value true')
+    })
+
+    it('should evaluate all operator using record array where it is false', () => {
+        let reduced = reducer.parseOData('arrayobject/all(e: e/age gt 21)'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+        assert.ok((<Expr.ILiteralExpression>expr).value == false, 'Expected a literal of value true')
     })
 })

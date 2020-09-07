@@ -1,4 +1,4 @@
-import { IExpression, Expression, ExpressionType } from './expression/expression'
+﻿import { IExpression, Expression, ExpressionType } from './expression/expression'
 import { ILiteralExpression, LiteralExpression } from './expression/literalexpression'
 import { ICompoundExpression } from './expression/compoundexpression'
 import { IIdentifierExpression, IdentifierExpression } from './expression/identifierexpression'
@@ -188,8 +188,9 @@ export class ODataVisitor extends ReducerVisitor {
 
                 break
 
-                // Type Functions
-                //case 'isof': // bool IsOf(type p0) | bool IsOf(expression p0, type p1)
+            case 'any':
+            case 'all':
+                break
 
             default:
                 throw new Error('OData visitor does not support function "' + expression.name + '"')
@@ -198,6 +199,58 @@ export class ODataVisitor extends ReducerVisitor {
         return new MethodExpression(expression.name, parameters, caller)
     }
     
+    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string, scopeName?: string): IExpression 
+    public evaluate(expression: IExpression, scope: Record<string, any> | number | string = null, scopeName: string = null): IExpression {
+        if(expression == null)
+            return null
+
+        switch(expression.type) {
+            case ExpressionType.Method:
+                let caller = this.evaluate((<IMethodExpression>expression).caller, scope, scopeName)
+
+                if(LiteralExpression.instanceof(caller) && Array.isArray(caller.value)) {
+                    switch((<IMethodExpression>expression).name) {
+                        case 'any': {
+                            let lambda = <ILambdaExpression>(<IMethodExpression>expression).parameters[0],
+                                reducer = new ODataVisitor(),
+                                isTrue = (expr: IExpression) => {
+                                    return LiteralExpression.instanceof(expr) && expr.value === true
+                                }
+
+                            scopeName = (<IIdentifierExpression>lambda.parameters[0]).name
+
+                            if(caller.value.some(e => isTrue(reducer.evaluate(lambda.expression, e, scopeName)))) {
+                                return new LiteralExpression(true)
+                            }
+                            
+                            return new LiteralExpression(false)
+                        }
+
+                        case 'all': {
+                            let lambda = <ILambdaExpression>(<IMethodExpression>expression).parameters[0],
+                                reducer = new ODataVisitor(),
+                                isTrue = (expr: IExpression) => {
+                                    return LiteralExpression.instanceof(expr) && expr.value === true
+                                }
+                        
+                            scopeName = (<IIdentifierExpression>lambda.parameters[0]).name
+                                
+                            if(caller.value.every(e => isTrue(reducer.evaluate(lambda.expression, e, scopeName)))) {
+                                return new LiteralExpression(true)
+                            }
+                            
+                            return new LiteralExpression(false)
+                        }
+                    }
+                }
+
+                return this.visit(new MethodExpression((<IMethodExpression>expression).name, (<IMethodExpression>expression).parameters.map(p => this.evaluate(p, scope, scopeName)), caller))
+
+            default:
+                return super.evaluate(expression, scope, scopeName)
+        }
+    }
+
     public static evaluate(expression: string, scope?: Record<string, any> | number | Date | string, scopeName?: string): any
     public static evaluate(expression: IExpression, scope?: Record<string, any> | number | Date | string, scopeName?: string): any
     public static evaluate(expression: IExpression | string, scope: Record<string, any> | number | Date | string = null, scopeName: string = null): any {
