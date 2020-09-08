@@ -65,7 +65,7 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
 
             if(isLogicalExpression(leaf)) {
                 yield {
-                    property: getPropertyName(leaf.left).name.join('.'),
+                    property: getPropertyName(leaf.left)?.name.join('.') ?? '',
                     operator: getOperator(leaf),
                     value: getPropertyValue(leaf.right),
                     wildcard: getWildcard(leaf.right)
@@ -185,23 +185,29 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                 case LogicalOperatorType.And:
                 case LogicalOperatorType.Equal:
                 case LogicalOperatorType.NotEqual:
-                    yield new LogicalExpression(expression.operator, left.value, right.value)
+                    yield new LogicalExpression(expression.operator, right.value, left.value)
+                    break
 
                 case LogicalOperatorType.Greater:  // 5 > 2 == 2 < 5
                     yield new LogicalExpression(LogicalOperatorType.Lesser, right.value, left.value)
+                    break
 
                 case LogicalOperatorType.GreaterOrEqual: // 5 >= 2 == 2 <= 5
                     yield new LogicalExpression(LogicalOperatorType.LesserOrEqual, right.value, left.value)
+                    break
 
                 case LogicalOperatorType.Lesser: // 5 < 2 == 2 > 5
                     yield new LogicalExpression(LogicalOperatorType.Greater, right.value, left.value)
+                    break
 
                 case LogicalOperatorType.LesserOrEqual: // 5 <= 2 == 2 >= 5
                     yield new LogicalExpression(LogicalOperatorType.GreaterOrEqual, right.value, left.value)
+                    break
             }
+        } 
+        else {
+            yield new LogicalExpression(expression.operator, left.value, right.value)
         }
-
-        yield new LogicalExpression(expression.operator, left.value, right.value)
     }
     else {
         if(expression.type == ExpressionType.Member) {

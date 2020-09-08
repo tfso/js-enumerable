@@ -49,11 +49,9 @@ describe('When using repository', () => {
                 count = 0
             
             chai.expect(operator.type).to.equal(LinqType.Where)
-            
-            if(operator.type == LinqType.Where) {
-                let list = operator.intersection
-                for(let expression of list) {
 
+            if(operator.type == LinqType.Where) {
+                for(let expression of operator.intersection) {
                     switch(expression.property) {
                         case 'year':
                             chai.expect(expression.value).to.equal(2015)
