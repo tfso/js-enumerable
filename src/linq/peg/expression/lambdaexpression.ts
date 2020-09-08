@@ -26,6 +26,10 @@ export class LambdaExpression extends Expression implements ILambdaExpression {
     public toString() {
         return `(${(this.parameters || []).map(param => param.toString()).join(', ')}) => ${this.expression.toString()}`
     }
+
+    public static instanceof(expression: IExpression): expression is ILambdaExpression {
+        return expression != null && expression.type == ExpressionType.Lambda
+    }
 }
 
 export { ILambdaExpression }

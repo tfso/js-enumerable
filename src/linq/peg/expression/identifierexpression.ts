@@ -13,6 +13,10 @@ export class IdentifierExpression extends Expression implements IIdentifierExpre
     public toString() {
         return this.name
     }
+
+    public static instanceof(expression: IExpression): expression is IIdentifierExpression {
+        return expression != null && expression.type == ExpressionType.Identifier
+    }
 }
 
 export { IIdentifierExpression }

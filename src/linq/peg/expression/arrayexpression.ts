@@ -23,6 +23,10 @@ export class ArrayExpression extends Expression implements IArrayExpression {
     public toString() {
         return `[${(this.elements || []).map(element => element.toString()).join(', ')}]`
     }
+
+    public static instanceof(expression: IExpression): expression is IArrayExpression {
+        return expression != null && expression.type == ExpressionType.Array
+    }
 }
 
 export { IArrayExpression }

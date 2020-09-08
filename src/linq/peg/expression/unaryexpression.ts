@@ -30,6 +30,10 @@ export class UnaryExpression extends Expression implements IUnaryExpression {
             return `${this.argument.toString()}${operator()}`
         }
     }
+
+    public static instanceof(expression: IExpression): expression is IUnaryExpression {
+        return expression != null && expression.type == ExpressionType.Unary
+    }
 }
 
 export { IUnaryExpression, UnaryOperatorType, UnaryAffixType }

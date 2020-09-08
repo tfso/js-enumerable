@@ -66,6 +66,10 @@ export class TemplateLiteralExpression extends Expression implements ITemplateLi
         }\``
     }
 
+    public static instanceof(expression: IExpression): expression is ITemplateLiteralExpression {
+        return expression != null && expression.type == ExpressionType.TemplateLiteral
+    }
+
     private combine(literals: Array<IExpression> = [], expressions: Array<IExpression> = []) {
         for(let i = 0; i < literals.length; i++) {
             this.indexerLiterals.push(this._elements.push(literals[i]) - 1)
