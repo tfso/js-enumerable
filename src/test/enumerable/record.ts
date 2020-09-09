@@ -7,30 +7,30 @@ if(jsEnumerable == null) {
 }
 
 function * iterator() {
-    yield { make: 'Toyota', model: 'Corolla', year: 1990 }
-    yield { make: 'Nissan', model: 'Leaf', year: 2019 }
-    yield { make: 'Nissan', model: 'Qashqai', year: 2009 }
-    yield { make: 'Volkswagen', model: 'Golf', year: 1999 }
-    yield { make: 'Mazda', model: '323 F-type', year: 2004 }
+    yield { id: 1, make: 'Toyota', model: 'Corolla', year: 1990, revisions: [{ year: 1966, name: 'E10' }, { year: 1970, name: 'E20' }, { year: 1974, name: 'E30-E60' }, { year: 1979, name: 'E70' }, { year: 1983, name: 'E80' }, { year: 1987, name: 'E90' }, { year: 1991, name: 'E100' }, { year: 1995, name: 'E110' }, { year: 2000, name: 'E120-130' }, { year: 2006, name: 'E140-150' }, { year: 2012, name: 'E160-180' }, { year: 2018, name: 'E210' }]}
+    yield { id: 2, make: 'Nissan', model: 'Leaf', year: 2019, revisions: [{ year: 2010, name: 'MY2011' }, { year: 2013, name: 'MY2013' }, { year: 2016, name: 'MY2016' }, { year: 2017, name: 'MY2017' }]}
+    yield { id: 3, make: 'Nissan', model: 'Qashqai', year: 2009, revisions: [{ year: 2006, name: 'J10' }, { year: 2010, name: 'J10-2' }, { year: 2013, name: 'J11' }, { year: 2017, name: 'J11-2' }]}
+    yield { id: 4, make: 'Volkswagen', model: 'Golf', year: 1999, revisions: [{ year: 1974, name: 'Mk1' }, { year: 1983, name: 'Mk2' }, { year: 1991, name: 'Mk3' }, { year: 1997, name: 'Mk4' }, { year: 2003, name: 'Mk5' }, { year: 2008, name: 'Mk6' }, { year: 2012, name: 'Mk7' }, { year: 2019, name: 'Mk8' }]}
+    yield { id: 5, make: 'Mazda', model: '323', year: 2004, revisions: [{ year: 1963, name: '1gen' }, { year: 1967, name: '2gen' }, { year: 1977, name: 'FA4' }, { year: 1980, name: 'BD' }, { year: 1985, name: 'BF' }, { year: 1989, name: 'BG' }, { year: 1994, name: 'BH' }, { year: 1998, name: 'BJ' }]}
 }
 
 async function * asyncIterator() {
-    yield { make: 'Toyota', model: 'Corolla', year: 1990 }
-    yield { make: 'Nissan', model: 'Leaf', year: 2019 }
-    yield { make: 'Nissan', model: 'Qashqai', year: 2009 }
-    yield { make: 'Volkswagen', model: 'Golf', year: 1999 }
-    yield { make: 'Mazda', model: '323 F-type', year: 2004 }
+    yield { id: 1, make: 'Toyota', model: 'Corolla', year: 1990, revisions: [{ year: 1966, name: 'E10' }, { year: 1970, name: 'E20' }, { year: 1974, name: 'E30-E60' }, { year: 1979, name: 'E70' }, { year: 1983, name: 'E80' }, { year: 1987, name: 'E90' }, { year: 1991, name: 'E100' }, { year: 1995, name: 'E110' }, { year: 2000, name: 'E120-130' }, { year: 2006, name: 'E140-150' }, { year: 2012, name: 'E160-180' }, { year: 2018, name: 'E210' }] }
+    yield { id: 2, make: 'Nissan', model: 'Leaf', year: 2019, revisions: [{ year: 2010, name: 'MY2011' }, { year: 2013, name: 'MY2013' }, { year: 2016, name: 'MY2016' }, { year: 2017, name: 'MY2017' }]}
+    yield { id: 3, make: 'Nissan', model: 'Qashqai', year: 2009, revisions: [{ year: 2006, name: 'J10' }, { year: 2010, name: 'J10-2' }, { year: 2013, name: 'J11' }, { year: 2017, name: 'J11-2' }]}
+    yield { id: 4, make: 'Volkswagen', model: 'Golf', year: 1999, revisions: [{ year: 1974, name: 'Mk1' }, { year: 1983, name: 'Mk2' }, { year: 1991, name: 'Mk3' }, { year: 1997, name: 'Mk4' }, { year: 2003, name: 'Mk5' }, { year: 2008, name: 'Mk6' }, { year: 2012, name: 'Mk7' }, { year: 2019, name: 'Mk8' }]}
+    yield { id: 5, make: 'Mazda', model: '323', year: 2004, revisions: [{ year: 1963, name: '1gen' }, { year: 1967, name: '2gen' }, { year: 1977, name: 'FA4' }, { year: 1980, name: 'BD' }, { year: 1985, name: 'BF' }, { year: 1989, name: 'BG' }, { year: 1994, name: 'BH' }, { year: 1998, name: 'BJ' }]}
 }
 
 describe('When using enumerable for record type', () => {
     describe('as an asynchronous iterable', () => {
-        it('should iterate normally', async () => {
+        it('should async iterate normally', async () => {
             let count = 0,
                 firstResult = iterator().next(),
-                firstValue = firstResult.value
+                firstValue = firstResult.value || undefined
     
             chai.expect(typeof firstResult == 'object').to.be.true
-            chai.expect(firstValue).to.deep.equal({ make: 'Toyota', model: 'Corolla', year: 1990 })
+            chai.expect(firstValue.id).to.equal(1)
     
             for await(let num of asyncIterator()) 
                 count++
@@ -127,16 +127,54 @@ describe('When using enumerable for record type', () => {
 
             chai.expect(car).to.deep.equal({ make: 'Toyota', year: 1990 })
         })
+
+        it('should async iterate using where cars having face lift newer than 2015 (odata)', async () => {
+            let cars = []
+            
+            for await(let car of new jsEnumerable.Enumerable(asyncIterator()).where('revisions/any(e: e/year gt 2015)'))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(4)
+            chai.expect(cars.map(car => car.id)).to.deep.equal([1, 2, 3, 4])
+        })
+
+        it('should async iterate using where cars having face lift newer than 2015 (javascript)', async () => {
+            let cars = []
+            
+            for await(let car of new jsEnumerable.Enumerable(asyncIterator()).where(car => car.revisions.some(rev => rev.year > 2015)))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(4)
+            chai.expect(cars.map(car => car.id)).to.deep.equal([1, 2, 3, 4])
+        })
+
+        it('should async iterate using where cars having face lift newer than 2020 (odata)', async () => {
+            let cars = []
+            
+            for await(let car of new jsEnumerable.Enumerable(asyncIterator()).where('revisions/any(e: e/year gt 2020)'))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(0)
+        })
+
+        it('should async iterate using where cars having face lift newer than 2020 (javascript)', async () => {
+            let cars = []
+            
+            for await(let car of new jsEnumerable.Enumerable(asyncIterator()).where(car => car.revisions.some(rev => rev.year > 2020)))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(0)
+        })
     })
 
     describe('as a synchronous iterable', () => {
         it('should iterate normally', () => {
             let count = 0,
                 firstResult = iterator().next(),
-                firstValue = firstResult.value
+                firstValue = firstResult.value || undefined
     
             chai.expect(typeof firstResult == 'object').to.be.true
-            chai.expect(firstValue).to.deep.equal({ make: 'Toyota', model: 'Corolla', year: 1990 })
+            chai.expect(firstValue.id).to.equal(1)
     
             for(let num of iterator()) 
                 count++
@@ -214,6 +252,62 @@ describe('When using enumerable for record type', () => {
                 ar.push(car.year)
 
             chai.expect(ar).to.deep.equal([1990, 1999, 2004, 2009, 2019])
+        })
+
+        it('should iterate using select with property keys', () => {
+            let car = new jsEnumerable.Enumerable(iterator()).select('make', 'year').first()
+
+            chai.expect(car).to.deep.equal({ make: 'Toyota', year: 1990 })
+        })
+
+        it('should iterate using select with selector', () => {
+            let car = new jsEnumerable.Enumerable(iterator()).select(({ make, year }) => ({ make, year })).first()
+
+            chai.expect(car).to.deep.equal({ make: 'Toyota', year: 1990 })
+        })
+
+        it('should iterate using select with string', () => {
+            let car = new jsEnumerable.Enumerable(iterator()).select('make, year').first()
+
+            chai.expect(car).to.deep.equal({ make: 'Toyota', year: 1990 })
+        })
+
+        it('should iterate using where cars having face lift newer than 2015 (odata)', () => {
+            let cars = []
+            
+            for(let car of new jsEnumerable.Enumerable(iterator()).where('revisions/any(e: e/year gt 2015)'))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(4)
+            chai.expect(cars.map(car => car.id)).to.deep.equal([1, 2, 3, 4])
+        })
+        
+        it('should iterate using where cars having face lift newer than 2015 (javascript)', () => {
+            let cars = []
+            
+            for(let car of new jsEnumerable.Enumerable(iterator()).where(car => car.revisions.some(r => r.year > 2015)))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(4)
+            chai.expect(cars.map(car => car.id)).to.deep.equal([1, 2, 3, 4])
+        })
+
+        it('should iterate using where cars having face lift newer than 2020 (odata)', () => {
+            let cars = []
+            
+            for(let car of new jsEnumerable.Enumerable(iterator()).where('revisions/any(e: e/year gt 2020)'))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(0)
+        })
+
+        it('should iterate using where cars having face lift newer than 2020 (javascript)', () => {
+            let cars = []
+            
+            for(let car of new jsEnumerable.Enumerable(iterator()).where(car => car.revisions.some(r => r.year > 2020)))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(0)
         })
     })
 })
