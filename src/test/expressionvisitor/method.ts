@@ -66,7 +66,7 @@ describe('When using ExpressionVisitor', () => {
             })
 
             it('should return a method expression when having lambda expression as argument', () => {
-                expr = visitor.parseLambda((ar: []) => ar.every(a => true))
+                expr = visitor.parseLambda((ar: Array<any>) => ar.every(a => true))
                                 
                 if(expr.type == Expr.ExpressionType.Lambda) 
                     expr = (<Expr.ILambdaExpression>expr).expression
