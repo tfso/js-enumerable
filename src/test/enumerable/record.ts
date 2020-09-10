@@ -165,6 +165,24 @@ describe('When using enumerable for record type', () => {
             
             chai.expect(cars.length).to.equal(0)
         })
+
+        it('should async iterate using where cars having models for over 40 years since 1970 (odata)', async () => {
+            let cars = []
+            
+            for await(let car of new jsEnumerable.Enumerable(asyncIterator()).where('revisions/any(e: e/year le 1970) and revisions/any(e: e/year gt 1970 add 40)'))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(1)
+        })
+        
+        it('should async iterate using where cars having models for over 40 years since 1970 (javascript)', async () => {
+            let cars = []
+            
+            for await(let car of new jsEnumerable.Enumerable(asyncIterator()).where(car => car.revisions.some(rev => rev.year <= 1970) && car.revisions.some(rev => rev.year > 1970 + 40)))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(1)
+        })
     })
 
     describe('as a synchronous iterable', () => {
@@ -308,6 +326,24 @@ describe('When using enumerable for record type', () => {
                 cars.push(car)
             
             chai.expect(cars.length).to.equal(0)
+        })
+
+        it('should iterate using where cars having models for over 40 years since 1970 (odata)', () => {
+            let cars = []
+            
+            for(let car of new jsEnumerable.Enumerable(iterator()).where('revisions/any(e: e/year le 1970) and revisions/any(e: e/year gt 1970 add 40)'))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(1)
+        })
+        
+        it('should iterate using where cars having models for over 40 years since 1970 (javascript)', () => {
+            let cars = []
+            
+            for(let car of new jsEnumerable.Enumerable(iterator()).where(car => car.revisions.some(rev => rev.year <= 1970) && car.revisions.some(rev => rev.year > 1970 + 40)))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(1)
         })
     })
 })
