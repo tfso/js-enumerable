@@ -20,6 +20,10 @@ export class ConditionalExpression extends Expression implements IConditionalExp
     public toString() {
         return `(${this.condition.toString()} ? ${this.success.toString()} : ${this.failure.toString()})`
     }
+
+    public static instanceof(expression: IExpression): expression is IConditionalExpression {
+        return expression != null && expression.type == ExpressionType.Conditional
+    }
 }
 
 export { IConditionalExpression }

@@ -11,7 +11,10 @@ describe('When using ExpressionVisitor', () => {
         })
 
         it('it should return a member expression', () => {
-            expr = visitor.visitLambda((it) => it.num)
+            expr = visitor.parseLambda((it) => it.num)
+                                    
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Member, 'Expected a MemberExpression')
             assert.ok((<Expr.IMemberExpression>expr).object.type == Expr.ExpressionType.Identifier, 'Expected a identifier as object')
@@ -19,7 +22,10 @@ describe('When using ExpressionVisitor', () => {
         })
 
         it('it should return a member expression with array indexer', () => {
-            expr = visitor.visitLambda((it) => it.ar[5])
+            expr = visitor.parseLambda((it) => it.ar[5])
+                                    
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Member, 'Expected a MemberExpression')
             assert.ok((<Expr.IMemberExpression>expr).object.type == Expr.ExpressionType.Identifier, 'Expected a identifier as object')

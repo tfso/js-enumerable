@@ -13,6 +13,10 @@ export class IndexExpression extends Expression implements IIndexExpression {
     public toString() {
         return `${this.object.toString()}[${this.index.toString()}]`
     }
+
+    public static instanceof(expression: IExpression): expression is IIndexExpression {
+        return expression != null && expression.type == ExpressionType.Index
+    }
 }
 
 export { IIndexExpression }

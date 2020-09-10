@@ -28,6 +28,10 @@ export class MethodExpression extends Expression implements IMethodExpression {
     public toString() {
         return `${this.caller ? `${this.caller.toString()}.` : ''}${this.name}(${(this.parameters || []).map(parameter => parameter.toString()).join(', ')})`
     }
+
+    public static instanceof(expression: IExpression): expression is IMethodExpression {
+        return expression != null && expression.type == ExpressionType.Method
+    }
 }
 
 export { IMethodExpression }

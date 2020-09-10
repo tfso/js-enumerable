@@ -2,7 +2,7 @@ import { LinqOperator, LinqType } from './types'
 import { Entity } from '../types'
 
 import { ReducerVisitor } from './../peg/reducervisitor'
-import { IExpression, ExpressionType, ILogicalExpression, LogicalOperatorType, IMethodExpression, IMemberExpression, IIdentifierExpression, ILiteralExpression, IArrayExpression } from './../peg/expressionvisitor'
+import { IExpression, ExpressionType, ILogicalExpression, LogicalOperatorType, IMethodExpression, IMemberExpression, IIdentifierExpression, ILiteralExpression, IArrayExpression, ILambdaExpression, MethodExpression, LambdaExpression } from './../peg/expressionvisitor'
 import { ODataVisitor } from './../peg/odatavisitor'
 
 import { LogicalExpression } from './../peg/expression/logicalexpression'
@@ -15,26 +15,32 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
         parameters: Array<any> = [],
         expression: IExpression,
         validate: (entity: TEntity) => boolean,
-        it: string
+        scopeName: string
 
     if(arguments.length >= 2)
         parameters = Array.from(arguments).slice(1)
 
     switch(typeof predicate) {
         case 'string':
-            expression = new ODataVisitor().visitOData(predicate)
+            expression = new ODataVisitor().parseOData(predicate)
             validate = (entity: TEntity) => ODataVisitor.evaluate(expression, entity) === true
-            it = ''
+            scopeName = ''
 
             break
 
         case 'function':
             let visitor = new ReducerVisitor()
 
-            expression = visitor.visitLambda(predicate, ...parameters)
-            validate = (entity: TEntity) => predicate.apply({}, [entity].concat(parameters))
-            it = visitor.it
+            expression = visitor.parseLambda(predicate, ...parameters)
 
+            if(LambdaExpression.instanceof(expression)) {
+                if(expression.parameters[0].type == ExpressionType.Identifier) {
+                    scopeName = (<IIdentifierExpression>expression.parameters[0]).name
+                }
+            }
+            
+            validate = (entity: TEntity) => predicate.apply({}, [entity].concat(parameters))
+            
             break
 
         default:
@@ -48,7 +54,7 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
             return (item) => ({ type: validate(item) == true ? 'yield' : 'continue', value: item })
         },
         get intersection() {
-            return visitIntersection(typeof predicate == 'string' ? 'odata' : 'javascript', it, expression)
+            return visitIntersection(typeof predicate == 'string' ? 'odata' : 'javascript', scopeName, expression)
         }
     }
 }
@@ -57,7 +63,7 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
     for(let expr of expression.intersection) {
         for(let leaf of visitLeaf(type, it, expr)) {
 
-            if(isLogicalExpression(leaf)) {
+            if(LogicalExpression.instanceof(leaf)) {
                 yield {
                     property: getPropertyName(leaf.left)?.name.join('.') ?? '',
                     operator: getOperator(leaf),
@@ -70,7 +76,7 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
 }
 
 function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' {
-    if(isLogicalExpression(expression)) {
+    if(LogicalExpression.instanceof(expression)) {
         switch(expression.operator) {
             case LogicalOperatorType.Equal:
                 return '=='
@@ -169,7 +175,7 @@ function getPropertyName(expression: IExpression): { name: string[], method?: IE
 
 
 function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<IExpression> {
-    if(isLogicalExpression(expression)) {
+    if(LogicalExpression.instanceof(expression)) {
         let left = visitLeaf(type, it, expression.left).next(),
             right = visitLeaf(type, it, expression.right).next()
 
@@ -213,7 +219,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
         else {
             switch(type) {
                 case 'odata':
-                    if(isMethodExpression(expression)) {
+                    if(MethodExpression.instanceof(expression)) {
                         switch(expression.name) {
                             case 'tolower':
                             case 'toupper':
@@ -273,12 +279,4 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
             }
         }
     }
-}
-
-function isLogicalExpression(expression: IExpression): expression is ILogicalExpression {
-    return expression.type == ExpressionType.Logical
-}
-
-function isMethodExpression(expression: IExpression): expression is IMethodExpression {
-    return expression.type == ExpressionType.Method
 }

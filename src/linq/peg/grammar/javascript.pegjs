@@ -45,7 +45,34 @@
 
 /* ---- Syntactic Grammar ----- */
 
-Start = Expression
+Start = ArrowExpression
+
+ArrowExpression
+	= args:Identifier __ ARROW __ expr:Expression
+    {
+    	return {
+        	type: 'LambdaExpression',
+          	arguments: [args],
+          	expression: expr
+        }
+    }
+    / LPAR __ RPAR __ ARROW __ expr:Expression
+    {
+    	return {
+        	type: 'LambdaExpression',
+          	arguments: [],
+          	expression: expr
+        }
+    }
+	/ LPAR args:(first:Identifier rest:((COMMA __) Identifier)* { return buildList(first, rest, 1); }) RPAR __ ARROW __ expr:ConditionalExpression
+    {
+    	return {
+        	type: 'LambdaExpression',
+          	arguments: args,
+          	expression: expr
+        }
+    }
+    / Expression
 
 Expression
     = ConditionalExpression
@@ -240,22 +267,22 @@ ParExpression
     { return expr; }
 
 QualifiedIdentifier
-    = !ReservedWord qual:(Identifier / Literal) LBRK __ expr:Expression RBRK __
-    { 
-      return { 
-    	type: 'ArrayExpression', 
-        object: qual, 
-        index: expr 
-      };
-    }
-    / !ReservedWord qual:Identifier args:Arguments
+    = !ReservedWord qual:Identifier args:Arguments
     { 
       return {
       	type: 'CallExpression', 
         object: qual,
         arguments: args
       };
-    } 
+    }    
+    / !ReservedWord qual:(Identifier / Literal) LBRK __ expr:Expression RBRK __
+    { 
+      return { 
+    	type: 'ArrayExpression',
+        object: qual,
+        index: expr
+      };
+    }
     / !ReservedWord first:(Identifier / StringLiteral / TemplateLiteral) rest:(DOT QualifiedIdentifier)*
     {
        return buildTree(first, rest, function(result, element) {
@@ -279,7 +306,7 @@ PrefixOp
     ) { return op[0].toLowerCase(); }
 
 Arguments
-    = LPAR __ args:(first:Expression rest:((COMMA __) Expression)* { return buildList(first, rest, 1); })? RPAR __
+    = LPAR __ args:(first:(ArrowExpression / Expression) rest:((COMMA __) (ArrowExpression / Expression))* { return buildList(first, rest, 1); })? RPAR __
     { return args || []; }
 
 VariableInitializer
@@ -437,6 +464,7 @@ ReservedWord
 
 /* ---- Separators, Operators ----- */
 
+ARROW	       		=   "=>"i
 ADD             =   "+"i
 AND             =   "&"i
 ANDAND          =   "&&"i

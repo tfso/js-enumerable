@@ -42,6 +42,10 @@ export class BinaryExpression extends Expression implements IBinaryExpression {
 
         return `${(this.left.type == ExpressionType.Binary) ? `(${this.left.toString()})` : this.left.toString()} ${operator()} ${(this.right.type == ExpressionType.Binary) ? `(${this.right.toString()})` : this.right.toString()}`
     }
+
+    public static instanceof(expression: IExpression): expression is IBinaryExpression {
+        return expression != null && expression.type == ExpressionType.Binary
+    }
 }
 
 export { IBinaryExpression, BinaryOperatorType }

@@ -22,6 +22,10 @@ export class LiteralExpression extends Expression implements ILiteralExpression 
                 return new String(this.value).toString()
         }
     }
+
+    public static instanceof(expression: IExpression): expression is ILiteralExpression {
+        return expression != null && expression.type == ExpressionType.Literal
+    }
 }
 
 export { ILiteralExpression }

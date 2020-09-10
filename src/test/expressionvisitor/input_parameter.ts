@@ -11,14 +11,20 @@ describe('When using ExpressionVisitor', () => {
         })
 
         it('it should handle a simple binary operator', () => {
-            expr = visitor.visitLambda((table) => 5 + 2)
+            expr = visitor.parseLambda(() => 5 + 2)
+       
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Binary, 'Expected a BinaryExpression')
         })
 
         it('it should handle a expression using input parameter', () => {
 
-            expr = visitor.visitLambda((table: any) => table.number == 5 + 2)
+            expr = visitor.parseLambda((table: any) => table.number == 5 + 2)
+
+            if(expr.type == Expr.ExpressionType.Lambda) 
+                expr = (<Expr.ILambdaExpression>expr).expression
 
             assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
             assert.ok((<Expr.ILogicalExpression>expr).operator == Expr.LogicalOperatorType.Equal, 'Expected a logical expression with operator equal')
