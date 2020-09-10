@@ -4,7 +4,6 @@ import { IIdentifierExpression, IdentifierExpression } from './expression/identi
 import { IMemberExpression, MemberExpression } from './expression/memberexpression'
 import { IMethodExpression, MethodExpression } from './expression/methodexpression'
 
-import { LambdaExpression } from './expression/lambdaexpression'
 import { ReducerVisitor } from './reducervisitor'
 
 export class JavascriptVisitor extends ReducerVisitor {
@@ -154,7 +153,7 @@ export class JavascriptVisitor extends ReducerVisitor {
             result: IExpression
 
         if(typeof expression == 'function')
-            expression = reducer.visitLambda(expression)
+            expression = reducer.parseLambda(expression)
 
         result = reducer.evaluate(expression, it)
 

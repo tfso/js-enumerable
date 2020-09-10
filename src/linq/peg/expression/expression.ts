@@ -14,6 +14,7 @@ import { IArrayExpression } from '../interface/iarrayexpression'
 import { IIndexExpression } from '../interface/iindexexpression'
 import { ITemplateLiteralExpression } from '../interface/itemplateliteralexpression'
 import { IObjectExpression } from '../interface/iobjectexpression'
+import { ILambdaExpression } from '../interface/ilambdaexpression'
 
 import { IExpressionVisitor } from '../interface/iexpressionvisitor'
 
@@ -39,6 +40,9 @@ export abstract class Expression implements IExpression {
         visitor.stack.push(this)
 
         switch(this.type) {
+            case ExpressionType.Lambda:
+                expression = visitor.visitLambda(<ILambdaExpression><Record<string, any>>this); break
+                
             case ExpressionType.Literal:
                 expression = visitor.visitLiteral(<ILiteralExpression><Record<string, any>>this); break
 
@@ -122,6 +126,9 @@ function * visit(expression: IExpression): Iterable<IterableIterator<IExpression
             yield visitLeaf(expression)
         }
     }
+    else if(isLambdaExpression(expression)) {
+        yield* visit(expression.expression)
+    }
     else {
         yield visitLeaf(expression)
     }
@@ -149,6 +156,10 @@ function * visitLeaf(expression: IExpression): IterableIterator<IExpression> {
 
 function isLogicalExpression(expression: IExpression): expression is ILogicalExpression {
     return expression.type == ExpressionType.Logical
+}
+
+function isLambdaExpression(expression: IExpression): expression is ILambdaExpression {
+    return expression.type == ExpressionType.Lambda
 }
 
 export { IExpression, ExpressionType }

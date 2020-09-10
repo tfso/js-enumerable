@@ -13,6 +13,7 @@ import { IArrayExpression } from './iarrayexpression'
 import { IIndexExpression } from './iindexexpression'
 import { ITemplateLiteralExpression } from './itemplateliteralexpression'
 import { IObjectExpression } from './iobjectexpression'
+import { ILambdaExpression } from './ilambdaexpression'
 
 export interface IExpressionStack {
     length(): number    
@@ -25,6 +26,7 @@ export interface IExpressionVisitor {
     readonly stack: IExpressionStack
 
     visit(expression: IExpression): IExpression
+    visitLambda(expression: ILambdaExpression): IExpression
     visitLiteral(expression: ILiteralExpression): IExpression 
     visitArray(expression: IArrayExpression): IExpression 
     visitTemplateLiteral(expression: ITemplateLiteralExpression): IExpression 

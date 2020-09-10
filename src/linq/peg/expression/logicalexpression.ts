@@ -66,6 +66,10 @@ export class LogicalExpression extends Expression implements ILogicalExpression 
 
         return (this.operator == LogicalOperatorType.And) ? `(${left} ${operator()} ${right})` : `${left} ${operator()} ${right}`
     }
+
+    public static instanceof(expression: IExpression): expression is ILogicalExpression {
+        return expression != null && expression.type == ExpressionType.Logical
+    }
 }
 
 export { ILogicalExpression, LogicalOperatorType }

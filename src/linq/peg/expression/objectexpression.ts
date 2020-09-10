@@ -33,6 +33,10 @@ export class ObjectExpression extends Expression implements IObjectExpression {
                 .join(', ')
         }}`
     }
+
+    public static instanceof(expression: IExpression): expression is IObjectExpression {
+        return expression != null && expression.type == ExpressionType.Object
+    }
 }
 
 export { IObjectExpression, IObjectProperty }

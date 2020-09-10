@@ -13,6 +13,10 @@ export class MemberExpression extends Expression implements IMemberExpression {
     public toString() {
         return `${this.object.toString()}.${this.property.toString()}` 
     }
+
+    public static instanceof(expression: IExpression): expression is IMemberExpression {
+        return expression != null && expression.type == ExpressionType.Member
+    }
 }
 
 export { IMemberExpression }

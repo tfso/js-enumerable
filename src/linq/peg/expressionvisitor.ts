@@ -17,9 +17,7 @@ import { IConditionalExpression, ConditionalExpression } from './expression/cond
 import { IArrayExpression, ArrayExpression } from './expression/arrayexpression'
 import { ITemplateLiteralExpression, TemplateLiteralExpression } from './expression/templateliteralexpression'
 import { IObjectExpression, ObjectExpression, IObjectProperty } from './expression/objectexpression'
-
-import { LambdaExpression } from './expression/lambdaexpression'
-
+import { ILambdaExpression, LambdaExpression } from './expression/lambdaexpression'
 
 export class ExpressionStack implements IExpressionStack {
     private items: Array<IExpression>;
@@ -58,8 +56,8 @@ export class ExpressionStack implements IExpressionStack {
 }
 
 export class ExpressionVisitor implements IExpressionVisitor {
-    protected _lambdaExpression: LambdaExpression;
-    private _expressionStack: ExpressionStack;
+    protected _rawExpression: { expression: string, parameters: Array<string>, fn: ((...args: Array<any>) => any) }
+    private _expressionStack: ExpressionStack
 
     constructor() {
         this._expressionStack = new ExpressionStack()
@@ -69,7 +67,7 @@ export class ExpressionVisitor implements IExpressionVisitor {
         return this._expressionStack
     }
 
-    public visitOData(filter: string): IExpression {
+    public parseOData(filter: string): IExpression {
         let ast = ODataParser.parse(filter)
         try {
             if(ast) {
@@ -83,30 +81,64 @@ export class ExpressionVisitor implements IExpressionVisitor {
         return null
     }
 
-    public visitLambdaExpression(expression: string): IExpression {
-        if(expression) {
-            let ast = JavascriptParser.parse(expression)
-            try {
-                if(ast) {
-                    return this.visit(this.transform(ast))
+    public parseLambda(lambda: string): IExpression
+    public parseLambda(lambda: (it: any, ...param: Array<any>) => any): IExpression
+    public parseLambda(): IExpression {
+        let lambda: string
+
+        switch(typeof arguments[0]) {
+            case 'string':
+                lambda = arguments[0]
+                break
+
+            case 'function':
+                let regexs = [
+                    /^\(?\s*([^)]*?)\s*\)?\s*(?:=>)+\s*(.*)$/i, //  arrow function; (item) => 5 + 1
+                    /^(?:function\s*)?\(\s*([^)]*?)\s*\)\s*(?:=>)?\s*\{\s*.*?(?:return)\s*(.*?)\;?\s*\}\s*$/i // () => { return 5 + 1 } or function() { return 5 + 1 }
+                ]
+
+                let raw = arguments[0].toString(),
+                    parameters: Array<string>,
+                    expression: string
+    
+                for(let regex of regexs) {
+                    let match: RegExpMatchArray
+        
+                    if((match = raw.match(regex)) !== null) {
+                        parameters = match[1].split(',').map((el) => el.trim())
+                        expression = match[2].replace(/_this/gi, 'this')
+        
+                        break
+                    }
                 }
+
+                lambda = `(${parameters.join(', ')}) => ${expression}`
+
+                break
+        }
+
+        let ast = JavascriptParser.parse(lambda)
+        try {
+            if(ast) {
+                return this.visit(this.transform(ast))
             }
-            catch(ex) {
-                throw new Error(ex.message)
-            }
+        }
+        catch(ex) {
+            throw new Error(ex.message)
         }
 
         return null
     }
 
-    public visitLambda(predicate: (it: any, ...param: Array<any>) => any): IExpression {
-        let expression = (this._lambdaExpression = new LambdaExpression(predicate)).expression
-
-        return this.visitLambdaExpression(expression)
-    }
-
     public visit(expression: IExpression): IExpression {
         return expression.accept(this)
+    }
+
+    public visitLambda(expression: ILambdaExpression): IExpression {
+        expression.parameters = expression.parameters.map((element) => element.accept(this))
+        expression.expression = expression.expression.accept(this)
+
+        return expression
     }
 
     public visitLiteral(expression: ILiteralExpression): IExpression {
@@ -207,6 +239,9 @@ export class ExpressionVisitor implements IExpressionVisitor {
         let child: IExpression
 
         switch(expression.type) {
+            case 'LambdaExpression':
+                return new LambdaExpression(Array.isArray(expression.arguments) ? expression.arguments.map((arg) => this.transform(arg)) : [], this.transform(expression.expression))
+
             case 'Identifier':
                 return new IdentifierExpression(expression.name)
 
@@ -407,6 +442,7 @@ export class ExpressionVisitor implements IExpressionVisitor {
 //export { IArrayExpression, IBinaryExpression, ICompoundExpression, IConditionalExpression, IIdentifierExpression, ILiteralExpression, ILogicalExpression, IMemberExpression, IMethodExpression, IUnaryExpression }
 
 export { IExpression, Expression, ExpressionType } from './expression/expression'
+export { ILambdaExpression, LambdaExpression } from './expression/lambdaexpression'
 export { ILiteralExpression, LiteralExpression } from './expression/literalexpression'
 export { ICompoundExpression } from './expression/compoundexpression'
 export { IIdentifierExpression, IdentifierExpression } from './expression/identifierexpression'

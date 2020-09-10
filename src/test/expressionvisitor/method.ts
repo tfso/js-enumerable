@@ -13,7 +13,7 @@ describe('When using ExpressionVisitor', () => {
         describe('OData expression', () => {
 
             it('should return a method expression', () => {
-                expr = visitor.visitOData('tolower(Country) eq \'NO\'')
+                expr = visitor.parseOData('tolower(Country) eq \'NO\'')
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
 
@@ -23,8 +23,19 @@ describe('When using ExpressionVisitor', () => {
                 assert.ok((<Expr.IMethodExpression>((<Expr.LogicalExpression>expr).left)).parameters[0].type == Expr.ExpressionType.Identifier, 'Expected a identifier as first argument')
             })
 
+            it('should return a method expression when having lambda expression as argument', () => {
+                expr = visitor.parseOData('Countries/any(a: a/Country eq \'NO\')')
+
+                assert.ok(expr.type == Expr.ExpressionType.Method, 'Expected a MethodExpression')
+                assert.ok((<Expr.IMethodExpression>expr).name == 'any', 'Expected method name \'any\'')
+                assert.ok((<Expr.IMethodExpression>expr).caller.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
+                assert.ok((<Expr.IIdentifierExpression>(<Expr.IMethodExpression>expr).caller).name == 'Countries', 'Expected name \'Countries\' of identifier as caller')
+                assert.ok((<Expr.IMethodExpression>expr).parameters.length == 1, 'Expected one argument')
+                assert.ok((<Expr.IMethodExpression>expr).parameters[0].type == Expr.ExpressionType.Lambda, 'Expected a lambda expression as first argument')
+            })
+
             it('should return a method expression for nested methods', () => {
-                expr = visitor.visitOData('concat(FCode, tolower(FText)) eq \'2TEST\'')
+                expr = visitor.parseOData('concat(FCode, tolower(FText)) eq \'2TEST\'')
 
                 assert.ok(expr.type == Expr.ExpressionType.Logical, 'Expected a LogicalExpression')
 
@@ -43,7 +54,10 @@ describe('When using ExpressionVisitor', () => {
 
         describe('Lambda expression', () => {
             it('should return a method expression', () => {
-                expr = visitor.visitLambda((str: string) => str.indexOf('a'))
+                expr = visitor.parseLambda((str: string) => str.indexOf('a'))
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Method, 'Expected a MethodExpression')
                 assert.ok((<Expr.IMethodExpression>expr).name == 'indexOf', 'Expected method name \'indexOf\'')
@@ -51,8 +65,25 @@ describe('When using ExpressionVisitor', () => {
                 assert.ok((<Expr.IMethodExpression>expr).caller.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
             })
 
+            it('should return a method expression when having lambda expression as argument', () => {
+                expr = visitor.parseLambda((ar: Array<any>) => ar.every(a => true))
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
+
+                assert.ok(expr.type == Expr.ExpressionType.Method, 'Expected a MethodExpression')
+                assert.ok((<Expr.IMethodExpression>expr).name == 'every', 'Expected method name \'indexOf\'')
+                assert.ok((<Expr.IMethodExpression>expr).caller.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
+                assert.ok((<Expr.IIdentifierExpression>(<Expr.IMethodExpression>expr).caller).name == 'ar', 'Expected name \'ar\' of identifier as caller')
+                assert.ok((<Expr.IMethodExpression>expr).parameters.length == 1, 'Expected one argument')
+                assert.ok((<Expr.IMethodExpression>expr).parameters[0].type == Expr.ExpressionType.Lambda, 'Expected a lambda expression as first argument')
+            })
+
             it('should return a method expression for nested calls', () => {
-                expr = visitor.visitLambda((str: string) => str.indexOf('a').toString())
+                expr = visitor.parseLambda((str: string) => str.indexOf('a').toString())
+                                
+                if(expr.type == Expr.ExpressionType.Lambda) 
+                    expr = (<Expr.ILambdaExpression>expr).expression
 
                 assert.ok(expr.type == Expr.ExpressionType.Method, 'Expected a MethodExpression')
                 assert.ok((<Expr.IMethodExpression>expr).name == 'toString', 'Expected method name \'toString\'')

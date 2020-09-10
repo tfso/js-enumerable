@@ -52,6 +52,16 @@
 
 Start = Expression
 
+LambdaExpression
+	= args:Identifier __ COLON __ expr:LogicalOrExpression
+    {
+    	return {
+			  type: 'LambdaExpression',
+        arguments: [args],
+        expression: expr
+      }
+    }
+
 Expression
     = LogicalOrExpression
 
@@ -171,20 +181,20 @@ ParExpression
     { return expr; }
 
 QualifiedIdentifier
-    = !ReservedWord qual:Identifier LBRK __ expr:Expression RBRK __
-    { 
-      return { 
-    	type: 'ArrayExpression', 
-        array: qual, 
-        index: expr 
-      };
-    }
-    / !ReservedWord qual:Identifier args:Arguments
+    = !ReservedWord qual:Identifier args:Arguments
     { 
       return {
       	type: 'CallExpression', 
         object: qual,
         arguments: args
+      };
+    }
+    / !ReservedWord qual:Identifier LBRK __ expr:Expression RBRK __
+    { 
+      return { 
+    	type: 'ArrayExpression', 
+        array: qual, 
+        index: expr 
       };
     }
     / !ReservedWord first:Identifier list:(DOT i:QualifiedIdentifier { return i; })?
@@ -211,7 +221,7 @@ PrefixOp
     }
 
 Arguments
-    = LPAR __ args:(first:Expression rest:((COMMA __) Expression)* { return buildList(first, rest, 1); })? RPAR __
+    = LPAR __ args:(first:(LambdaExpression / Expression) rest:((COMMA __) (LambdaExpression / Expression))* { return buildList(first, rest, 1); })? RPAR __
     { return args || []; }
 
 VariableInitializer
