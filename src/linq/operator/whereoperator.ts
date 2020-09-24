@@ -175,6 +175,9 @@ function getPropertyName(expression: IExpression): { name: string[], method?: IE
 
 
 function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<IExpression> {
+    if(expression === null)
+        return null
+
     if(LogicalExpression.instanceof(expression)) {
         let left = visitLeaf(type, it, expression.left).next(),
             right = visitLeaf(type, it, expression.right).next()
@@ -221,10 +224,29 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                 case 'odata':
                     if(MethodExpression.instanceof(expression)) {
                         switch(expression.name) {
-                            case 'tolower':
-                            case 'toupper':
-                                yield expression.parameters[0]
+                            case 'tolower': {
+                                let parameter = visitLeaf(type, it, expression.parameters[0]).next()
+
+                                if(LiteralExpression.instanceof(parameter.value)) {
+                                    yield new LiteralExpression(String(parameter.value).toLowerCase())
+                                }
+                                else {
+                                    yield parameter.value
+                                }
                                 break
+                            }
+
+                            case 'toupper': {
+                                let parameter = visitLeaf(type, it, expression.parameters[0]).next()
+
+                                if(LiteralExpression.instanceof(parameter.value)) {
+                                    yield new LiteralExpression(String(parameter.value).toLowerCase())
+                                }
+                                else {
+                                    yield parameter.value
+                                }
+                                break
+                            }
 
                             case 'contains': // bool contains(string p0, string p1)
                             case 'substringof': {  // bool substringof(string po, string p1)
@@ -234,8 +256,9 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                                 if(right.value?.type == ExpressionType.Literal) {
                                     yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`[[*]]${(<ILiteralExpression>right.value).value}[[*]]`))
                                 }
-
-                                yield expression
+                                else {
+                                    yield expression
+                                }
                                 break
                             }
 
@@ -245,9 +268,11 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
 
                                 if(right.value?.type == ExpressionType.Literal) {
                                     yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`[[*]]${(<ILiteralExpression>right.value).value}`))
+                                } 
+                                else {
+                                    yield expression
                                 }
 
-                                yield expression
                                 break
                             }
                             case 'startswith': { // bool startswith(string p0, string p1)
@@ -257,13 +282,16 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                                 if(right.value?.type == ExpressionType.Literal) {
                                     yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`${(<ILiteralExpression>right.value).value}[[*]]`))
                                 }
-
-                                yield expression
+                                else {
+                                    yield expression
+                                }
+                                
                                 break
                             }
-
                             default: 
-                                yield expression
+                                let caller = visitLeaf(type, it, expression.caller).next()
+
+                                yield new MethodExpression(expression.name, expression.parameters, caller.value)
                                 break
                         }
                     }
@@ -274,7 +302,14 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                     break
 
                 case 'javascript':
-                    yield expression
+                    if(MethodExpression.instanceof(expression)) {
+                        let caller = visitLeaf(type, it, expression.caller).next()
+
+                        yield new MethodExpression(expression.name, expression.parameters, caller.value)
+                    }
+                    else {
+                        yield expression
+                    }
                     break
             }
         }
