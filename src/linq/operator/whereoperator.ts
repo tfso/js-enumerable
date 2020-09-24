@@ -1,4 +1,4 @@
-import { LinqOperator, LinqType } from './types'
+import { LinqOperator, LinqType, WhereExpression } from './types'
 import { Entity } from '../types'
 
 import { ReducerVisitor } from './../peg/reducervisitor'
@@ -59,10 +59,9 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
     }
 }
 
-function * visitIntersection(type: 'odata' | 'javascript', it: string, expression: IExpression) {
+function * visitIntersection(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<WhereExpression> {
     for(let expr of expression.intersection) {
         for(let leaf of visitLeaf(type, it, expr)) {
-
             if(LogicalExpression.instanceof(leaf)) {
                 yield {
                     property: getPropertyName(leaf.left)?.name.join('.') ?? '',
@@ -71,108 +70,47 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
                     wildcard: getWildcard(leaf.right)
                 }
             }
+
+            if(MethodExpression.instanceof(leaf)) {
+                switch(type) {
+                    case 'odata':
+                        switch(leaf.name) {
+                            case 'any':
+                            case 'all':
+                                let lambda = leaf.parameters[0]
+
+                                if(LambdaExpression.instanceof(lambda)) 
+                                    yield {
+                                        property: getPropertyName(leaf.caller)?.name.join('.'),
+                                        operator: leaf.name,
+                                        intersection: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
+                                    }
+
+                                break
+                        }
+                        break
+
+                    case 'javascript':
+                        switch(leaf.name) {
+                            case 'some':
+                            case 'every':
+                                let lambda = leaf.parameters[0]
+
+                                if(LambdaExpression.instanceof(lambda)) 
+                                    yield {
+                                        property: getPropertyName(leaf.caller)?.name.join('.'),
+                                        operator: leaf.name == 'some' ? 'any' : 'all',
+                                        intersection: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
+                                    }
+
+                                break
+                        }
+                        break
+                }
+            }
         }
     }
 }
-
-function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' {
-    if(LogicalExpression.instanceof(expression)) {
-        switch(expression.operator) {
-            case LogicalOperatorType.Equal:
-                return '=='
-
-            case LogicalOperatorType.NotEqual:
-                return '!='
-
-            case LogicalOperatorType.Greater:
-                return '>'
-
-            case LogicalOperatorType.GreaterOrEqual:
-                return '>='
-
-            case LogicalOperatorType.Lesser:
-                return '<'
-
-            case LogicalOperatorType.LesserOrEqual:
-                return '<='
-        }
-    }
-}
-
-function getPropertyValue(expression: IExpression): any {
-    switch(expression.type) {
-        case ExpressionType.Array:
-            return (<IArrayExpression>expression).elements.map(expr => getPropertyValue(expr))
-
-        case ExpressionType.Literal:
-            switch(typeof (<ILiteralExpression>expression).value) {
-                case 'string':
-                    return (<ILiteralExpression>expression).value.replace(/\[\[*\]\]/gi, '')
-
-                default:
-                    return (<ILiteralExpression>expression).value
-            }
-
-        case ExpressionType.Object:
-            return null
-    }
-}
-
-function getWildcard(expression: IExpression): 'none' | 'left' | 'right' | 'both' {
-    switch(expression.type) {
-        case ExpressionType.Literal:
-            let value = (<ILiteralExpression>expression).value
-
-            if(typeof value == 'string') {
-                let match = /^(\[\[*\]\])?.*(\[\[*\]\])?$/.exec(value)
-                if(match) {
-                    if(match[1] && match[2])
-                        return 'both'
-                    else if(match[1])
-                        return 'left'
-                    else if(match[2])
-                        return 'right'                   
-                }
-            }
-            // fallthrough
-
-        default:
-            return 'none'
-    }
-}
-
-function getPropertyName(expression: IExpression): { name: string[], method?: IExpression } {
-    
-    switch(expression.type) {
-        case ExpressionType.Identifier:
-            return {
-                name: [(<IIdentifierExpression>expression).name]
-            }
-        
-        case ExpressionType.Member:
-            let member = <IMemberExpression>expression
-
-            if(member.object.type == ExpressionType.Identifier) {
-                let identifier = <IIdentifierExpression>member.object,
-                    child = getPropertyName(member.property)
-                
-                return {
-                    name: [identifier.name, ...child.name]
-                }
-            }
-
-        case ExpressionType.Method:
-            let method = <IMethodExpression>expression
-
-            return {
-                name: method.caller ? [...getPropertyName(method.caller).name] : [],
-                method: expression
-            }
-
-            break
-    }
-}
-
 
 function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<IExpression> {
     if(expression === null)
@@ -288,6 +226,8 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                                 
                                 break
                             }
+                            case 'any':
+                            case 'all':
                             default: 
                                 let caller = visitLeaf(type, it, expression.caller).next()
 
@@ -313,5 +253,103 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                     break
             }
         }
+    }
+}
+
+function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' {
+    if(LogicalExpression.instanceof(expression)) {
+        switch(expression.operator) {
+            case LogicalOperatorType.Equal:
+                return '=='
+
+            case LogicalOperatorType.NotEqual:
+                return '!='
+
+            case LogicalOperatorType.Greater:
+                return '>'
+
+            case LogicalOperatorType.GreaterOrEqual:
+                return '>='
+
+            case LogicalOperatorType.Lesser:
+                return '<'
+
+            case LogicalOperatorType.LesserOrEqual:
+                return '<='
+        }
+    }
+}
+
+function getPropertyValue(expression: IExpression): any {
+    switch(expression.type) {
+        case ExpressionType.Array:
+            return (<IArrayExpression>expression).elements.map(expr => getPropertyValue(expr))
+
+        case ExpressionType.Literal:
+            switch(typeof (<ILiteralExpression>expression).value) {
+                case 'string':
+                    return (<ILiteralExpression>expression).value.replace(/\[\[*\]\]/gi, '')
+
+                default:
+                    return (<ILiteralExpression>expression).value
+            }
+
+        case ExpressionType.Object:
+            return null
+    }
+}
+
+function getWildcard(expression: IExpression): 'none' | 'left' | 'right' | 'both' {
+    switch(expression.type) {
+        case ExpressionType.Literal:
+            let value = (<ILiteralExpression>expression).value
+
+            if(typeof value == 'string') {
+                let match = /^(\[\[*\]\])?.*(\[\[*\]\])?$/.exec(value)
+                if(match) {
+                    if(match[1] && match[2])
+                        return 'both'
+                    else if(match[1])
+                        return 'left'
+                    else if(match[2])
+                        return 'right'                   
+                }
+            }
+            // fallthrough
+
+        default:
+            return 'none'
+    }
+}
+
+function getPropertyName(expression: IExpression): { name: string[], method?: IExpression } {
+    
+    switch(expression.type) {
+        case ExpressionType.Identifier:
+            return {
+                name: [(<IIdentifierExpression>expression).name]
+            }
+        
+        case ExpressionType.Member:
+            let member = <IMemberExpression>expression
+
+            if(member.object.type == ExpressionType.Identifier) {
+                let identifier = <IIdentifierExpression>member.object,
+                    child = getPropertyName(member.property)
+                
+                return {
+                    name: [identifier.name, ...child.name]
+                }
+            }
+
+        case ExpressionType.Method:
+            let method = <IMethodExpression>expression
+
+            return {
+                name: method.caller ? [...getPropertyName(method.caller).name] : [],
+                method: expression
+            }
+
+            break
     }
 }
