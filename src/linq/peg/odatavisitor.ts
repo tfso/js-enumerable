@@ -199,14 +199,14 @@ export class ODataVisitor extends ReducerVisitor {
         return new MethodExpression(expression.name, parameters, caller)
     }
     
-    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string, scopeName?: string): IExpression 
-    public evaluate(expression: IExpression, scope: Record<string, any> | number | string = null, scopeName: string = null): IExpression {
+    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string): IExpression 
+    public evaluate(expression: IExpression, scope: Record<string, any> | number | string = null): IExpression {
         if(expression == null)
             return null
 
         switch(expression.type) {
             case ExpressionType.Method:
-                let caller = this.evaluate((<IMethodExpression>expression).caller, scope, scopeName)
+                let caller = this.evaluate((<IMethodExpression>expression).caller, scope)
 
                 if(LiteralExpression.instanceof(caller) && Array.isArray(caller.value)) {
                     switch((<IMethodExpression>expression).name) {
@@ -215,11 +215,10 @@ export class ODataVisitor extends ReducerVisitor {
                                 reducer = new ODataVisitor(),
                                 isTrue = (expr: IExpression) => {
                                     return LiteralExpression.instanceof(expr) && expr.value === true
-                                }
+                                },
+                                scopeName = (<IIdentifierExpression>lambda.parameters[0]).name
 
-                            scopeName = (<IIdentifierExpression>lambda.parameters[0]).name
-
-                            if(caller.value.some(e => isTrue(reducer.evaluate(lambda.expression, e, scopeName)))) {
+                            if(caller.value.some(e => isTrue(reducer.evaluate(lambda.expression, isRecord(e) ? Object.assign({}, { [scopeName]: e }) : e)))) {
                                 return new LiteralExpression(true)
                             }
                             
@@ -231,11 +230,10 @@ export class ODataVisitor extends ReducerVisitor {
                                 reducer = new ODataVisitor(),
                                 isTrue = (expr: IExpression) => {
                                     return LiteralExpression.instanceof(expr) && expr.value === true
-                                }
-                        
-                            scopeName = (<IIdentifierExpression>lambda.parameters[0]).name
+                                },
+                                scopeName = (<IIdentifierExpression>lambda.parameters[0]).name
                                 
-                            if(caller.value.every(e => isTrue(reducer.evaluate(lambda.expression, e, scopeName)))) {
+                            if(caller.value.every(e => isTrue(reducer.evaluate(lambda.expression, isRecord(e) ? Object.assign({}, { [scopeName]: e }) : e)))) {
                                 return new LiteralExpression(true)
                             }
                             
@@ -244,24 +242,28 @@ export class ODataVisitor extends ReducerVisitor {
                     }
                 }
 
-                return this.visit(new MethodExpression((<IMethodExpression>expression).name, (<IMethodExpression>expression).parameters.map(p => this.evaluate(p, scope, scopeName)), caller))
+                return this.visit(new MethodExpression((<IMethodExpression>expression).name, (<IMethodExpression>expression).parameters.map(p => this.evaluate(p, scope)), caller))
 
             default:
-                return super.evaluate(expression, scope, scopeName)
+                return super.evaluate(expression, scope)
         }
     }
 
-    public static evaluate(expression: string, scope?: Record<string, any> | number | Date | string, scopeName?: string): any
-    public static evaluate(expression: IExpression, scope?: Record<string, any> | number | Date | string, scopeName?: string): any
-    public static evaluate(expression: IExpression | string, scope: Record<string, any> | number | Date | string = null, scopeName: string = null): any {
+    public static evaluate(expression: string, scope?: Record<string, any> | number | Date | string): any
+    public static evaluate(expression: IExpression, scope?: Record<string, any> | number | Date | string): any
+    public static evaluate(expression: IExpression | string, scope: Record<string, any> | number | Date | string = null): any {
         let reducer = new ODataVisitor(),
             result: IExpression
 
         if(typeof expression == 'string')
             expression = reducer.parseOData(expression)
 
-        result = reducer.evaluate(expression, scope, scopeName)
+        result = reducer.evaluate(expression, scope)
 
         return result.type == ExpressionType.Literal ? (<ILiteralExpression>result).value : undefined
     }
+}
+
+function isRecord(value: Record<string, any> | any): value is Record<string, any> {
+    return value !== null && typeof value == 'object' && value.getTime === undefined
 }
