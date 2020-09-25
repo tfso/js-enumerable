@@ -253,6 +253,36 @@ export class ExpressionVisitor implements IExpressionVisitor {
 
                         return child
 
+                    case 'MemberExpression':
+                        let current = expression,
+                            stack = []
+
+                        do {
+                            stack.push(this.transform(current.object))
+
+                            if(current.property.type != 'MemberExpression')
+                                break
+
+                            current = current.property
+                        } 
+                        while (true)
+
+                        if(current.property.type == 'CallExpression') {
+                            // we want stacked memberexpressions as caller for handyness
+                            child = this.transform(current.property);
+
+                            (<MethodExpression>child).caller = stack.reduceRight((caller, member) => {
+                                if(!caller)
+                                    return member
+                                else 
+                                    return new MemberExpression(member, caller)
+                            }, null)
+
+                            return child
+                        }
+
+                        // fall through
+
                     default:
                         return new MemberExpression(this.transform(expression.object), this.transform(expression.property))
                 }

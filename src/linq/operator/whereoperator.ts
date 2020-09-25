@@ -1,4 +1,4 @@
-import { LinqOperator, LinqType } from './types'
+import { LinqOperator, LinqType, WhereExpression } from './types'
 import { Entity } from '../types'
 
 import { ReducerVisitor } from './../peg/reducervisitor'
@@ -59,17 +59,244 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
     }
 }
 
-function * visitIntersection(type: 'odata' | 'javascript', it: string, expression: IExpression) {
+function * visitIntersection(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<WhereExpression> {
     for(let expr of expression.intersection) {
         for(let leaf of visitLeaf(type, it, expr)) {
-
             if(LogicalExpression.instanceof(leaf)) {
-                yield {
-                    property: getPropertyName(leaf.left)?.name.join('.') ?? '',
-                    operator: getOperator(leaf),
-                    value: getPropertyValue(leaf.right),
-                    wildcard: getWildcard(leaf.right)
+                let value = getPropertyValue(leaf.right),
+                    property = getPropertyName(leaf.left)?.name.join('.') ?? '',
+                    operator = getOperator(leaf)
+                    
+                switch(typeof value) {
+                    case 'string':
+                        yield {
+                            type: 'string', property, operator, value, wildcard: getWildcard(leaf.right)
+                        }
+                        break
+
+                    case 'bigint':
+                    case 'number':
+                        yield {
+                            type: 'number', property, operator, value
+                        }
+                        break
+
+                    case 'boolean':
+                        yield {
+                            type: 'boolean', property, operator, value
+                        }
+                        break
+                    
+                    case 'object':
+                        if(value == null) {
+                            yield {
+                                type: 'null', property, operator, value
+                            }
+                        }
+                        else if(typeof value.getTime == 'function' && value.getTime() >= 0) {
+                            yield {
+                                type: 'date', property, operator, value
+                            }
+                        }
+                        else if(Array.isArray(value) == true) {
+                            yield {
+                                type: 'array', property, operator, value
+                            }
+                        }
+
+                        break
+
+                    case 'undefined':
+                        yield {
+                            type: 'null', property, operator, value
+                        }
+
+                    default:
+                        
                 }
+            }
+            else if(MethodExpression.instanceof(leaf)) {
+                switch(type) {
+                    case 'odata':
+                        switch(leaf.name) {
+                            case 'any':
+                            case 'all':
+                                let lambda = leaf.parameters[0]
+
+                                if(LambdaExpression.instanceof(lambda)) 
+                                    yield {
+                                        type: 'expression',
+                                        property: getPropertyName(leaf.caller)?.name.join('.'),
+                                        operator: leaf.name,
+                                        value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
+                                    }
+
+                                break
+                        }
+                        break
+
+                    case 'javascript':
+                        switch(leaf.name) {
+                            case 'some':
+                            case 'every':
+                                let lambda = leaf.parameters[0]
+
+                                if(LambdaExpression.instanceof(lambda)) 
+                                    yield {
+                                        type: 'expression',
+                                        property: getPropertyName(leaf.caller)?.name.join('.'),
+                                        operator: leaf.name == 'some' ? 'any' : 'all',
+                                        value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
+                                    }
+
+                                break
+                        }
+                        break
+                }
+            }
+        }
+    }
+}
+
+function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<IExpression> {
+    if(expression === null)
+        return null
+
+    if(LogicalExpression.instanceof(expression)) {
+        let left = visitLeaf(type, it, expression.left).next(),
+            right = visitLeaf(type, it, expression.right).next()
+
+        if((left.value?.type == ExpressionType.Identifier || left.value?.type == ExpressionType.Member || left.value?.type == ExpressionType.Method) == false) {
+            switch(expression.operator) {
+                case LogicalOperatorType.Or:
+                case LogicalOperatorType.And:
+                case LogicalOperatorType.Equal:
+                case LogicalOperatorType.NotEqual:
+                    yield new LogicalExpression(expression.operator, right.value, left.value)
+                    break
+
+                case LogicalOperatorType.Greater:  // 5 > 2 == 2 < 5
+                    yield new LogicalExpression(LogicalOperatorType.Lesser, right.value, left.value)
+                    break
+
+                case LogicalOperatorType.GreaterOrEqual: // 5 >= 2 == 2 <= 5
+                    yield new LogicalExpression(LogicalOperatorType.LesserOrEqual, right.value, left.value)
+                    break
+
+                case LogicalOperatorType.Lesser: // 5 < 2 == 2 > 5
+                    yield new LogicalExpression(LogicalOperatorType.Greater, right.value, left.value)
+                    break
+
+                case LogicalOperatorType.LesserOrEqual: // 5 <= 2 == 2 >= 5
+                    yield new LogicalExpression(LogicalOperatorType.GreaterOrEqual, right.value, left.value)
+                    break
+            }
+        } 
+        else {
+            yield new LogicalExpression(expression.operator, left.value, right.value)
+        }
+    }
+    else {
+        if(expression.type == ExpressionType.Member) {
+            if((<IMemberExpression>expression).object.type == ExpressionType.Identifier && (<IIdentifierExpression>(<IMemberExpression>expression).object).name == it)
+                yield (<IMemberExpression>expression).property
+            else
+                yield expression
+        }
+        else {
+            switch(type) {
+                case 'odata':
+                    if(MethodExpression.instanceof(expression)) {
+                        switch(expression.name) {
+                            case 'tolower': {
+                                let parameter = visitLeaf(type, it, expression.parameters[0]).next()
+
+                                if(LiteralExpression.instanceof(parameter.value)) {
+                                    yield new LiteralExpression(String(parameter.value).toLowerCase())
+                                }
+                                else {
+                                    yield parameter.value
+                                }
+                                break
+                            }
+
+                            case 'toupper': {
+                                let parameter = visitLeaf(type, it, expression.parameters[0]).next()
+
+                                if(LiteralExpression.instanceof(parameter.value)) {
+                                    yield new LiteralExpression(String(parameter.value).toLowerCase())
+                                }
+                                else {
+                                    yield parameter.value
+                                }
+                                break
+                            }
+
+                            case 'contains': // bool contains(string p0, string p1)
+                            case 'substringof': {  // bool substringof(string po, string p1)
+                                let left = visitLeaf(type, it, expression.parameters[0]).next(),
+                                    right = visitLeaf(type, it, expression.parameters[1]).next()
+
+                                if(right.value?.type == ExpressionType.Literal) {
+                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`[[*]]${(<ILiteralExpression>right.value).value}[[*]]`))
+                                }
+                                else {
+                                    yield expression
+                                }
+                                break
+                            }
+
+                            case 'endswith': { // bool endswith(string p0, string p1)
+                                let left = visitLeaf(type, it, expression.parameters[0]).next(),
+                                    right = visitLeaf(type, it, expression.parameters[1]).next()
+
+                                if(right.value?.type == ExpressionType.Literal) {
+                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`[[*]]${(<ILiteralExpression>right.value).value}`))
+                                } 
+                                else {
+                                    yield expression
+                                }
+
+                                break
+                            }
+                            case 'startswith': { // bool startswith(string p0, string p1)
+                                let left = visitLeaf(type, it, expression.parameters[0]).next(),
+                                    right = visitLeaf(type, it, expression.parameters[1]).next()
+
+                                if(right.value?.type == ExpressionType.Literal) {
+                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`${(<ILiteralExpression>right.value).value}[[*]]`))
+                                }
+                                else {
+                                    yield expression
+                                }
+                                
+                                break
+                            }
+                            case 'any':
+                            case 'all':
+                            default: 
+                                let caller = visitLeaf(type, it, expression.caller).next()
+
+                                yield new MethodExpression(expression.name, expression.parameters, caller.value)
+                                break
+                        }
+                    }
+                    else {
+                        yield expression
+                    }
+
+                    break
+
+                case 'javascript':
+                    if(MethodExpression.instanceof(expression)) {
+                        let caller = visitLeaf(type, it, expression.caller).next()
+
+                        yield new MethodExpression(expression.name, expression.parameters, caller.value)
+                    }
+                    else {
+                        yield expression
+                    }
+                    break
             }
         }
     }
@@ -97,6 +324,8 @@ function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | 
                 return '<='
         }
     }
+
+    return null
 }
 
 function getPropertyValue(expression: IExpression): any {
@@ -170,113 +399,5 @@ function getPropertyName(expression: IExpression): { name: string[], method?: IE
             }
 
             break
-    }
-}
-
-
-function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<IExpression> {
-    if(LogicalExpression.instanceof(expression)) {
-        let left = visitLeaf(type, it, expression.left).next(),
-            right = visitLeaf(type, it, expression.right).next()
-
-        if((left.value?.type == ExpressionType.Identifier || left.value?.type == ExpressionType.Member || left.value?.type == ExpressionType.Method) == false) {
-            switch(expression.operator) {
-                case LogicalOperatorType.Or:
-                case LogicalOperatorType.And:
-                case LogicalOperatorType.Equal:
-                case LogicalOperatorType.NotEqual:
-                    yield new LogicalExpression(expression.operator, right.value, left.value)
-                    break
-
-                case LogicalOperatorType.Greater:  // 5 > 2 == 2 < 5
-                    yield new LogicalExpression(LogicalOperatorType.Lesser, right.value, left.value)
-                    break
-
-                case LogicalOperatorType.GreaterOrEqual: // 5 >= 2 == 2 <= 5
-                    yield new LogicalExpression(LogicalOperatorType.LesserOrEqual, right.value, left.value)
-                    break
-
-                case LogicalOperatorType.Lesser: // 5 < 2 == 2 > 5
-                    yield new LogicalExpression(LogicalOperatorType.Greater, right.value, left.value)
-                    break
-
-                case LogicalOperatorType.LesserOrEqual: // 5 <= 2 == 2 >= 5
-                    yield new LogicalExpression(LogicalOperatorType.GreaterOrEqual, right.value, left.value)
-                    break
-            }
-        } 
-        else {
-            yield new LogicalExpression(expression.operator, left.value, right.value)
-        }
-    }
-    else {
-        if(expression.type == ExpressionType.Member) {
-            if((<IMemberExpression>expression).object.type == ExpressionType.Identifier && (<IIdentifierExpression>(<IMemberExpression>expression).object).name == it)
-                yield (<IMemberExpression>expression).property
-            else
-                yield expression
-        }
-        else {
-            switch(type) {
-                case 'odata':
-                    if(MethodExpression.instanceof(expression)) {
-                        switch(expression.name) {
-                            case 'tolower':
-                            case 'toupper':
-                                yield expression.parameters[0]
-                                break
-
-                            case 'contains': // bool contains(string p0, string p1)
-                            case 'substringof': {  // bool substringof(string po, string p1)
-                                let left = visitLeaf(type, it, expression.parameters[0]).next(),
-                                    right = visitLeaf(type, it, expression.parameters[1]).next()
-
-                                if(right.value?.type == ExpressionType.Literal) {
-                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`[[*]]${(<ILiteralExpression>right.value).value}[[*]]`))
-                                }
-
-                                yield expression
-                                break
-                            }
-
-                            case 'endswith': { // bool endswith(string p0, string p1)
-                                let left = visitLeaf(type, it, expression.parameters[0]).next(),
-                                    right = visitLeaf(type, it, expression.parameters[1]).next()
-
-                                if(right.value?.type == ExpressionType.Literal) {
-                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`[[*]]${(<ILiteralExpression>right.value).value}`))
-                                }
-
-                                yield expression
-                                break
-                            }
-                            case 'startswith': { // bool startswith(string p0, string p1)
-                                let left = visitLeaf(type, it, expression.parameters[0]).next(),
-                                    right = visitLeaf(type, it, expression.parameters[1]).next()
-
-                                if(right.value?.type == ExpressionType.Literal) {
-                                    yield new LogicalExpression(LogicalOperatorType.Equal, left.value, new LiteralExpression(`${(<ILiteralExpression>right.value).value}[[*]]`))
-                                }
-
-                                yield expression
-                                break
-                            }
-
-                            default: 
-                                yield expression
-                                break
-                        }
-                    }
-                    else {
-                        yield expression
-                    }
-
-                    break
-
-                case 'javascript':
-                    yield expression
-                    break
-            }
-        }
     }
 }

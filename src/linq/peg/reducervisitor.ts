@@ -48,7 +48,7 @@ export class ReducerVisitor extends ExpressionVisitor {
                 }
             }
 
-            let reduced = this.evaluate((<ILambdaExpression>expr).expression, scope)
+            let reduced = this.evaluate((<ILambdaExpression>expr).expression, {}, scope)
 
             expr = reduced.type == ExpressionType.Literal ? reduced : new LambdaExpression((<ILambdaExpression>expr).parameters, reduced)
         }
@@ -171,25 +171,32 @@ export class ReducerVisitor extends ExpressionVisitor {
         return new LogicalExpression(expression.operator, left, right)
     }
 
-    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string, scopeName?: string): IExpression 
-    public evaluate(expression: IExpression, scope: Record<string, any> | number | string = null, scopeName: string = null): IExpression {
+    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string, global?: Record<string, any>): IExpression 
+    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string, global?: Record<string, any>): IExpression 
+    public evaluate(expression: IExpression, scope: Record<string, any> | number | string = null, global: Record<string, any> = {}): IExpression {
         if(expression == null)
             return null
 
-        let value: any = null
-            
-
-        
+        let value: any = null       
 
         switch(expression.type) {
             case ExpressionType.Lambda:
-                let parameter = (<ILambdaExpression>expression).parameters[0] ?? null
+                let parameter = (<ILambdaExpression>expression).parameters[0] ?? null,
+                    scopeName: string = null
 
                 if(parameter?.type == ExpressionType.Identifier) {
                     scopeName = (<IIdentifierExpression>parameter).name
                 }
 
-                let result = this.evaluate((<ILambdaExpression>expression).expression, scope, scopeName)
+                let newScope = {}, newGlobal = {}
+                
+                if(isRecord(global) && scopeName in global)
+                    Object.assign(newScope, global[scopeName])
+
+                if(isRecord(scope)) 
+                    Object.assign(newScope, { [scopeName]: scope })           
+
+                let result = this.evaluate((<ILambdaExpression>expression).expression, newScope, Object.assign({}, global, newScope))
                 
                 return result.type == ExpressionType.Literal ? result : new LambdaExpression((<ILambdaExpression>expression).parameters, result)
 
@@ -197,54 +204,54 @@ export class ReducerVisitor extends ExpressionVisitor {
                 break
 
             case ExpressionType.Identifier: {
-                let identifier = (<IIdentifierExpression>expression)
+                let identifier = (<IIdentifierExpression>expression),
+                    currentScope = Object.assign({}, global ?? {}, scope ?? {})
 
-                if(scope != null) {
-                    // this object
-                    if(isRecord(scope) && identifier.name in scope && (value = scope[identifier.name]) !== undefined) {
-                        if(value == null)
-                            return new LiteralExpression(null)
+                
+                // this object
+                if(isRecord(currentScope) && identifier.name in currentScope && (value = currentScope[identifier.name]) !== undefined) {
+                    if(value == null)
+                        return new LiteralExpression(null)
 
-                        switch(typeof value) {
-                            case 'string':
-                            case 'number':
-                            case 'boolean':
-                                break
-                        
-                            case 'object':
-                                if(value.getTime && value.getTime() >= 0)
-                                    break
-
-                                if(Array.isArray(value) == true)
-                                    break // hmm, literal value as array?
-
-                                value = null
+                    switch(typeof value) {
+                        case 'string':
+                        case 'number':
+                        case 'boolean':
+                            break
+                    
+                        case 'object':
+                            if(value.getTime && value.getTime() >= 0)
                                 break
 
-                            default:
-                                value = null
-                                break
-                        }
+                            if(Array.isArray(value) == true)
+                                break // hmm, literal value as array?
 
-                        return new LiteralExpression(value)
+                            value = null
+                            break
+
+                        default:
+                            value = null
+                            break
                     }
-                    else if(['number', 'string'].includes(typeof scope)) {
-                        return new LiteralExpression(scope)
-                    }
+
+                    return new LiteralExpression(value)
                 }
-
+                else if(['number', 'string'].includes(typeof scope)) {
+                    return new LiteralExpression(scope)
+                }
+                
                 break
             }
 
             case ExpressionType.Array:
-                return new ArrayExpression((<IArrayExpression>expression).elements.map(v => this.evaluate(v, scope, scopeName)))
+                return new ArrayExpression((<IArrayExpression>expression).elements.map(v => this.evaluate(v, scope, global)))
 
             case ExpressionType.Object:
-                return new ObjectExpression((<IObjectExpression>expression).properties.map(el => <IObjectProperty>{ key: this.evaluate(el.key, scope, scopeName), value: this.evaluate(el.value, scope, scopeName) }))
+                return new ObjectExpression((<IObjectExpression>expression).properties.map(el => <IObjectProperty>{ key: this.evaluate(el.key, scope, global), value: this.evaluate(el.value, scope, global) }))
 
             case ExpressionType.Index: {
-                let object = this.evaluate((<IIndexExpression>expression).object, scope, scopeName),
-                    index = this.evaluate((<IIndexExpression>expression).index, scope, scopeName)
+                let object = this.evaluate((<IIndexExpression>expression).object, scope, global),
+                    index = this.evaluate((<IIndexExpression>expression).index, scope, global)
 
                 if(index.type == ExpressionType.Literal)
                     switch(object.type) {
@@ -264,7 +271,7 @@ export class ReducerVisitor extends ExpressionVisitor {
 
                                 return false
                             })
-                            return property ? this.evaluate(property.value, scopeName) : new LiteralExpression(null)
+                            return property ? this.evaluate(property.value, scope, global) : new LiteralExpression(null)
 
                         case ExpressionType.Array:
                             return Array.from((<IArrayExpression>object).elements)[(<ILiteralExpression>index).value]
@@ -287,50 +294,71 @@ export class ReducerVisitor extends ExpressionVisitor {
             }
 
             case ExpressionType.Member: {
-                let object = (<IMemberExpression>expression).object,
-                    property = (<IMemberExpression>expression).property
+                let currentGlobal = Object.assign({}, global),
+                    currentScope = Object.assign({}, global, scope),
+                    current = <IMemberExpression>expression                    
 
-                if(scope != null) {
-                    if(object.type == ExpressionType.Identifier) {
-                        if((<IIdentifierExpression>object).name == 'this' || (<IIdentifierExpression>object).name == scopeName) {
-                            value = this.evaluate(property, scope, scopeName)
-                            if(property.equal(value) == false)
-                                return value
-                        }
-                        else {
-                            let descriptor = Object.getOwnPropertyDescriptor(scope, (<IIdentifierExpression>object).name)
-                            if(descriptor && typeof descriptor.value == 'object') {
-                                value = this.evaluate(property, descriptor.value, scopeName)
-                                if(property.equal(value) == false)
-                                    return value
+                do {
+                    if(IdentifierExpression.instanceof(current.object)) {
+                        if(current.object.name != 'this') {
+                            let descriptor = Object.getOwnPropertyDescriptor(currentScope, current.object.name)
+
+                            if(descriptor && typeof descriptor.value == 'object')
+                                currentScope = Object.assign({}, descriptor.value)
+                            else {
+                                currentScope = {}
+                                break
                             }
                         }
                     }
+                    else {
+                        currentScope = {}
+                        break
+                    }
+
+                    if(!MemberExpression.instanceof(current.property))
+                        break
+
+                    current = current.property
+                }
+                while (true)
+
+                if(current.property.type == ExpressionType.Identifier) {
+                    currentGlobal = {}
+                } 
+
+                value = this.evaluate(current.property, currentScope, currentGlobal)
+
+                if(value.type == ExpressionType.Literal) {
+                    return value
+                }
+                else if(current.property.equal(value) == false) {
+                    return new MemberExpression(current.object, value)
                 }
 
                 break
             }
 
             case ExpressionType.Conditional:
-                return this.visit(new ConditionalExpression(this.evaluate((<IConditionalExpression>expression).condition, scope, scopeName), this.evaluate((<IConditionalExpression>expression).success, scope, scopeName), this.evaluate((<IConditionalExpression>expression).failure, scope, scopeName)))
+                return this.visit(new ConditionalExpression(this.evaluate((<IConditionalExpression>expression).condition, scope, global), this.evaluate((<IConditionalExpression>expression).success, scope, global), this.evaluate((<IConditionalExpression>expression).failure, scope, global)))
 
             case ExpressionType.Logical:
-                return this.visit(new LogicalExpression((<ILogicalExpression>expression).operator, this.evaluate((<ILogicalExpression>expression).left, scope, scopeName), this.evaluate((<ILogicalExpression>expression).right, scope, scopeName)))
+                return this.visit(new LogicalExpression((<ILogicalExpression>expression).operator, this.evaluate((<ILogicalExpression>expression).left, scope, global), this.evaluate((<ILogicalExpression>expression).right, scope, global)))
 
             case ExpressionType.Binary:
-                return this.visit(new BinaryExpression((<IBinaryExpression>expression).operator, this.evaluate((<IBinaryExpression>expression).left, scope, scopeName), this.evaluate((<IBinaryExpression>expression).right, scope, scopeName)))
+                return this.visit(new BinaryExpression((<IBinaryExpression>expression).operator, this.evaluate((<IBinaryExpression>expression).left, scope, global), this.evaluate((<IBinaryExpression>expression).right, scope, global)))
 
             case ExpressionType.Method:
-                return this.visit(new MethodExpression((<IMethodExpression>expression).name, (<IMethodExpression>expression).parameters.map(p => this.evaluate(p, scope, scopeName)), this.evaluate((<IMethodExpression>expression).caller, scope, scopeName)))
+                return this.visit(new MethodExpression((<IMethodExpression>expression).name, (<IMethodExpression>expression).parameters.map(p => this.evaluate(p, scope, global)), this.evaluate((<IMethodExpression>expression).caller, scope, global)))
             
             default:
                 let o = <IExpression>Object.create(Object.getPrototypeOf(expression), Object.getOwnPropertyNames(expression).reduce<Record<string, any>>((prev, cur) => {
                     let prop = Object.getOwnPropertyDescriptor(expression, cur)
 
                     if(prop.value instanceof Expression)
-                        prop.value = this.evaluate(prop.value, scope, scopeName)
+                        prop.value = this.evaluate(prop.value, scope, global)
                     else if(prop.value instanceof Array)
-                        prop.value = prop.value.map(a => a instanceof Expression ? this.evaluate(a, scope, scopeName) : a)
+                        prop.value = prop.value.map(a => a instanceof Expression ? this.evaluate(a, scope, global) : a)
 
                     prev[cur] = prop
 
@@ -343,9 +371,9 @@ export class ReducerVisitor extends ExpressionVisitor {
         return expression
     }
 
-    public static evaluate(expression: IExpression, scope: Record<string, any> = null, scopeName: string = null): any {
+    public static evaluate(expression: IExpression, scope: Record<string, any> = null): any {
         let reducer = new ReducerVisitor(),
-            result = reducer.evaluate(expression, scope, scopeName)
+            result = reducer.evaluate(expression, scope)
 
         return result.type == ExpressionType.Literal ? (<ILiteralExpression>result).value : undefined
     }

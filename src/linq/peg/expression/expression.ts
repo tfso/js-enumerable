@@ -152,6 +152,9 @@ function * visitLeaf(expression: IExpression): IterableIterator<IExpression> {
                 break
         }
     }
+    else {
+        yield expression
+    }
 }
 
 function isLogicalExpression(expression: IExpression): expression is ILogicalExpression {

@@ -54,17 +54,17 @@ describe('When using repository', () => {
                 for(let expression of operator.intersection) {
                     switch(expression.property) {
                         case 'year':
-                            chai.expect(expression.value).to.equal(2015)
+                            chai.expect('value' in expression ? expression.value : null).to.equal(2015)
                             chai.expect(expression.operator).to.equal('==')
                             break
 
                         case 'location':
-                            chai.expect(expression.value).to.equal('NO')
+                            chai.expect('value' in expression ? expression.value : null).to.equal('NO')
                             chai.expect(expression.operator).to.equal('==')
                             break
 
                         case 'id':
-                            chai.expect(expression.value).to.equal(5)
+                            chai.expect('value' in expression ? expression.value : null).to.equal(5)
                             chai.expect(expression.operator).to.equal('>')
                             break
 
@@ -92,7 +92,7 @@ describe('When using repository', () => {
 
                     switch(expression.property) {
                         case 'year':
-                            chai.expect(expression.value).to.equal(2015)
+                            chai.expect('value' in expression ? expression.value : null).to.equal(2015)
                             chai.expect(expression.operator).to.equal('==')
                             break
 
@@ -120,7 +120,7 @@ describe('When using repository', () => {
 
                     switch(expression.property) {
                         case 'year':
-                            chai.expect(expression.value).to.equal(2015)
+                            chai.expect('value' in expression ? expression.value : null).to.equal(2015)
                             chai.expect(expression.operator).to.equal('>=')
                             break
 
@@ -159,17 +159,17 @@ describe('When using repository', () => {
                 for(let expression of list) {
                     switch(expression.property) {
                         case 'year':
-                            chai.expect(expression.value).to.equal(2015)
+                            chai.expect('value' in expression ? expression.value : null).to.equal(2015)
                             chai.expect(expression.operator).to.equal('==')
                             break
 
                         case 'location':
-                            chai.expect(expression.value).to.equal('NO')
+                            chai.expect('value' in expression ? expression.value : null).to.equal('NO')
                             chai.expect(expression.operator).to.equal('==')
                             break
 
                         case 'id':
-                            chai.expect(expression.value).to.equal(5)
+                            chai.expect('value' in expression ? expression.value : null).to.equal(5)
                             chai.expect(expression.operator).to.equal('>')
                             break
 
