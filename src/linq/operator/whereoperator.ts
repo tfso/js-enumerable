@@ -63,15 +63,59 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
     for(let expr of expression.intersection) {
         for(let leaf of visitLeaf(type, it, expr)) {
             if(LogicalExpression.instanceof(leaf)) {
-                yield {
-                    property: getPropertyName(leaf.left)?.name.join('.') ?? '',
-                    operator: getOperator(leaf),
-                    value: getPropertyValue(leaf.right),
-                    wildcard: getWildcard(leaf.right)
+                let value = getPropertyValue(leaf.right),
+                    property = getPropertyName(leaf.left)?.name.join('.') ?? '',
+                    operator = getOperator(leaf)
+                    
+                switch(typeof value) {
+                    case 'string':
+                        yield {
+                            type: 'string', property, operator, value, wildcard: getWildcard(leaf.right)
+                        }
+                        break
+
+                    case 'bigint':
+                    case 'number':
+                        yield {
+                            type: 'number', property, operator, value
+                        }
+                        break
+
+                    case 'boolean':
+                        yield {
+                            type: 'boolean', property, operator, value
+                        }
+                        break
+                    
+                    case 'object':
+                        if(value == null) {
+                            yield {
+                                type: 'null', property, operator, value
+                            }
+                        }
+                        else if(typeof value.getTime == 'function' && value.getTime() >= 0) {
+                            yield {
+                                type: 'date', property, operator, value
+                            }
+                        }
+                        else if(Array.isArray(value) == true) {
+                            yield {
+                                type: 'array', property, operator, value
+                            }
+                        }
+
+                        break
+
+                    case 'undefined':
+                        yield {
+                            type: 'null', property, operator, value
+                        }
+
+                    default:
+                        
                 }
             }
-
-            if(MethodExpression.instanceof(leaf)) {
+            else if(MethodExpression.instanceof(leaf)) {
                 switch(type) {
                     case 'odata':
                         switch(leaf.name) {
@@ -81,9 +125,10 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
 
                                 if(LambdaExpression.instanceof(lambda)) 
                                     yield {
+                                        type: 'expression',
                                         property: getPropertyName(leaf.caller)?.name.join('.'),
                                         operator: leaf.name,
-                                        intersection: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
+                                        value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
                                     }
 
                                 break
@@ -98,9 +143,10 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
 
                                 if(LambdaExpression.instanceof(lambda)) 
                                     yield {
+                                        type: 'expression',
                                         property: getPropertyName(leaf.caller)?.name.join('.'),
                                         operator: leaf.name == 'some' ? 'any' : 'all',
-                                        intersection: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
+                                        value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
                                     }
 
                                 break
@@ -278,6 +324,8 @@ function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | 
                 return '<='
         }
     }
+
+    return null
 }
 
 function getPropertyValue(expression: IExpression): any {

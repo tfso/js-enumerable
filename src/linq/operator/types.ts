@@ -23,9 +23,13 @@ type LingIterator<T extends Entity> = {
 export type LinqOperator<T extends Entity = Entity> = 
     (LinqOperatorSkip | LinqOperatorTake | LinqOperatorSlice | LinqOperatorIncludes<T> | LinqOperatorWhere<T> | LinqOperatorOrderBy<T> | LinqOperatorSelect) & (LinqEvaluator<T> | LingIterator<T>)
 
-type BinaryExpression = { operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: any, wildcard: 'none' | 'left' | 'right' | 'both' }
-type AnyExpression = { operator: 'any', property: string, intersection: IterableIterator<WhereExpression> }
-type AllExpression = { operator: 'all', property: string, intersection: IterableIterator<WhereExpression> }
-    
-export type WhereExpression = BinaryExpression | AnyExpression | AllExpression
-    
+type NullExpression = { type: 'null', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: any }
+type StringExpression = { type: 'string', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: any, wildcard: 'none' | 'left' | 'right' | 'both' }
+type NumberExpression = { type: 'number', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: bigint | number }
+type RecordExpression = { type: 'record', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: Record<string, any> }
+type DateExpression = { type: 'date', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: Date }
+type BooleanExpression = { type: 'boolean', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: boolean }
+type ArrayExpression = { type: 'array', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: Array<any> }
+type InExpression = { type: 'expression', operator: 'any' | 'all', property: string, value: IterableIterator<WhereExpression> }
+
+export type WhereExpression = NullExpression | StringExpression | NumberExpression | RecordExpression | DateExpression | BooleanExpression | ArrayExpression | InExpression

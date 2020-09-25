@@ -186,7 +186,7 @@ describe('When using enumerable for record type', () => {
                     switch(expression.property) {
                         case 'details.revisions':
                             if(expression.operator == 'any') {
-                                for(let anyExpression of expression.intersection) {
+                                for(let anyExpression of expression.value) {
                                     chai.expect(anyExpression.property).to.equal('year')
                                     count++
                                 }
@@ -229,7 +229,7 @@ describe('When using enumerable for record type', () => {
                     switch(expression.property) {
                         case 'details.revisions':
                             if(expression.operator == 'any') {
-                                for(let anyExpression of expression.intersection) {
+                                for(let anyExpression of expression.value) {
                                     chai.expect(anyExpression.property).to.equal('year')
                                     count++
                                 }
