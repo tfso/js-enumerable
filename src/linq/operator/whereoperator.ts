@@ -336,7 +336,7 @@ function getPropertyValue(expression: IExpression): any {
         case ExpressionType.Literal:
             switch(typeof (<ILiteralExpression>expression).value) {
                 case 'string':
-                    return (<ILiteralExpression>expression).value.replace(/\[\[*\]\]/gi, '')
+                    return (<ILiteralExpression>expression).value.replace(/\[\[\*\]\]/gi, '')
 
                 default:
                     return (<ILiteralExpression>expression).value
@@ -353,7 +353,7 @@ function getWildcard(expression: IExpression): 'none' | 'left' | 'right' | 'both
             let value = (<ILiteralExpression>expression).value
 
             if(typeof value == 'string') {
-                let match = /^(\[\[*\]\])?.*(\[\[*\]\])?$/.exec(value)
+                let match = /^(\[\[\*\]\])?.*?(\[\[\*\]\])?$/.exec(value)
                 if(match) {
                     if(match[1] && match[2])
                         return 'both'

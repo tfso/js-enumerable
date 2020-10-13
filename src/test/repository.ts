@@ -184,6 +184,40 @@ describe('When using repository', () => {
 
             chai.expect(count).to.equal(3)
         })
+
+        it('should intersect expression properties using odata', () => {
+            let enumerable = new jsEnumerable.Enumerable(repository).where(`contains(tolower(location), 'ev') and year ge 2010`),
+                operator = enumerable.operators.pop(),
+                count = 0
+
+            chai.expect(operator.type).to.equal(LinqType.Where)
+        
+            if(operator.type == LinqType.Where) {
+                let list = operator.intersection
+                for(let expression of list) {
+                    switch(expression.property) {
+                        case 'year':
+                            chai.expect('value' in expression ? expression.value : null).to.equal(2010)
+                            chai.expect(expression.operator).to.equal('>=')
+                            break
+
+                        case 'location':
+                            chai.expect('value' in expression ? expression.value : null).to.equal('ev')
+                            chai.expect(expression.operator).to.equal('==')
+                            chai.expect(expression.type == 'string' ? expression.wildcard : 'none').to.equal('both')
+                            break
+
+                        default:
+                            chai.assert(false, `unexpected property "${expression.property}"`)
+                            break
+                    }
+
+                    count++
+                }
+            }
+
+            chai.expect(count).to.equal(2)
+        })
     })
 
     it('should be able to iterate', async () => {
