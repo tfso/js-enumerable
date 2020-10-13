@@ -10,11 +10,9 @@ export interface IRepository<TEntity extends Record<string, any>, TEntityId> ext
 
     read(id?: TEntityId): Promise<TEntity | null>
 
-    update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity>
-    update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<boolean>
-    update<T extends TEntity>(entity: Partial<T>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof T>): Promise<T>
-    update<T extends TEntity>(entity: Partial<T>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof T>): Promise<boolean>
-
+    update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity | boolean>
+    update<T extends TEntity>(entity: Partial<T>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof T>): Promise<T | boolean>
+    
     delete(id: TEntity | TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
 
     getIterable(meta?: Partial<{ continuationToken: string }>): AsyncIterable<TEntity>

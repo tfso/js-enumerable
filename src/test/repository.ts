@@ -1,5 +1,6 @@
 import { Enumerable, IEnumerable } from './../linq'
 import { LinqType } from '../linq/operator'
+import { IRepository } from './../index'
 
 /* eslint-disable-next-line */
 if(jsEnumerable == null) {
@@ -28,6 +29,8 @@ class CarRepository extends RepositoryMock<ICar, number> {
         yield * this.data
     }
 }
+
+let assignedRepo: IRepository<ICar, number> = new CarRepository()
 
 describe('When using repository', () => {
     const repository = new CarRepository(
