@@ -100,13 +100,15 @@ export class ExpressionVisitor implements IExpressionVisitor {
                 let raw = arguments[0].toString(),
                     parameters: Array<string>,
                     expression: string
-    
+
                 for(let regex of regexs) {
                     let match: RegExpMatchArray
         
                     if((match = raw.match(regex)) !== null) {
                         parameters = match[1].split(',').map((el) => el.trim())
-                        expression = match[2].replace(/_this/gi, 'this')
+                        expression = match[2]
+                            .replace(/_this/gi, 'this')
+                            .replace(/\(function\(([^)]+)\)\{return\s(.*?)\}\)/gi, '($1) => $2') // inner arrow functions in methods (for some/every) will probably be converted to a function by babel etc
         
                         break
                     }
