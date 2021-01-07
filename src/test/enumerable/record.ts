@@ -250,6 +250,39 @@ describe('When using enumerable for record type', () => {
 
             chai.expect(count).to.equal(4)
         })
+
+        it('should handle remap of key', async () => {
+            let map = (name: string) => name == 'details/revisions' ? 'revisions' : 'yey' ?? name
+
+            let enumerable = new jsEnumerable.Enumerable(asyncIterator())
+                .where('details/revisions/any(e: e/year le 1970)')
+                .remap(name => {
+                    switch(<any>name) {
+                        case 'details.revisions':
+                            return 'revisions'
+
+                        default:
+                            return name
+                    }
+                })
+
+            let count = 0
+            for(let operator of enumerable.operators) {
+                if(operator.type == LinqType.Where) {
+                    for(let expression of operator.intersection) {
+                        switch(expression.property) {
+                            case 'details.revisions':
+                                count--; break
+
+                            case 'revisions':
+                                count++; break
+                        }
+                    }
+                }
+            }
+
+            chai.expect(count).to.equal(1)
+        })
     })
 
     describe('as a synchronous iterable', () => {
@@ -411,6 +444,39 @@ describe('When using enumerable for record type', () => {
                 cars.push(car)
             
             chai.expect(cars.length).to.equal(1)
+        })
+
+        it('should handle remap of key', () => {
+            let map = (name: string) => name == 'details/revisions' ? 'revisions' : 'yey' ?? name
+
+            let enumerable = new jsEnumerable.Enumerable(iterator())
+                .where('details/revisions/any(e: e/year le 1970)')
+                .remap(name => {
+                    switch(<any>name) {
+                        case 'details.revisions':
+                            return 'revisions'
+
+                        default:
+                            return name
+                    }
+                })
+
+            let count = 0
+            for(let operator of enumerable.operators) {
+                if(operator.type == LinqType.Where) {
+                    for(let expression of operator.intersection) {
+                        switch(expression.property) {
+                            case 'details.revisions':
+                                count--; break
+
+                            case 'revisions':
+                                count++; break
+                        }
+                    }
+                }
+            }
+
+            chai.expect(count).to.equal(1)
         })
     })
 })

@@ -189,7 +189,7 @@ describe('When using repository', () => {
         })
 
         it('should intersect expression properties using odata', () => {
-            let enumerable = new jsEnumerable.Enumerable(repository).where(`contains(tolower(location), 'ev') and year ge 2010`),
+            let enumerable = new jsEnumerable.Enumerable(repository).where(`contains(tolower(location), 'ev') eq true and year ge 2010`),
                 operator = enumerable.operators.pop(),
                 count = 0
 

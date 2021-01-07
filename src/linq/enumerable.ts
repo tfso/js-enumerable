@@ -1,6 +1,8 @@
 import Base from './base'
-import { skipOperator, takeOperator, sliceOperator, includeOperator, orderByOperator, whereOperator, selectOperator } from './operator'
+import { skipOperator, takeOperator, sliceOperator, includeOperator, orderByOperator, whereOperator, selectOperator, LinqType } from './operator'
 import { Entity, EntityRecord } from './types'
+
+import { RemapVisitor } from './peg/remapvisitor'
 
 export class Enumerable<TEntity> extends Base<TEntity> {
     constructor(items?: Array<TEntity>)
@@ -113,6 +115,35 @@ export class Enumerable<TEntity> extends Base<TEntity> {
     public select<TRecord extends EntityRecord<TEntity>, TResult extends Partial<TRecord>>(list: string): Enumerable<TResult>
     public select(...args: any[]) {
         this.operators.push(<any>selectOperator(...args))
+
+        return this
+    }
+
+    /**
+     * A remapper of identifier names, members is seperated with dot.
+     * @param remapper Function that returns the new name of the identifier
+     */
+    public remap<TRecord extends EntityRecord<TEntity>, M extends (name: K) => K | string, K extends keyof TRecord, T extends string>(remapper: M): Enumerable<Record<ReturnType<M>, any>>
+    /**
+     * A remapper of values that corresponds to a identifier name
+     * @param remapper Function that returns the new value
+     */
+    public remap(remapper: (name: string, value: any) => any): this
+    public remap(remapper: (...args: any) => any): any {
+        let visitor = remapper.length == 2 ? new RemapVisitor(null, remapper) : new RemapVisitor(remapper, null)
+    
+        for(let item of this.operators) {
+            switch(item.type) {
+                case LinqType.Where:
+                    item.expression = visitor.visit(item.expression)
+                    break
+
+                case LinqType.OrderBy:
+                    if(remapper.length == 1)
+                        item.property = remapper(item.property)
+                    break
+            }
+        }
 
         return this
     }
