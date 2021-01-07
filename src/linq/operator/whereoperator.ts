@@ -59,6 +59,9 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
     }
 }
 
+/***
+ * Returns normalized user-friendly where-expression
+ */
 function * visitIntersection(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<WhereExpression> {
     for(let expr of expression.intersection) {
         for(let leaf of visitLeaf(type, it, expr)) {
@@ -75,6 +78,11 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
                         break
 
                     case 'bigint':
+                        yield {
+                            type: 'bigint', property, operator, value
+                        }
+                        break
+
                     case 'number':
                         yield {
                             type: 'number', property, operator, value
@@ -158,6 +166,9 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
     }
 }
 
+/***
+ * Analyzing expression and returns normalized expressions, where usable expressions is LogicalExpression (unknown at left) or MethodExpression
+ */
 function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<IExpression> {
     if(expression === null)
         return null
@@ -166,7 +177,59 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
         let left = visitLeaf(type, it, expression.left).next(),
             right = visitLeaf(type, it, expression.right).next()
 
-        if((left.value?.type == ExpressionType.Identifier || left.value?.type == ExpressionType.Member || left.value?.type == ExpressionType.Method) == false) {
+        if(LogicalExpression.instanceof(left.value) && LiteralExpression.instanceof(right.value)) {
+            switch(right.value.value) {
+                case true:
+                    switch(expression.operator) {
+                        case LogicalOperatorType.Equal:
+                        case LogicalOperatorType.GreaterOrEqual:
+                        case LogicalOperatorType.LesserOrEqual:
+                            let visited = visitLeaf(type, it, left.value).next()
+
+                            if(LogicalExpression.instanceof(visited.value))
+                                yield visited.value
+
+                            break
+                    }
+                    break
+
+                case false:
+                    if(expression.operator == LogicalOperatorType.NotEqual) {
+                        let visited = visitLeaf(type, it, left.value).next()
+
+                        if(LogicalExpression.instanceof(visited.value))
+                            yield visited.value
+                    }
+                    break
+            }
+        }
+        else if(LogicalExpression.instanceof(right.value) && LiteralExpression.instanceof(left.value)) {
+            switch(left.value.value) {
+                case true:
+                    switch(expression.operator) {
+                        case LogicalOperatorType.Equal:
+                        case LogicalOperatorType.GreaterOrEqual:
+                        case LogicalOperatorType.LesserOrEqual:
+                            let visited = visitLeaf(type, it, right.value).next()
+
+                            if(LogicalExpression.instanceof(visited.value))
+                                yield visited.value
+                            
+                            break
+                    }
+                    break
+
+                case false:
+                    if(expression.operator == LogicalOperatorType.NotEqual) {
+                        let visited = visitLeaf(type, it, right.value).next()
+
+                        if(LogicalExpression.instanceof(visited.value))
+                            yield visited.value
+                    }
+                    break
+            }
+        }
+        else if((left.value?.type == ExpressionType.Identifier || left.value?.type == ExpressionType.Member || left.value?.type == ExpressionType.Method) == false) {
             switch(expression.operator) {
                 case LogicalOperatorType.Or:
                 case LogicalOperatorType.And:
