@@ -17,7 +17,7 @@
   "author": "Nicolai Gjærum",
   "license": "MIT",
   "dependencies": {
-    "core-js": "^3.6.5"
+    "core-js": "^3"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
