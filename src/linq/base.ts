@@ -133,6 +133,9 @@ export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
                     continue
 
                 yield state.value ?? result.value
+
+                if(state.type == 'yield-last')
+                    break
             }
         }
 
@@ -184,6 +187,9 @@ export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
                     continue
 
                 yield state.value ?? result.value
+
+                if(state.type == 'yield-last')
+                    break
             }
         }
 

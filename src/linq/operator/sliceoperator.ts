@@ -19,6 +19,9 @@ export function sliceOperator<T extends Entity>(begin: string | number, end?: nu
                 if(end && idx > end)
                     return { type: 'break' }
 
+                if(end && idx == end)
+                    return { type: 'yield-last' }
+
                 return { type: 'yield' }
             }
         }

@@ -12,7 +12,7 @@ type LinqOperatorOrderBy<T extends Entity = Entity> = { type: LinqType.OrderBy, 
 type LinqOperatorSelect = { type: LinqType.Select }
 
 type LinqEvaluator<T extends Entity> = {
-    evaluate: () => { (item: T): { type: 'continue' | 'break' | 'yield', value?: T } }
+    evaluate: () => { (item: T): { type: 'continue' | 'break' | 'yield' | 'yield-last', value?: T } }
 }
 
 type LingIterator<T extends Entity> = {

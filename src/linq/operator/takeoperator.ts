@@ -8,7 +8,7 @@ export function takeOperator<T extends Entity>(count: number): LinqOperator<T> {
         evaluate: () => {
             let idx = 0
 
-            return (item) => ({ type: idx++ == count ? 'break' : 'yield' })
+            return (item) => ({ type: idx++ == count ? 'break' : (idx == count ? 'yield-last' : 'yield') })
         } 
     }
 }
