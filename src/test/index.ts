@@ -20,3 +20,5 @@ import './expressionvisitor/unary'
 import './javascriptvisitor'
 import './odatavisitor'
 import './reducervisitor'
+
+import './expression'
