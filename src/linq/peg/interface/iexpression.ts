@@ -9,6 +9,8 @@ export interface IExpression {
 
     readonly intersection: IExpression[]
     readonly union: IExpression[]
+    readonly difference: IExpression[]
+    readonly sets: IExpression[][]
 
     toString(): string
 }

@@ -105,6 +105,16 @@ export abstract class Expression implements IExpression {
         return intersection ?? []
     }
 
+    public get difference(): IExpression[] {
+        let difference: Array<IExpression>
+
+        difference = Array.from(visit(this)).reduce((acc, curr, idx) => {
+            return acc
+        }, difference)
+
+        return []
+    }
+
     public get union(): IExpression[] {
         let union: Array<IExpression>
 
@@ -113,6 +123,18 @@ export abstract class Expression implements IExpression {
         }, union)
 
         return union ?? []
+    }
+
+    public get sets(): IExpression[][] {
+        let sets: Array<IExpression[]> = []
+
+        sets = Array.from(visit(this)).reduce((acc, curr, idx) => {
+            acc.push(Array.from(curr))
+
+            return acc
+        }, sets)
+
+        return sets
     }
 }
 
