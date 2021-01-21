@@ -55,6 +55,21 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
         },
         get intersection() {
             return visitIntersection(typeof predicate == 'string' ? 'odata' : 'javascript', scopeName, expression)
+        },
+        get sets() {
+            function * visitChild(expressions: IExpression[]): IterableIterator<WhereExpression> {
+                for(let expr of expressions) {
+                    yield * visitExpression(typeof predicate == 'string' ? 'odata' : 'javascript', scopeName, expr)
+                }
+            }
+
+            function * visit() {
+                for(let set of expression.sets) {
+                    yield visitChild(set)
+                }
+            }
+
+            return visit()
         }
     }
 }
@@ -64,103 +79,107 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
  */
 function * visitIntersection(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<WhereExpression> {
     for(let expr of expression.intersection) {
-        for(let leaf of visitLeaf(type, it, expr)) {
-            if(LogicalExpression.instanceof(leaf)) {
-                let value = getPropertyValue(leaf.right),
-                    property = getPropertyName(leaf.left)?.name.join('.') ?? '',
-                    operator = getOperator(leaf)
-                    
-                switch(typeof value) {
-                    case 'string':
-                        yield {
-                            type: 'string', property, operator, value, wildcard: getWildcard(leaf.right)
-                        }
-                        break
+        yield * visitExpression(type, it, expr)
+    }
+}
 
-                    case 'bigint':
-                        yield {
-                            type: 'bigint', property, operator, value
-                        }
-                        break
+function * visitExpression(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<WhereExpression> {
+    for(let leaf of visitLeaf(type, it, expression)) {
+        if(LogicalExpression.instanceof(leaf)) {
+            let value = getPropertyValue(leaf.right),
+                property = getPropertyName(leaf.left)?.name.join('.') ?? '',
+                operator = getOperator(leaf)
+                
+            switch(typeof value) {
+                case 'string':
+                    yield {
+                        type: 'string', property, operator, value, wildcard: getWildcard(leaf.right)
+                    }
+                    break
 
-                    case 'number':
-                        yield {
-                            type: 'number', property, operator, value
-                        }
-                        break
+                case 'bigint':
+                    yield {
+                        type: 'bigint', property, operator, value
+                    }
+                    break
 
-                    case 'boolean':
-                        yield {
-                            type: 'boolean', property, operator, value
-                        }
-                        break
-                    
-                    case 'object':
-                        if(value == null) {
-                            yield {
-                                type: 'null', property, operator, value
-                            }
-                        }
-                        else if(typeof value.getTime == 'function' && value.getTime() >= 0) {
-                            yield {
-                                type: 'date', property, operator, value
-                            }
-                        }
-                        else if(Array.isArray(value) == true) {
-                            yield {
-                                type: 'array', property, operator, value
-                            }
-                        }
+                case 'number':
+                    yield {
+                        type: 'number', property, operator, value
+                    }
+                    break
 
-                        break
-
-                    case 'undefined':
+                case 'boolean':
+                    yield {
+                        type: 'boolean', property, operator, value
+                    }
+                    break
+                
+                case 'object':
+                    if(value == null) {
                         yield {
                             type: 'null', property, operator, value
                         }
+                    }
+                    else if(typeof value.getTime == 'function' && value.getTime() >= 0) {
+                        yield {
+                            type: 'date', property, operator, value
+                        }
+                    }
+                    else if(Array.isArray(value) == true) {
+                        yield {
+                            type: 'array', property, operator, value
+                        }
+                    }
 
-                    default:
-                        
-                }
+                    break
+
+                case 'undefined':
+                    yield {
+                        type: 'null', property, operator, value
+                    }
+
+                default:
+                    
             }
-            else if(MethodExpression.instanceof(leaf)) {
-                switch(type) {
-                    case 'odata':
-                        switch(leaf.name) {
-                            case 'any':
-                            case 'all':
-                                let lambda = leaf.parameters[0]
+        }
+        else if(MethodExpression.instanceof(leaf)) {
+            switch(type) {
+                case 'odata':
+                    switch(leaf.name) {
+                        case 'any':
+                        case 'all':
+                            let lambda = leaf.parameters[0]
 
-                                if(LambdaExpression.instanceof(lambda)) 
-                                    yield {
-                                        type: 'expression',
-                                        property: getPropertyName(leaf.caller)?.name.join('.'),
-                                        operator: leaf.name,
-                                        value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
-                                    }
+                            if(LambdaExpression.instanceof(lambda)) 
+                                yield {
+                                    type: 'expression',
+                                    property: getPropertyName(leaf.caller)?.name.join('.'),
+                                    operator: leaf.name,
+                                    value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
+                                }
 
-                                break
-                        }
-                        break
+                            break
+                    }
+                    break
 
-                    case 'javascript':
-                        switch(leaf.name) {
-                            case 'some':
-                            case 'every':
-                                let lambda = leaf.parameters[0]
+                case 'javascript':
+                    switch(leaf.name) {
+                        case 'some':
+                        case 'every':
+                            let lambda = leaf.parameters[0]
 
-                                if(LambdaExpression.instanceof(lambda)) 
-                                    yield {
-                                        type: 'expression',
-                                        property: getPropertyName(leaf.caller)?.name.join('.'),
-                                        operator: leaf.name == 'some' ? 'any' : 'all',
-                                        value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
-                                    }
+                            if(LambdaExpression.instanceof(lambda)) 
+                                yield {
+                                    type: 'expression',
+                                    property: getPropertyName(leaf.caller)?.name.join('.'),
+                                    operator: leaf.name == 'some' ? 'any' : 'all',
+                                    value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
+                                }
 
-                                break
-                        }
-                        break
-                }
+                            break
+                    }
+                    break
             }
         }
     }
