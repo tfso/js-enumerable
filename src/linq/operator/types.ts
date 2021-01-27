@@ -7,7 +7,7 @@ type LinqOperatorSkip = { type: LinqType.Skip, count: number }
 type LinqOperatorTake = { type: LinqType.Take, count: number }
 type LinqOperatorSlice = { type: LinqType.Slice, begin: number | string, end?: number }
 type LinqOperatorIncludes<T extends Entity = Entity> = { type: LinqType.Includes, entity: Partial<T> }
-type LinqOperatorWhere<T extends Entity = Entity> = { type: LinqType.Where, expression: IExpression, readonly intersection: IterableIterator<WhereExpression>, readonly sets: IterableIterator<IterableIterator<WhereExpression>> }
+type LinqOperatorWhere<T extends Entity = Entity> = { type: LinqType.Where, expression: IExpression, readonly intersection: IterableIterator<WhereExpression>, readonly sets: IterableIterator<IterableIterator<WhereExpression>>, toString(language?: 'javascript' | 'odata'): string }
 type LinqOperatorOrderBy<T extends Entity = Entity> = { type: LinqType.OrderBy, property: undefined | keyof T | string }
 type LinqOperatorSelect = { type: LinqType.Select }
 
