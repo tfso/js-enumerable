@@ -17,6 +17,8 @@
     IObjectExpression, ObjectExpression, IObjectProperty 
 } from './expressionvisitor'
 
+import { parse } from './parser'
+
 export class ReducerVisitor extends ExpressionVisitor {
     private _parentExpressionStack: Array<IExpression> = [];
 
@@ -24,35 +26,53 @@ export class ReducerVisitor extends ExpressionVisitor {
         super()
     }
 
-    public parseLambda(lambda: string, ...params: Array<any>): IExpression
-    public parseLambda(lambda: (it: Record<string, any>, ...params: Array<any>) => any, ...params: Array<any>): IExpression
-    public parseLambda(lambda: any, ...params: Array<any>): IExpression {
-        let expr = super.parseLambda(arguments[0]),
-            scope: Record<string, any> = {}, 
-            scopeName: string = null
+    public parse(type: 'odata', predicate: string): ReturnType<typeof parse>
+    public parse(type: 'javascript', lambda: (it: any, ...param: Array<any>) => boolean, ...params: Array<any>): ReturnType<typeof parse>
+    public parse(type: 'javascript', predicate: string, ...params: Array<any>): ReturnType<typeof parse>
+    public parse(type: 'odata' | 'javascript', predicate: any, ...params: Array<any>): ReturnType<typeof parse> {
+        let { original, expression } = super.parse(<any>type, predicate)
 
-        if(expr.type == ExpressionType.Lambda) {
-            for(let idx = 0; idx < (<ILambdaExpression>expr).parameters.length; idx++) {
-                let param = (<ILambdaExpression>expr).parameters[idx]
+        if(type == 'javascript') {
+            let scope: Record<string, any> = {},
+                scopeName: string = null
+    
+            if(expression.type == ExpressionType.Lambda) {
+                for(let idx = 0; idx < (<ILambdaExpression>expression).parameters.length; idx++) {
+                    let param = (<ILambdaExpression>expression).parameters[idx]
 
-                if(param.type == ExpressionType.Identifier) {
-                    if(idx == 0) {
-                        scopeName = (<IIdentifierExpression>param).name
-                    }
-                    else {
-                        if(idx <= params.length) {
-                            scope[(<IIdentifierExpression>param).name] = params[idx - 1]
+                    if(param.type == ExpressionType.Identifier) {
+                        if(idx == 0) {
+                            scopeName = (<IIdentifierExpression>param).name
+                        }
+                        else {
+                            if(idx <= params.length) {
+                                scope[(<IIdentifierExpression>param).name] = params[idx - 1]
+                            }
                         }
                     }
                 }
+
+                let reduced = this.evaluate((<ILambdaExpression>expression).expression, {}, scope)
+
+                return {
+                    type: 'javascript', 
+                    original,
+                    expression: reduced.type == ExpressionType.Literal ? reduced : new LambdaExpression((<ILambdaExpression>expression).parameters, reduced)
+                }
             }
-
-            let reduced = this.evaluate((<ILambdaExpression>expr).expression, {}, scope)
-
-            expr = reduced.type == ExpressionType.Literal ? reduced : new LambdaExpression((<ILambdaExpression>expr).parameters, reduced)
         }
 
-        return expr
+        return {
+            type, 
+            original,
+            expression
+        }
+    }
+
+    public parseLambda(lambda: string, ...params: Array<any>): IExpression
+    public parseLambda(lambda: (it: Record<string, any>, ...params: Array<any>) => any, ...params: Array<any>): IExpression
+    public parseLambda(lambda: any, ...params: Array<any>): IExpression {
+        return this.parse('javascript', lambda, ...params)?.expression
     }
 
     public visitLiteral(expression: ILiteralExpression): IExpression {
