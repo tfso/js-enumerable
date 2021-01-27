@@ -26,12 +26,12 @@ export abstract class Repository<TEntity extends Record<string, any>, TEntityId>
     abstract create(entity: TEntity, meta?: Partial<{ etag: string }>): Promise<TEntity | null>
     abstract create<T extends TEntity>(entity: T, meta?: Partial<{ etag: string }>): Promise<T | null>
     
-    abstract async read(id?: TEntityId): Promise<TEntity | null>
+    abstract read(id?: TEntityId): Promise<TEntity | null>
     
-    abstract async update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity | boolean>
-    abstract async update<T extends TEntity>(entity: Partial<T>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof T>): Promise<T | boolean>
+    abstract update(entity: Partial<TEntity>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof TEntity>): Promise<TEntity | boolean>
+    abstract update<T extends TEntity>(entity: Partial<T>, meta?: Partial<{ etag: string }>, ...fields: Array<keyof T>): Promise<T | boolean>
     
-    abstract async delete(id: TEntity | TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
+    abstract delete(id: TEntity | TEntityId, meta?: Partial<{ etag: string }>): Promise<boolean>
 
     public getIterable(meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterable<TEntity> {
         return Object.assign(Object.create(Object.getPrototypeOf(this)), this, {

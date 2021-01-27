@@ -23,7 +23,7 @@ export class ODataVisitor extends ReducerVisitor {
     }
 
     public visitMethod(expression: IMethodExpression): IExpression {
-        let parameters = expression.parameters.map((arg) => arg.accept(this)),
+        let parameters: IExpression[] = expression.parameters.map((arg) => arg.accept(this)),
             caller: IExpression = expression.caller?.accept(this) ?? undefined,
             name: string = undefined
         
