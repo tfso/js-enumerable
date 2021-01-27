@@ -18,6 +18,10 @@ import { ILambdaExpression } from '../interface/ilambdaexpression'
 
 import { IExpressionVisitor } from '../interface/iexpressionvisitor'
 
+export abstract class IAccept {
+    
+}
+
 export abstract class Expression implements IExpression {
     private _type: ExpressionType;
 
@@ -33,8 +37,8 @@ export abstract class Expression implements IExpression {
         this._type = value
     }
 
-    public accept<T extends IExpressionVisitor>(visitor: T) {
-        let expression: IExpression
+    public accept<V, T extends IExpressionVisitor<V>>(visitor: T) {
+        let expression: V
 
         // add this as parent to stack for next acceptance/visit
         visitor.stack.push(this)

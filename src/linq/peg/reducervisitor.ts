@@ -1,5 +1,5 @@
 ﻿import { 
-    ExpressionVisitor,
+    IExpressionVisitor, ExpressionVisitor,
     IExpression, Expression, ExpressionType,
     ILambdaExpression, LambdaExpression,
     ILiteralExpression, LiteralExpression,
@@ -23,7 +23,6 @@ export class ReducerVisitor extends ExpressionVisitor {
     constructor() {
         super()
     }
-
 
     public parseLambda(lambda: string, ...params: Array<any>): IExpression
     public parseLambda(lambda: (it: Record<string, any>, ...params: Array<any>) => any, ...params: Array<any>): IExpression
@@ -114,7 +113,7 @@ export class ReducerVisitor extends ExpressionVisitor {
     }
 
     public visitConditional(expression: IConditionalExpression): IExpression {
-        let condition = expression.condition.accept(this)
+        let condition: IExpression = expression.condition.accept(this)
 
         if(condition.type == ExpressionType.Literal) {
             if((<LiteralExpression>condition).value === true)
@@ -127,8 +126,8 @@ export class ReducerVisitor extends ExpressionVisitor {
     }
 
     public visitLogical(expression: ILogicalExpression): IExpression {
-        let left = expression.left.accept(this),
-            right = expression.right.accept(this)
+        let left: IExpression = expression.left.accept(this),
+            right: IExpression = expression.right.accept(this)
 
         if(left.type == ExpressionType.Literal && right.type == ExpressionType.Literal) {
             let leftValue = (<LiteralExpression>left).value,

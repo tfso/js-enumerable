@@ -1,7 +1,8 @@
 ﻿import ODataParser from './parser/odata-parser'
 import JavascriptParser from './parser/javascript-parser'
+import { ExpressionStack } from './expressionstack'
 
-import { IExpressionVisitor, IExpressionStack } from './interface/iexpressionvisitor'
+import { IExpressionVisitor } from './interface/iexpressionvisitor'
 
 import { IExpression, Expression, ExpressionType } from './expression/expression'
 import { ILiteralExpression, LiteralExpression } from './expression/literalexpression'
@@ -18,42 +19,6 @@ import { IArrayExpression, ArrayExpression } from './expression/arrayexpression'
 import { ITemplateLiteralExpression, TemplateLiteralExpression } from './expression/templateliteralexpression'
 import { IObjectExpression, ObjectExpression, IObjectProperty } from './expression/objectexpression'
 import { ILambdaExpression, LambdaExpression } from './expression/lambdaexpression'
-
-export class ExpressionStack implements IExpressionStack {
-    private items: Array<IExpression>;
-    private count: number;
-
-    constructor() {
-        this.items = []
-        this.count = 0
-    }
-
-    public length() {
-        return this.count
-    }
-
-    public push(item: IExpression) {
-        this.items.push(item)
-        this.count = this.count + 1
-    }
-
-    public pop(): IExpression {
-        if(this.count > 0) {
-            this.count = this.count - 1
-        }
-
-        return this.items.pop()
-    }
-
-    public peek(steps = 0): IExpression {
-        if((this.count + steps) <= 1)
-            return <any>{ // dummy
-                type: 0
-            }
-
-        return this.items[this.count - 2 + steps] // current object is always last
-    }
-}
 
 export class ExpressionVisitor implements IExpressionVisitor {
     protected _rawExpression: { expression: string, parameters: Array<string>, fn: ((...args: Array<any>) => any) }
@@ -472,6 +437,8 @@ export class ExpressionVisitor implements IExpressionVisitor {
 
 //export { IExpression, Expression, ExpressionType } from './expression';
 //export { IArrayExpression, IBinaryExpression, ICompoundExpression, IConditionalExpression, IIdentifierExpression, ILiteralExpression, ILogicalExpression, IMemberExpression, IMethodExpression, IUnaryExpression }
+
+export { IExpressionVisitor } from './interface/iexpressionvisitor'
 
 export { IExpression, Expression, ExpressionType } from './expression/expression'
 export { ILambdaExpression, LambdaExpression } from './expression/lambdaexpression'
