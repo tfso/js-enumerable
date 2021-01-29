@@ -87,6 +87,7 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
 
                     throw new Error('Javascript to odata translator is not implemented')
 
+                default:
                 case 'raw':
                     return original
             }
