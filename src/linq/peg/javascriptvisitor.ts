@@ -16,7 +16,7 @@ export class JavascriptVisitor extends ReducerVisitor {
     }
     
     public visitMethod(expression: IMethodExpression): IExpression {
-        let parameters = expression.parameters.map((arg) => arg.accept(this)),
+        let parameters: IExpression[] = expression.parameters.map((arg) => arg.accept(this)),
             caller: IExpression = expression.caller ? expression.caller.accept(this) : null,
             name: string = expression.name
 

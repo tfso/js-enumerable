@@ -8,12 +8,16 @@ import { ODataVisitor } from './../peg/odatavisitor'
 import { LogicalExpression } from './../peg/expression/logicalexpression'
 import { LiteralExpression } from './../peg/expression/literalexpression'
 
+import { ODataTranslator } from './../peg/translator/odatatranslator'
+
 export function whereOperator<TEntity extends Entity>(predicate: string): LinqOperator<TEntity>
 export function whereOperator<TEntity extends Entity>(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): LinqOperator<TEntity>
 export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
     let predicate: any = arguments[0],
         parameters: Array<any> = [],
         expression: IExpression,
+        original: string,
+        type: 'odata' | 'javascript',
         validate: (entity: TEntity) => boolean,
         scopeName: string
 
@@ -22,25 +26,23 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
 
     switch(typeof predicate) {
         case 'string':
-            expression = new ODataVisitor().parseOData(predicate)
+            ({ type, expression, original } = new ODataVisitor().parse('odata', predicate))
+
             validate = (entity: TEntity) => ODataVisitor.evaluate(expression, entity) === true
             scopeName = ''
 
             break
 
         case 'function':
-            let visitor = new ReducerVisitor()
+            ({ type, expression, original } = new ReducerVisitor().parse('javascript', predicate, ...parameters))
 
-            expression = visitor.parseLambda(predicate, ...parameters)
-
+            validate = (entity: TEntity) => predicate.apply({}, [entity].concat(parameters))
             if(LambdaExpression.instanceof(expression)) {
                 if(expression.parameters[0].type == ExpressionType.Identifier) {
                     scopeName = (<IIdentifierExpression>expression.parameters[0]).name
                 }
             }
-            
-            validate = (entity: TEntity) => predicate.apply({}, [entity].concat(parameters))
-            
+
             break
 
         default:
@@ -70,6 +72,25 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
             }
 
             return visit()
+        },
+        toString: (language?: 'javascript' | 'odata' | 'raw') => {
+            switch(language ?? type) {
+                case 'javascript':
+                    if(type == 'javascript')
+                        return expression.toString()
+
+                    throw new Error('OData to javascript translator is not implemented')
+
+                case 'odata':
+                    if(type == 'odata')
+                        return new ODataTranslator().visit(expression)
+
+                    throw new Error('Javascript to odata translator is not implemented')
+
+                default:
+                case 'raw':
+                    return original
+            }
         }
     }
 }

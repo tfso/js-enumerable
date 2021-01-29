@@ -1,4 +1,5 @@
 import { IExpression } from './iexpression'
+import { IExpressionStack } from './iexpressionstack'
 
 import { ILiteralExpression } from './iliteralexpression'
 import { ICompoundExpression } from './icompoundexpression'
@@ -15,29 +16,22 @@ import { ITemplateLiteralExpression } from './itemplateliteralexpression'
 import { IObjectExpression } from './iobjectexpression'
 import { ILambdaExpression } from './ilambdaexpression'
 
-export interface IExpressionStack {
-    length(): number    
-    push(item: IExpression): void
-    pop(): IExpression 
-    peek(steps?: number): IExpression 
-}
-
-export interface IExpressionVisitor {
+export interface IExpressionVisitor<V = IExpression> {
     readonly stack: IExpressionStack
 
-    visit(expression: IExpression): IExpression
-    visitLambda(expression: ILambdaExpression): IExpression
-    visitLiteral(expression: ILiteralExpression): IExpression 
-    visitArray(expression: IArrayExpression): IExpression 
-    visitTemplateLiteral(expression: ITemplateLiteralExpression): IExpression 
-    visitObject(expression: IObjectExpression): IExpression 
-    visitIndex(expression: IIndexExpression): IExpression 
-    visitCompound(expression: ICompoundExpression): IExpression 
-    visitIdentifier(expression: IIdentifierExpression): IExpression 
-    visitBinary(expression: IBinaryExpression): IExpression 
-    visitMethod(expression: IMethodExpression): IExpression 
-    visitUnary(expression: IUnaryExpression): IExpression 
-    visitMember(expression: IMemberExpression): IExpression 
-    visitLogical(expression: ILogicalExpression): IExpression 
-    visitConditional(expression: IConditionalExpression): IExpression
+    visit(expression: IExpression): V
+    visitLambda(expression: ILambdaExpression): V
+    visitLiteral(expression: ILiteralExpression): V 
+    visitArray(expression: IArrayExpression): V 
+    visitTemplateLiteral(expression: ITemplateLiteralExpression): V
+    visitObject(expression: IObjectExpression): V
+    visitIndex(expression: IIndexExpression): V 
+    visitCompound(expression: ICompoundExpression): V
+    visitIdentifier(expression: IIdentifierExpression): V
+    visitBinary(expression: IBinaryExpression): V 
+    visitMethod(expression: IMethodExpression): V
+    visitUnary(expression: IUnaryExpression): V
+    visitMember(expression: IMemberExpression): V
+    visitLogical(expression: ILogicalExpression): V
+    visitConditional(expression: IConditionalExpression): V
 }
