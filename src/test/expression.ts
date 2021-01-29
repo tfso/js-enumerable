@@ -88,4 +88,27 @@ describe('When using Expression', () => {
 
     })
 
+    it('should not use sets with an outer and', () => {
+
+        let expression = reducer.parseOData(`((contains(id/value, '12')) or (contains(tolower(name), '12'))) and (id/type eq 1)`)
+
+        let count = 0
+        for(let part of expression.sets) {
+            count += part.length
+        }
+
+        chai.expect(count).to.equal(1)
+    })
+
+    it('should use sets with an inner and', () => {
+        let expression = reducer.parseOData(`(id/type eq 1 and contains(id/value, '12')) or (id/type eq 1 and contains(tolower(name), '12'))`)
+
+        let count = 0
+        for(let part of expression.sets) {
+            count += part.length
+        }
+
+        chai.expect(count).to.equal(4)
+    })
+
 })

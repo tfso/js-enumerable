@@ -6,6 +6,8 @@ import './enumerable/primary'
 import './enumerable/record'
 import './repository'
 
+import './translator/odata'
+
 import './expressionvisitor/array'
 import './expressionvisitor/binary'
 import './expressionvisitor/conditional'

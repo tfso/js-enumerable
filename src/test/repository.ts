@@ -216,6 +216,11 @@ describe('When using repository', () => {
             chai.expect(operator.type).to.equal(LinqType.Where)
         
             if(operator.type == LinqType.Where) {
+                let [toString, toRaw] = [operator.toString('odata'), operator.toString('raw')]
+
+                chai.expect(toString).to.be.equal(`(contains(tolower(location), 'ev') eq true) and (year ge 2010)`)
+                chai.expect(toRaw).to.be.equal(`contains(tolower(location), 'ev') eq true and year ge 2010`)
+
                 let list = operator.intersection
                 for(let expression of list) {
                     switch(expression.property) {
