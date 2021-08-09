@@ -17,17 +17,18 @@ jobs:
           npm test
           npm run lint
           npm run build
-          zip -r artifact lib src package.json index.html LICENSE README.md
         env:
           CI: true
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
+      - name: upload artifact
+        uses: actions/upload-artifact@v2.2.4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: artifact.zip
-          asset_name: artifact.zip
-          tag: ${{ github.ref }}
-          overwrite: true
+          path: | 
+            lib/
+            src/
+            package.json
+            index.html
+            LICENSE
+            README.md
 
   publish-npm:
     name: publish npm
@@ -35,37 +36,36 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: download artifact
+        uses: actions/download-artifact@v2.0.10
+      - name: setup
+        uses: actions/setup-node@v1
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-          scope: tfso
+          scope: "@tfso"
       - name: publish
         run: |
-          npm ci
-          npm run build
-          npm publish --access public --@tfso:registry=https://registry.npmjs.org/
+          npm publish --access public
         env:
-          CI: true
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
-  publish-gpr:
+  publish-github:
     name: publish npm to github
     if: "!github.event.release.prerelease" # https://developer.github.com/v3/activity/events/types/#releaseevent
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: download artifact
+        uses: actions/download-artifact@v2.0.10
+      - name: setup
+        uses: actions/setup-node@v1
         with:
           node-version: 12
           registry-url: https://npm.pkg.github.com/
           scope: "@tfso"
       - name: publish
         run: |
-          npm ci
-          npm run build
           npm publish
         env:
           CI: true
