@@ -6,7 +6,7 @@ export interface IExpression {
 
     accept<V, T extends IExpressionVisitor<V>>(visitor: T): V
     
-    equal(expression: IExpression): boolean
+    equal(expression: IExpression | null): boolean
 
     readonly intersection: IExpression[]
     readonly union: IExpression[]

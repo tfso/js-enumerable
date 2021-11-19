@@ -29,7 +29,9 @@ export class TemplateLiteralVisitor extends JavascriptVisitor {
     //    return new TemplateLiteralExpression(elements);
     //}
 
-    public evaluate(expression: IExpression, it: Record<string, any> = null): IExpression {
+    public evaluate(expression: IExpression, it: Record<string, any> | null): IExpression
+    public evaluate(expression: IExpression | null, it: Record<string, any> | null): IExpression | null
+    public evaluate(expression: IExpression | null, it: Record<string, any> | null = null): IExpression | null {
         let value: any = null
 
         if(expression == null)

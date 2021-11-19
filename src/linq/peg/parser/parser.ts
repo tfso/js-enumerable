@@ -24,15 +24,15 @@ type ReturnExpression = {
     expression: IExpression
 }
 
-export function parse(type: 'odata', predicate: string): ReturnExpression | null
-export function parse(type: 'javascript', lambda: (it: any, ...param: Array<any>) => boolean): ReturnExpression | null
-export function parse(type: 'javascript', predicate: string): ReturnExpression | null
-export function parse(type: 'odata' | 'javascript', predicate: any): ReturnExpression | null {
-    let ast: Record<string, any> = null
+export function parse(type: 'odata', predicate: string): ReturnExpression
+export function parse(type: 'javascript', lambda: (it: any, ...param: Array<any>) => boolean): ReturnExpression
+export function parse(type: 'javascript', predicate: string): ReturnExpression
+export function parse(type: 'odata' | 'javascript', predicate: string | ((it: any, ...param: Array<any>) => boolean)): ReturnExpression {
+    let ast: Record<string, any> | null = null
 
     switch(type) {
         case 'javascript':
-            let lambda: string
+            let lambda: string | null = null
 
             switch(typeof predicate) {
                 case 'string':
@@ -46,11 +46,11 @@ export function parse(type: 'odata' | 'javascript', predicate: any): ReturnExpre
                     ]
     
                     let raw = predicate.toString(),
-                        parameters: Array<string>,
-                        expression: string
+                        parameters: Array<string> = [],
+                        expression = ''
     
                     for(let regex of regexs) {
-                        let match: RegExpMatchArray
+                        let match: RegExpMatchArray | null
             
                         if((match = raw.match(regex)) !== null) {
                             parameters = match[1].split(',').map((el) => el.trim())
@@ -58,48 +58,60 @@ export function parse(type: 'odata' | 'javascript', predicate: any): ReturnExpre
                                 .replace(/_this/gi, 'this')
                                 .replace(/\(function\(([^)]+)\)\{return\s(.*?)\}\)/gi, '($1) => $2') // inner arrow functions in methods (for some/every) will probably be converted to a function by babel etc
             
+                            lambda = `(${parameters.join(', ')}) => ${expression}`
+
                             break
                         }
                     }
-    
-                    lambda = `(${parameters.join(', ')}) => ${expression}`
+
+                    if(!lambda)
+                        throw new Error(`Javascript predicate is missing parsable lambda function; '${raw}'`)
     
                     break
+                
+                default:
+                    throw new Error('Javascript predicate has to be a string, fat arrow function or a function with a return as first statement')
             }
     
             ast = JavascriptParser.parse(lambda)
+
+            if(!ast)
+                throw new Error(`Couldn't extract Abstact Syntax Tree from '${lambda}'`)
+
             try {
-                if(ast) {
-                    return {
-                        type: 'javascript', 
-                        original: lambda,
-                        expression: transform(ast)
-                    }
+                return {
+                    type: 'javascript', 
+                    original: lambda,
+                    expression: transform(ast)
                 }
             }
             catch(ex) {
                 throw new Error(ex.message)
             }
-    
-            return null
 
         case 'odata':
+            if(typeof predicate !== 'string')
+                throw new Error('OData predicate has to be a string')
+
             ast = ODataParser.parse(predicate)
-            try {
-                if(ast) {
-                    return {
-                        type: 'odata', 
-                        original: predicate,
-                        expression: transform(ast)
-                    }
+
+            if(!ast) 
+                throw new Error(`Couldn't extract Abstact Syntax Tree from '${predicate}'`)
+
+            try {    
+                return {
+                    type: 'odata', 
+                    original: predicate,
+                    expression: transform(ast)
                 }
             }
             catch(ex) {
                 throw new Error(ex.message)
             }
+        
+        default:
+            throw new Error(`Unknown type ${type}`)
     }
-
-    return null
 }
 
 /**
@@ -147,11 +159,11 @@ export function transform(expression: Record<string, any>): IExpression {
                         child = transform(current.property);
 
                         (<MethodExpression>child).caller = stack.reduceRight((caller, member) => {
-                            if(!caller)
+                            if(caller == null)
                                 return member
                             else 
                                 return new MemberExpression(member, caller)
-                        }, null)
+                        })
 
                         return child
                     }
@@ -165,7 +177,7 @@ export function transform(expression: Record<string, any>): IExpression {
         case 'CallExpression':
             switch(expression.object.type) {
                 case 'Identifier':
-                    return new MethodExpression(expression.object.name, Array.isArray(expression.arguments) ? expression.arguments.map((arg) => transform(arg)) : [], null)
+                    return new MethodExpression(expression.object.name, Array.isArray(expression.arguments) ? expression.arguments.map((arg) => transform(arg)) : [])
 
                 default:
                     throw new Error('Caller of method expression is not a Identifier, but is ' + expression.object.type)

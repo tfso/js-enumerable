@@ -1,5 +1,5 @@
 import Base from './base'
-import { skipOperator, takeOperator, sliceOperator, includeOperator, orderByOperator, whereOperator, selectOperator, LinqType } from './operator'
+import { skipOperator, takeOperator, sliceOperator, includeOperator, orderByOperator, whereOperator, selectOperator, LinqType, LinqOperator } from './operator'
 import { Entity, EntityRecord } from './types'
 
 import { RemapVisitor } from './peg/remapvisitor'
@@ -71,8 +71,8 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      * @param parameters any javascript parameters has to be declared
      */
     public where(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): this
-    public where(): this {
-        this.operators.push(whereOperator.call(null, ...arguments))
+    public where(predicate: any, ...param: any[]): this {
+        this.operators.push(<LinqOperator<TEntity>>whereOperator(predicate, ...param))
         
         return this
     }
@@ -124,6 +124,11 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      * @param remapper Function that returns the new name of the identifier
      */
     public remap<TRecord extends EntityRecord<TEntity>, M extends (name: K) => K | string, K extends keyof TRecord, T extends string>(remapper: M): Enumerable<Record<ReturnType<M>, any>>
+    /**
+     * A remapper of identifier names, members is seperated with dot.
+     * @param remapper Function that returns the new name of the identifier
+     */
+    public remap<TRecord extends Record<string, any>>(remapper: (name: string) => string): Enumerable<TRecord>
     /**
      * A remapper of values that corresponds to a identifier name
      * @param remapper Function that returns the new value

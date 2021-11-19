@@ -30,13 +30,13 @@ export class ReducerVisitor extends ExpressionVisitor {
     public parse(type: 'javascript', lambda: (it: any, ...param: Array<any>) => boolean, ...params: Array<any>): ReturnType<typeof parse>
     public parse(type: 'javascript', predicate: string, ...params: Array<any>): ReturnType<typeof parse>
     public parse(type: 'odata' | 'javascript', predicate: any, ...params: Array<any>): ReturnType<typeof parse> {
-        let { original, expression } = super.parse(<any>type, predicate)
+        let { original, expression } = super.parse(<any>type, predicate) ?? { }
 
         if(type == 'javascript') {
             let scope: Record<string, any> = {},
-                scopeName: string = null
+                scopeName: string | null = null
     
-            if(expression.type == ExpressionType.Lambda) {
+            if(expression?.type == ExpressionType.Lambda) {
                 for(let idx = 0; idx < (<ILambdaExpression>expression).parameters.length; idx++) {
                     let param = (<ILambdaExpression>expression).parameters[idx]
 
@@ -190,9 +190,9 @@ export class ReducerVisitor extends ExpressionVisitor {
         return new LogicalExpression(expression.operator, left, right)
     }
 
-    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string, global?: Record<string, any>): IExpression 
-    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string, global?: Record<string, any>): IExpression 
-    public evaluate(expression: IExpression, scope: Record<string, any> | number | string = null, global: Record<string, any> = {}): IExpression {
+    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string | null, global?: Record<string, any>): IExpression 
+    public evaluate(expression: IExpression | null, scope?: Record<string, any> | number | string | null, global?: Record<string, any>): IExpression | null
+    public evaluate(expression: IExpression | null, scope: Record<string, any> | number | string | null = null, global: Record<string, any> = {}): IExpression | null {
         if(expression == null)
             return null
 
@@ -201,19 +201,20 @@ export class ReducerVisitor extends ExpressionVisitor {
         switch(expression.type) {
             case ExpressionType.Lambda:
                 let parameter = (<ILambdaExpression>expression).parameters[0] ?? null,
-                    scopeName: string = null
+                    scopeName: string | null = null
 
                 if(parameter?.type == ExpressionType.Identifier) {
                     scopeName = (<IIdentifierExpression>parameter).name
                 }
-
-                let newScope = {}, newGlobal = {}
                 
-                if(isRecord(global) && scopeName in global)
-                    Object.assign(newScope, global[scopeName])
+                let newScope = {}
+                if(typeof scopeName == 'string') {
+                    if(isRecord(global) && scopeName in global)
+                        Object.assign(newScope, global[scopeName])
 
-                if(isRecord(scope)) 
-                    Object.assign(newScope, { [scopeName]: scope })           
+                    if(isRecord(scope))
+                        Object.assign(newScope, { [scopeName]: scope })
+                } 
 
                 let result = this.evaluate((<ILambdaExpression>expression).expression, newScope, Object.assign({}, global, newScope))
                 
@@ -301,7 +302,8 @@ export class ReducerVisitor extends ExpressionVisitor {
                                     return new LiteralExpression(Array.from((<ILiteralExpression>object).value)[(<ILiteralExpression>index).value])
                                 }
                                 
-                                let descriptor: PropertyDescriptor
+                                let descriptor: PropertyDescriptor | undefined
+
                                 if(descriptor = Object.getOwnPropertyDescriptor((<ILiteralExpression>object).value, (<ILiteralExpression>index).value))
                                     return new LiteralExpression(descriptor.value)
                             }
@@ -368,15 +370,15 @@ export class ReducerVisitor extends ExpressionVisitor {
                 return this.visit(new BinaryExpression((<IBinaryExpression>expression).operator, this.evaluate((<IBinaryExpression>expression).left, scope, global), this.evaluate((<IBinaryExpression>expression).right, scope, global)))
 
             case ExpressionType.Method:
-                return this.visit(new MethodExpression((<IMethodExpression>expression).name, (<IMethodExpression>expression).parameters.map(p => this.evaluate(p, scope, global)), this.evaluate((<IMethodExpression>expression).caller, scope, global)))
+                return this.visit(new MethodExpression((<IMethodExpression>expression).name, (<IMethodExpression>expression).parameters.map(p => this.evaluate(p, scope, global)), (<IMethodExpression>expression).caller ? this.evaluate((<IMethodExpression>expression).caller ?? null, scope, global) ?? undefined : undefined))
             
             default:
                 let o = <IExpression>Object.create(Object.getPrototypeOf(expression), Object.getOwnPropertyNames(expression).reduce<Record<string, any>>((prev, cur) => {
                     let prop = Object.getOwnPropertyDescriptor(expression, cur)
 
-                    if(prop.value instanceof Expression)
+                    if(prop?.value instanceof Expression)
                         prop.value = this.evaluate(prop.value, scope, global)
-                    else if(prop.value instanceof Array)
+                    else if(prop?.value instanceof Array)
                         prop.value = prop.value.map(a => a instanceof Expression ? this.evaluate(a, scope, global) : a)
 
                     prev[cur] = prop
@@ -390,7 +392,7 @@ export class ReducerVisitor extends ExpressionVisitor {
         return expression
     }
 
-    public static evaluate(expression: IExpression, scope: Record<string, any> = null): any {
+    public static evaluate(expression: IExpression, scope: Record<string, any> | null = null): any {
         let reducer = new ReducerVisitor(),
             result = reducer.evaluate(expression, scope)
 

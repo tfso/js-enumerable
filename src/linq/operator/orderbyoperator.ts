@@ -9,7 +9,7 @@ export function orderByOperator<T extends Entity>(property?: keyof T | string): 
             let ar = Array.from(items)
 
             ar.sort((a, b) => {
-                let left = null, right = null
+                let left: any = null, right: any = null
 
                 if(typeof property == 'string') {
                     if(isRecord(a) && isRecord(b)) {
@@ -34,8 +34,8 @@ export function orderByOperator<T extends Entity>(property?: keyof T | string): 
                 ar.push(item)
 
             ar.sort((a, b) => {
-                let left = null, 
-                    right = null
+                let left: any = null, 
+                    right: any = null
 
                 if(typeof property == 'string') {
                     if(isRecord(a) && isRecord(b)) {

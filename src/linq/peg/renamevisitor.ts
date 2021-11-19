@@ -31,7 +31,7 @@ export class RenameVisitor extends ExpressionVisitor {
     }
 
     public visitMember(expression: IMemberExpression): IExpression {       
-        let path: string
+        let path: string | undefined
    
         if((path = this.renames.get(this.flattenMember(expression))) == null)
             return new MemberExpression(expression.object.accept(this), expression.property.accept(this))

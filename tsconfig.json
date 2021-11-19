@@ -1,13 +1,15 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
+        "strict": true,
         "target": "es6",
         "lib": [
             "dom",
             "es2018",
             "esnext.asynciterable"
         ],
-        "downlevelIteration": true,
+        "downlevelIteration": false,
+        "useUnknownInCatchVariables": false,
         "skipLibCheck": true,
         "module": "commonjs",
         "moduleResolution": "node",

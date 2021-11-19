@@ -19,11 +19,11 @@ export abstract class RepositoryMock<Entity, EntityId> extends Repository<Entity
         return entity
     }
 
-    public async read(id: EntityId): Promise<Entity> {
-        return this.data.find(item => this.equality(id, this.getEntityId(item)))
+    public async read(id: EntityId): Promise<Entity | null> {
+        return this.data.find(item => this.equality(id, this.getEntityId(item))) ?? null
     }
 
-    public async update(entity: Partial<Entity>): Promise<Entity> {
+    public async update(entity: Partial<Entity>): Promise<Entity | null> {
         const id = this.getEntityId(entity)
         const idx: number = this.data.findIndex(item => this.equality(id, this.getEntityId(item)))
 

@@ -1,7 +1,7 @@
 import { Enumerable, IEnumerable, LinqType } from './../../linq'
 
 /* eslint-disable-next-line */
-if(jsEnumerable == null) {
+if(jsEnumerable! == null) {
     /* eslint-disable-next-line */
     var jsEnumerable: { Enumerable: typeof Enumerable } = require('./../../index')
 }
@@ -30,7 +30,7 @@ describe('When using enumerable for record type', () => {
                 firstValue = firstResult.value || undefined
     
             chai.expect(typeof firstResult == 'object').to.be.true
-            chai.expect(firstValue.id).to.equal(1)
+            chai.expect(firstValue?.id).to.equal(1)
     
             for await(let num of asyncIterator()) 
                 count++
@@ -178,9 +178,9 @@ describe('When using enumerable for record type', () => {
             let operator = enumerable.operators.pop(),
                 count = 0
 
-            chai.expect(operator.type).to.equal(LinqType.Where)
+            chai.expect(operator?.type).to.equal(LinqType.Where)
 
-            if(operator.type == LinqType.Where) {
+            if(operator?.type == LinqType.Where) {
                 let list = operator.intersection
                 for(let expression of list) {
                     switch(expression.property) {
@@ -221,9 +221,9 @@ describe('When using enumerable for record type', () => {
             let operator = enumerable.operators.pop(),
                 count = 0
 
-            chai.expect(operator.type).to.equal(LinqType.Where)
+            chai.expect(operator?.type).to.equal(LinqType.Where)
 
-            if(operator.type == LinqType.Where) {
+            if(operator?.type == LinqType.Where) {
                 let list = operator.intersection
                 for(let expression of list) {
                     switch(expression.property) {
@@ -292,7 +292,7 @@ describe('When using enumerable for record type', () => {
                 firstValue = firstResult.value || undefined
     
             chai.expect(typeof firstResult == 'object').to.be.true
-            chai.expect(firstValue.id).to.equal(1)
+            chai.expect(firstValue?.id).to.equal(1)
     
             for(let num of iterator()) 
                 count++

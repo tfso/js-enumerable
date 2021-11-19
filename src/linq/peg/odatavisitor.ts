@@ -24,14 +24,14 @@ export class ODataVisitor extends ReducerVisitor {
 
     public visitMethod(expression: IMethodExpression): IExpression {
         let parameters: IExpression[] = expression.parameters.map((arg) => arg.accept(this)),
-            caller: IExpression = expression.caller?.accept(this) ?? undefined,
-            name: string = undefined
+            caller: IExpression | undefined = expression.caller?.accept(this) ?? undefined,
+            name: string | undefined = undefined
         
-        let params: Array<any>
+        let params: Array<any> | undefined
 
         // routine to get all parameters that is a literal, eg; solvable
         let getParams = (expression: IMethodExpression, ...typeofs: Array<string>) => {
-            let params: Array<any> = null,
+            let params: Array<any> | undefined,
                 getType = (t: any) => {
                     if(typeof t == 'object') {
                         if(t.getTime && t.getTime() >= 0)
@@ -199,16 +199,17 @@ export class ODataVisitor extends ReducerVisitor {
         return new MethodExpression(expression.name, parameters, caller)
     }
     
-    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string): IExpression 
-    public evaluate(expression: IExpression, scope: Record<string, any> | number | string = null): IExpression {
+    public evaluate(expression: IExpression, scope?: Record<string, any> | number | string | null): IExpression
+    public evaluate(expression: IExpression | null, scope?: Record<string, any> | number | string | null): IExpression | null
+    public evaluate(expression: IExpression | null, scope: Record<string, any> | number | string | null = null): IExpression | null {
         if(expression == null)
             return null
 
         switch(expression.type) {
             case ExpressionType.Method:
-                let caller = this.evaluate((<IMethodExpression>expression).caller, scope)
+                let caller = this.evaluate((<IMethodExpression>expression).caller ?? null, scope)
 
-                if(LiteralExpression.instanceof(caller) && Array.isArray(caller.value)) {
+                if(caller && LiteralExpression.instanceof(caller) && Array.isArray(caller.value)) {
                     switch((<IMethodExpression>expression).name) {
                         case 'any': {
                             let lambda = <ILambdaExpression>(<IMethodExpression>expression).parameters[0],
@@ -242,16 +243,16 @@ export class ODataVisitor extends ReducerVisitor {
                     }
                 }
 
-                return this.visit(new MethodExpression((<IMethodExpression>expression).name, (<IMethodExpression>expression).parameters.map(p => this.evaluate(p, scope)), caller))
+                return this.visit(new MethodExpression((<IMethodExpression>expression).name, (<IMethodExpression>expression).parameters.map(p => this.evaluate(p, scope)), caller ?? undefined))
 
             default:
                 return super.evaluate(expression, scope)
         }
     }
 
-    public static evaluate(expression: string, scope?: Record<string, any> | number | Date | string): any
-    public static evaluate(expression: IExpression, scope?: Record<string, any> | number | Date | string): any
-    public static evaluate(expression: IExpression | string, scope: Record<string, any> | number | Date | string = null): any {
+    public static evaluate(expression: string, scope?: Record<string, any> | number | Date | string | null): any
+    public static evaluate(expression: IExpression, scope?: Record<string, any> | number | Date | string | null): any
+    public static evaluate(expression: IExpression | string, scope: Record<string, any> | number | Date | string | null = null): any {
         let reducer = new ODataVisitor(),
             result: IExpression
 

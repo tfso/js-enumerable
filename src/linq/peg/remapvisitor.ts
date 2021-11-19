@@ -8,7 +8,7 @@ import { ILiteralExpression, LiteralExpression } from './expression/literalexpre
 import { ExpressionVisitor } from './expressionvisitor'
 
 export class RemapVisitor extends ExpressionVisitor {
-    constructor(private remapKey: (name: string) => string, private remapValue: (name: string, value: any) => any) {
+    constructor(private remapKey: null | ((name: string) => string), private remapValue: null | ((name: string, value: any) => any)) {
         super()
 
         if(typeof this.remapKey != 'function')
@@ -24,7 +24,7 @@ export class RemapVisitor extends ExpressionVisitor {
 
     public visitLiteral(expression: ILiteralExpression): IExpression {
         let parent = this.stack.peek(),
-            property: IExpression,
+            property: IExpression | null,
             value: any
         
         if(this.remapValue && (property = this.findIdentifier(parent)) && (value = this.remapValue(this.flattenMember(property), expression.value)) !== undefined)
@@ -54,10 +54,10 @@ export class RemapVisitor extends ExpressionVisitor {
         return new MemberExpression(expression.object.accept(this), expression.property.accept(this))
     }
 
-    private findIdentifier(expression: IExpression): IExpression {
+    private findIdentifier(expression: IExpression): IExpression | null {
         let member: any
 
-        switch(expression.type) {
+        switch(expression?.type) {
             case ExpressionType.Logical:
                 if((member = this.findIdentifier((<ILogicalExpression>expression).left)) != null)
                     return member
@@ -74,10 +74,13 @@ export class RemapVisitor extends ExpressionVisitor {
                 return expression
 
             case ExpressionType.Method:
-                if((<IMethodExpression>expression).caller != null && (member = this.findIdentifier((<IMethodExpression>expression).caller)) != null)
+                const caller = (<IMethodExpression>expression).caller
+                const parameters = (<IMethodExpression>expression).parameters
+
+                if(caller != null && (member = this.findIdentifier(caller)) != null)
                     return member
 
-                if((<IMethodExpression>expression).parameters.length >= 1 && (member = this.findIdentifier((<IMethodExpression>expression).parameters[0])) != null)
+                if(parameters.length >= 1 && (member = this.findIdentifier(parameters[0])) != null)
                     return member
 
                 break

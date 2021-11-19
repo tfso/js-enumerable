@@ -98,7 +98,7 @@ export abstract class Expression implements IExpression {
     public abstract toString(): string
 
     public get intersection(): IExpression[] {
-        let intersection: Array<IExpression>
+        let intersection: Array<IExpression> | undefined
 
         intersection = Array.from(visit(this)).reduce((acc, curr, idx) => {
             return Array.from(curr).filter((expr) => {
@@ -110,7 +110,7 @@ export abstract class Expression implements IExpression {
     }
 
     public get difference(): IExpression[] {
-        let difference: Array<IExpression>
+        let difference: Array<IExpression> | undefined
 
         difference = Array.from(visit(this)).reduce((acc, curr, idx) => {
             return acc
@@ -120,7 +120,7 @@ export abstract class Expression implements IExpression {
     }
 
     public get union(): IExpression[] {
-        let union: Array<IExpression>
+        let union: Array<IExpression> | undefined
 
         union = Array.from(visit(this)).reduce((acc, curr, idx) => {
             return (acc || []).concat(Array.from(curr))

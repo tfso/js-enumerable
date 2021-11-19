@@ -215,10 +215,10 @@ function isRecord(value: Record<string, any> | any): value is Record<string, any
     return value !== null && typeof value == 'object'
 }
 
-function isIterable<T>(value: Iterable<T> | IterableIterator<T> | AsyncIterable<T> | AsyncIterableIterator<T>): value is IterableIterator<T> {
+function isIterable<T>(value: Iterable<T> | IterableIterator<T> | AsyncIterable<T> | AsyncIterableIterator<T> | null): value is IterableIterator<T> {
     return isRecord(value) && typeof (<any>value)[Symbol.iterator] == 'function'
 }
 
-function isAsyncIterable<T>(value: Iterable<T> | IterableIterator<T> | AsyncIterable<T> | AsyncIterableIterator<T>): value is AsyncIterableIterator<T> {
+function isAsyncIterable<T>(value: Iterable<T> | IterableIterator<T> | AsyncIterable<T> | AsyncIterableIterator<T> | null): value is AsyncIterableIterator<T> {
     return isRecord(value) && typeof (<any>value)[Symbol.asyncIterator] == 'function'
 }

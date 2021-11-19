@@ -1,7 +1,7 @@
 import { LinqOperator, LinqType } from './types'
-import { Entity, isRecord } from './../types'
+import { Entity, isRecord, RecordSafe } from './../types'
 
-export function includeOperator<T extends Entity>(entity: Partial<T>): LinqOperator<T> {
+export function includeOperator<T extends RecordSafe>(entity: Partial<T>): LinqOperator<T> {
     return { 
         type: LinqType.Includes,
         entity,
@@ -9,6 +9,6 @@ export function includeOperator<T extends Entity>(entity: Partial<T>): LinqOpera
             let values = Object.entries(entity)
 
             return (item) => ({ type: isRecord(item) && values.every(([key, value]) => key in item && (value == undefined || value == item[key])) ? 'yield' : 'continue' })
-        } 
+        }
     }
 }
