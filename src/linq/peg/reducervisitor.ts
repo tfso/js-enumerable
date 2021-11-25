@@ -74,7 +74,7 @@ export class ReducerVisitor extends ExpressionVisitor {
     public parseLambda(lambda: any, ...params: Array<any>): IExpression {
         return this.parse('javascript', lambda, ...params)?.expression
     }
-
+    
     public visitLiteral(expression: ILiteralExpression): IExpression {
         return this.evaluate(expression)
     }

@@ -1,7 +1,6 @@
 import 'core-js/modules/es.symbol.async-iterator'
 import 'core-js/modules/es.symbol'
 
-import './basic'
 import './enumerable/primary'
 import './enumerable/record'
 import './repository'
@@ -22,5 +21,6 @@ import './expressionvisitor/unary'
 import './javascriptvisitor'
 import './odatavisitor'
 import './reducervisitor'
+import './rewritevisitor'
 
 import './expression'
