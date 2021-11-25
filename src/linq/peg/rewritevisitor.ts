@@ -22,16 +22,8 @@ export class RewriteVisitor extends ExpressionVisitor {
         this.renamed = new Map()
         this.renames = new Map()
 
-        const duplicates: Set<string> = new Set()
-        
         for(const { from = '', to = undefined, rewriteValue = undefined } of renames) {
             if(typeof from == 'string' && from.length > 0) {
-                if(to) {
-                    if(duplicates.has(to))
-                        throw new Error(`Unable to rewrite from "${from}" to "${to}" since "${to}" already exists in a previous rewrite`)
-                
-                    duplicates.add(to)
-                }
 
                 this.renames.set(from, { to, rewriteValue })
             }
