@@ -111,7 +111,7 @@ jobs:
           npm version ${{ steps.semver.outputs.fullversion }} --no-git-tag-version --ignore-scripts
       - name: publish prerelease version
         run: |
-          npm publish --tag ${{ steps.npmpublish.outputs.tag }}
+          npm publish --access public --tag ${{ steps.npmpublish.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
