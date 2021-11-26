@@ -65,55 +65,48 @@ jobs:
             LICENSE
             README.md
 
-  publish-npm-prerelease:
-    name: publish npm prerelease
-    if: "github.event.release.prerelease"
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: download artifact
-        uses: actions/download-artifact@v2.0.10
-        with:
-          name: artifact
-      - name: setup
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
-          registry-url: https://registry.npmjs.org/
-          scope: "@tfso"
-      # - name: validate and extract release information
-      #   id: release
-      #   run: |
-      #     echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
-      - name: parse semver string
-        id: semver 
-        uses: booxmedialtd/ws-action-parse-semver@v1
-        with:
-          input_string: ${{ github.ref }}
-          version_extractor_regex: 'refs\/tags\/v(.*)$'
-      - name: extract npm tag
-        id: npmpublish
-        run: |
-          echo "${PRERELEASE}" | sed 's/[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/::set-output name=tag::\1/'
-        env: 
-          PRERELEASE: ${{steps.semver.outputs.fullversion}}
-      - name: check prerelease
-        if: "!steps.semver.outputs.prerelease"
-        run: |
-          echo "prerelease is not correct according to semantic versioning for prerelease tag; ie: v1.0.1-beta.1"
-          echo "version is currently ${{ steps.semver.outputs.fullversion }}"
-          exit 1
-      - name: set version for package
-        run: |
-          npm version ${{ steps.semver.outputs.fullversion }} --no-git-tag-version --ignore-scripts
-      - name: publish prerelease version
-        run: |
-          npm publish --access public --tag ${{ steps.npmpublish.outputs.tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+  # publish-npm-prerelease:
+  #   name: publish npm prerelease
+  #   if: "github.event.release.prerelease"
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: download artifact
+  #       uses: actions/download-artifact@v2.0.10
+  #       with:
+  #         name: artifact
+  #     - name: setup
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 12
+  #         registry-url: https://registry.npmjs.org/
+  #         scope: "@tfso"
+  #     - name: parse semver string
+  #       id: semver 
+  #       uses: booxmedialtd/ws-action-parse-semver@v1
+  #       with:
+  #         input_string: ${{ github.ref }}
+  #         version_extractor_regex: 'refs\/tags\/v(.*)$'
+  #     - name: extract npm tag
+  #       id: npmpublish
+  #       run: |
+  #         echo "${PRERELEASE}" | sed 's/[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/::set-output name=tag::\1/'
+  #       env: 
+  #         PRERELEASE: ${{steps.semver.outputs.fullversion}}
+  #     - name: check prerelease
+  #       if: "!steps.semver.outputs.prerelease"
+  #       run: |
+  #         echo "prerelease is not correct according to semantic versioning for prerelease tag; ie: v1.0.1-beta.1"
+  #         echo "version is currently ${{ steps.semver.outputs.fullversion }}"
+  #         exit 1
+  #     - name: set version for package
+  #       run: |
+  #         npm version ${{ steps.semver.outputs.fullversion }} --no-git-tag-version --ignore-scripts
+  #     - name: publish prerelease version
+  #       run: |
+  #         npm publish --access public --tag ${{ steps.npmpublish.outputs.tag }}
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
   publish-github-prerelease:
     name: publish npm prerelease to github
