@@ -159,7 +159,7 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      * A rewrite of previous where/orderBy to a new identifier name, where members is seperated with dot.
      * @param rewrites array of rewrite from a identifier name to a new one, with a possibility convert the value as well
      */
-    public rewrite<TRecord extends Record<string, any>>(...rewrites: { from: string, to?: string, rewriteValue?: (value: any) => any }[]): Enumerable<TRecord>
+    public rewrite<TRecord extends Record<string, any>>(...rewrites: { from: string, to?: string, convert?: (value: any) => any }[]): Enumerable<TRecord>
     /**
      * A rewrite of previous where/orderBy to a new identifier name, where members is seperated with dot.
      * @param rewrites array of rewrite from a identifier name to a new one, with a possibility convert the value as well
