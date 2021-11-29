@@ -28,7 +28,7 @@ describe('When using Rewrite for ExpressionVisitor', () => {
     })
 
     it('should be able to rewrite member name and corresponding value', () => {
-        const rewrite = new RewriteVisitor({ from: 'mynumber', to: 'number', rewriteValue: (value) => value * 2 })
+        const rewrite = new RewriteVisitor({ from: 'mynumber', to: 'number', convert: (value) => value * 2 })
         const lambda = rewrite.parseLambda('(it) => it.mynumber == 2.5')
 
         chai.expect(isLambdaExpression(lambda)).to.be.true
@@ -46,7 +46,7 @@ describe('When using Rewrite for ExpressionVisitor', () => {
 
     it('should be able to rewrite member name and corresponding value by visiting', () => {
         const expression = new Expr.ExpressionVisitor().parseLambda('(it) => it.mynumber == 2.5')
-        const rewrite = new RewriteVisitor({ from: 'mynumber', to: 'number', rewriteValue: (value) => value * 2 })
+        const rewrite = new RewriteVisitor({ from: 'mynumber', to: 'number', convert: (value) => value * 2 })
         const lambda = rewrite.visit(expression)
 
         chai.expect(isLambdaExpression(lambda)).to.be.true
@@ -63,7 +63,7 @@ describe('When using Rewrite for ExpressionVisitor', () => {
     })
 
     it('should be able to rewrite member with scoping', () => {
-        const rewrite = new RewriteVisitor({ from: 'it.mynumber', to: 'number', rewriteValue: (value) => value * 2 })
+        const rewrite = new RewriteVisitor({ from: 'it.mynumber', to: 'number', convert: (value) => value * 2 })
         const lambda = rewrite.parseLambda('(it) => it.it.mynumber == 2.5')
 
         chai.expect(isLambdaExpression(lambda)).is.not.undefined
@@ -80,7 +80,7 @@ describe('When using Rewrite for ExpressionVisitor', () => {
     })
 
     it('should not be able to rewrite member with scoping using wrong scope', () => {
-        const rewrite = new RewriteVisitor({ from: 'it.mynumber', to: 'number', rewriteValue: (value) => value * 2 })
+        const rewrite = new RewriteVisitor({ from: 'it.mynumber', to: 'number', convert: (value) => value * 2 })
         const lambda = rewrite.parseLambda('(it) => it.mynumber == 2.5')
 
         chai.expect(isLambdaExpression(lambda)).is.not.undefined
@@ -97,7 +97,7 @@ describe('When using Rewrite for ExpressionVisitor', () => {
     })
 
     it('should not be able to rewrite member with scoping using correct scope', () => {
-        const rewrite = new RewriteVisitor({ from: 'it.mynumber', to: 'number', rewriteValue: (value) => value * 2 })
+        const rewrite = new RewriteVisitor({ from: 'it.mynumber', to: 'number', convert: (value) => value * 2 })
         const lambda = rewrite.parseLambda('() => it.mynumber == 2.5')
 
         chai.expect(isLambdaExpression(lambda)).to.not.be.undefined
@@ -113,7 +113,7 @@ describe('When using Rewrite for ExpressionVisitor', () => {
     })
 
     it('should be able to rewrite member using expression as string', () => {
-        const rewrite = new RewriteVisitor({ from: 'mynumber', to: 'number', rewriteValue: (value) => value * 2 })
+        const rewrite = new RewriteVisitor({ from: 'mynumber', to: 'number', convert: (value) => value * 2 })
         const expression = rewrite.parseLambda('mynumber == 2.5')
 
         const logicalExpr = isLogicalExpression(expression) ? expression : undefined
@@ -128,8 +128,8 @@ describe('When using Rewrite for ExpressionVisitor', () => {
 
     it('should be able to rewrite members with the same destination', () => {
         const rewrite = new RewriteVisitor(
-            { from: 'myfirst', to: 'number', rewriteValue: (value) => value * 2 },
-            { from: 'mysecond', to: 'number', rewriteValue: (value) => value + 2 }
+            { from: 'myfirst', to: 'number', convert: (value) => value * 2 },
+            { from: 'mysecond', to: 'number', convert: (value) => value + 2 }
         )
         const expression = rewrite.parseLambda('myfirst >= 2.5 && mysecond <= 3.5')
 
