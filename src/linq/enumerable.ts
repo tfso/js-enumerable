@@ -154,18 +154,18 @@ export class Enumerable<TEntity> extends Base<TEntity> {
         return this
     }
 
-    public rewrite<TRecord extends EntityRecord<TEntity>, M extends { from: K, to: T, rewriteValue?: (value: any) => any }, K extends keyof TRecord, T extends string>(...rewrites: M[]): Enumerable<Record<M['to'] | keyof Omit<TRecord, M['from']>, any>>
+    public rewrite<TRecord extends EntityRecord<TEntity>, M extends { from: K, to: T, convert?: (value: any) => any }, K extends keyof TRecord, T extends string>(...rewrites: M[]): Enumerable<Record<M['to'] | keyof Omit<TRecord, M['from']>, any>>
     /**
      * A rewrite of previous where/orderBy to a new identifier name, where members is seperated with dot.
-     * @param rewrites array of rewrite from a identifier name to a new one, with a possibility rewrite the value as well
+     * @param rewrites array of rewrite from a identifier name to a new one, with a possibility convert the value as well
      */
     public rewrite<TRecord extends Record<string, any>>(...rewrites: { from: string, to?: string, rewriteValue?: (value: any) => any }[]): Enumerable<TRecord>
     /**
      * A rewrite of previous where/orderBy to a new identifier name, where members is seperated with dot.
-     * @param rewrites array of rewrite from a identifier name to a new one, with a possibility rewrite the value as well
+     * @param rewrites array of rewrite from a identifier name to a new one, with a possibility convert the value as well
      */
-    public rewrite(...rewrites: { from: string, to?: string, rewriteValue?: (value: any) => any }[]): this
-    public rewrite(...rewrites: { from: string, to?: string, rewriteValue: (value: any) => any }[]): this {
+    public rewrite(...rewrites: { from: string, to?: string, convert?: (value: any) => any }[]): this
+    public rewrite(...rewrites: { from: string, to?: string, convert: (value: any) => any }[]): this {
         let visitor = new RewriteVisitor(...rewrites)
 
         for(let item of this.operators) {

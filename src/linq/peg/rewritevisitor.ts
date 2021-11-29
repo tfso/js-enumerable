@@ -12,20 +12,20 @@ import { parse } from './parser'
 
 export class RewriteVisitor extends ExpressionVisitor {
     private renamed: Map<IExpression | undefined, string>
-    private renames: Map<string, { to?: string, rewriteValue?: (value: any) => any }>
+    private renames: Map<string, { to?: string, convert?: (value: any) => any }>
     
     private scope: string | undefined = undefined
 
-    constructor(...renames: Array<{ from: string, to?: string, rewriteValue?: (value: any) => any }>) {
+    constructor(...renames: Array<{ from: string, to?: string, convert?: (value: any) => any }>) {
         super()
 
         this.renamed = new Map()
         this.renames = new Map()
 
-        for(const { from = '', to = undefined, rewriteValue = undefined } of renames) {
+        for(const { from = '', to = undefined, convert = undefined } of renames) {
             if(typeof from == 'string' && from.length > 0) {
 
-                this.renames.set(from, { to, rewriteValue })
+                this.renames.set(from, { to, convert })
             }
         }
     }
@@ -97,8 +97,8 @@ export class RewriteVisitor extends ExpressionVisitor {
             if(parentName) {
                 const rewrite = this.findRewrite(parentName)
 
-                if(rewrite?.rewriteValue) {
-                    const value = rewrite.rewriteValue(expression.value)
+                if(rewrite?.convert) {
+                    const value = rewrite.convert(expression.value)
 
                     return new LiteralExpression(value)
                 }
