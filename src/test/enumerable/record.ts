@@ -283,6 +283,29 @@ describe('When using enumerable for record type', () => {
 
             chai.expect(count).to.equal(1)
         })
+
+        it('should handle rewrite of key', async () => {
+            let enumerable = new jsEnumerable.Enumerable(asyncIterator())
+                .where('details/revisions/any(e: e/year le 1970)')
+                .rewrite({ from: 'details.revisions', to: 'revisions' })
+
+            let count = 0
+            for(let operator of enumerable.operators) {
+                if(operator.type == LinqType.Where) {
+                    for(let expression of operator.intersection) {
+                        switch(expression.property) {
+                            case 'details.revisions':
+                                count--; break
+
+                            case 'revisions':
+                                count++; break
+                        }
+                    }
+                }
+            }
+
+            chai.expect(count).to.equal(1)
+        })
     })
 
     describe('as a synchronous iterable', () => {
@@ -447,8 +470,6 @@ describe('When using enumerable for record type', () => {
         })
 
         it('should handle remap of key', () => {
-            let map = (name: string) => name == 'details/revisions' ? 'revisions' : 'yey' ?? name
-
             let enumerable = new jsEnumerable.Enumerable(iterator())
                 .where('details/revisions/any(e: e/year le 1970)')
                 .remap(name => {
@@ -460,6 +481,29 @@ describe('When using enumerable for record type', () => {
                             return name
                     }
                 })
+
+            let count = 0
+            for(let operator of enumerable.operators) {
+                if(operator.type == LinqType.Where) {
+                    for(let expression of operator.intersection) {
+                        switch(expression.property) {
+                            case 'details.revisions':
+                                count--; break
+
+                            case 'revisions':
+                                count++; break
+                        }
+                    }
+                }
+            }
+
+            chai.expect(count).to.equal(1)
+        })
+
+        it('should handle rewrite of key', () => {
+            let enumerable = new jsEnumerable.Enumerable(iterator())
+                .where('details/revisions/any(e: e/year le 1970)')
+                .rewrite({ from: 'details.revisions', to: 'revisions' })
 
             let count = 0
             for(let operator of enumerable.operators) {

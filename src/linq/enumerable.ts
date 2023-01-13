@@ -3,6 +3,7 @@ import { skipOperator, takeOperator, sliceOperator, includeOperator, orderByOper
 import { Entity, EntityRecord } from './types'
 
 import { RemapVisitor } from './peg/remapvisitor'
+import { RewriteVisitor } from './peg/rewritevisitor'
 
 export class Enumerable<TEntity> extends Base<TEntity> {
     constructor(items?: Array<TEntity>)
@@ -123,7 +124,7 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      * A remapper of identifier names, members is seperated with dot.
      * @param remapper Function that returns the new name of the identifier
      */
-    public remap<TRecord extends EntityRecord<TEntity>, M extends (name: K) => K | string, K extends keyof TRecord, T extends string>(remapper: M): Enumerable<Record<ReturnType<M>, any>>
+    public remap<TRecord extends EntityRecord<TEntity>, M extends (name: K) => T | string, K extends keyof TRecord, T extends string>(remapper: M): Enumerable<Record<ReturnType<M>, any>>
     /**
      * A remapper of identifier names, members is seperated with dot.
      * @param remapper Function that returns the new name of the identifier
@@ -146,6 +147,39 @@ export class Enumerable<TEntity> extends Base<TEntity> {
                 case LinqType.OrderBy:
                     if(remapper.length == 1)
                         item.property = remapper(item.property)
+                    break
+            }
+        }
+
+        return this
+    }
+
+    public rewrite<TRecord extends EntityRecord<TEntity>, M extends { from: K, to: T, convert?: (value: any) => any }, K extends keyof TRecord, T extends string>(...rewrites: M[]): Enumerable<Record<M['to'] | keyof Omit<TRecord, M['from']>, any>>
+    /**
+     * A rewrite of previous where/orderBy to a new identifier name, where members is seperated with dot.
+     * @param rewrites array of rewrite from a identifier name to a new one, with a possibility convert the value as well
+     */
+    public rewrite<TRecord extends Record<string, any>>(...rewrites: { from: string, to?: string, convert?: (value: any) => any }[]): Enumerable<TRecord>
+    /**
+     * A rewrite of previous where/orderBy to a new identifier name, where members is seperated with dot.
+     * @param rewrites array of rewrite from a identifier name to a new one, with a possibility convert the value as well
+     */
+    public rewrite(...rewrites: { from: string, to?: string, convert?: (value: any) => any }[]): this
+    public rewrite(...rewrites: { from: string, to?: string, convert: (value: any) => any }[]): this {
+        let visitor = new RewriteVisitor(...rewrites)
+
+        for(let item of this.operators) {
+            switch(item.type) {
+                case LinqType.Where:
+                    item.expression = visitor.visit(item.expression)
+                    break
+
+                case LinqType.OrderBy:
+                    for(const rewrite of rewrites) {
+                        if(rewrite.to && rewrite.from === item.property) {
+                            item.property = rewrite.to
+                        }
+                    }
                     break
             }
         }

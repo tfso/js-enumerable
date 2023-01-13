@@ -183,12 +183,28 @@ function * visitLeaf(expression: IExpression): IterableIterator<IExpression> {
     }
 }
 
-function isLogicalExpression(expression: IExpression): expression is ILogicalExpression {
-    return expression.type == ExpressionType.Logical
+export function isLogicalExpression(expression?: IExpression): expression is ILogicalExpression {
+    return expression?.type == ExpressionType.Logical ?? false
 }
 
-function isLambdaExpression(expression: IExpression): expression is ILambdaExpression {
-    return expression.type == ExpressionType.Lambda
+export function isLambdaExpression(expression?: IExpression): expression is ILambdaExpression {
+    return expression?.type == ExpressionType.Lambda ?? false
+}
+
+export function isBinaryExpression(expression?: IExpression): expression is IBinaryExpression {
+    return expression?.type == ExpressionType.Binary ?? false
+}
+
+export function isMemberExpression(expression?: IExpression): expression is IMemberExpression {
+    return expression?.type == ExpressionType.Member ?? false
+}
+
+export function isIdentifierExpression(expression?: IExpression): expression is IIdentifierExpression {
+    return expression?.type == ExpressionType.Identifier ?? false
+}
+
+export function isLiteralExpression(expression?: IExpression): expression is ILiteralExpression {
+    return expression?.type == ExpressionType.Literal ?? false
 }
 
 export { IExpression, ExpressionType }
