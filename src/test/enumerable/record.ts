@@ -7,18 +7,18 @@ if(jsEnumerable == null) {
 }
 
 function * iterator() {
-    yield { id: 1, make: 'Toyota', model: 'Corolla', year: 1990, details: { revisions: [{ year: 1966, name: 'E10' }, { year: 1970, name: 'E20' }, { year: 1974, name: 'E30-E60' }, { year: 1979, name: 'E70' }, { year: 1983, name: 'E80' }, { year: 1987, name: 'E90' }, { year: 1991, name: 'E100' }, { year: 1995, name: 'E110' }, { year: 2000, name: 'E120-130' }, { year: 2006, name: 'E140-150' }, { year: 2012, name: 'E160-180' }, { year: 2018, name: 'E210' }]} }
+    yield { id: 1, make: 'Toyota', optional: 'yes', model: 'Corolla', year: 1990, details: { revisions: [{ year: 1966, name: 'E10' }, { year: 1970, name: 'E20' }, { year: 1974, name: 'E30-E60' }, { year: 1979, name: 'E70' }, { year: 1983, name: 'E80' }, { year: 1987, name: 'E90' }, { year: 1991, name: 'E100' }, { year: 1995, name: 'E110' }, { year: 2000, name: 'E120-130' }, { year: 2006, name: 'E140-150' }, { year: 2012, name: 'E160-180' }, { year: 2018, name: 'E210' }]} }
     yield { id: 2, make: 'Nissan', model: 'Leaf', year: 2019, details: { revisions: [{ year: 2010, name: 'MY2011' }, { year: 2013, name: 'MY2013' }, { year: 2016, name: 'MY2016' }, { year: 2017, name: 'MY2017' }]} }
-    yield { id: 3, make: 'Nissan', model: 'Qashqai', year: 2009, details: { revisions: [{ year: 2006, name: 'J10' }, { year: 2010, name: 'J10-2' }, { year: 2013, name: 'J11' }, { year: 2017, name: 'J11-2' }]} }
-    yield { id: 4, make: 'Volkswagen', model: 'Golf', year: 1999, details: { revisions: [{ year: 1974, name: 'Mk1' }, { year: 1983, name: 'Mk2' }, { year: 1991, name: 'Mk3' }, { year: 1997, name: 'Mk4' }, { year: 2003, name: 'Mk5' }, { year: 2008, name: 'Mk6' }, { year: 2012, name: 'Mk7' }, { year: 2019, name: 'Mk8' }]} }
+    yield { id: 3, make: 'Nissan', optional: null, model: 'Qashqai', year: 2009, details: { revisions: [{ year: 2006, name: 'J10' }, { year: 2010, name: 'J10-2' }, { year: 2013, name: 'J11' }, { year: 2017, name: 'J11-2' }]} }
+    yield { id: 4, make: 'Volkswagen', optional: 'yes', model: 'Golf', year: 1999, details: { revisions: [{ year: 1974, name: 'Mk1' }, { year: 1983, name: 'Mk2' }, { year: 1991, name: 'Mk3' }, { year: 1997, name: 'Mk4' }, { year: 2003, name: 'Mk5' }, { year: 2008, name: 'Mk6' }, { year: 2012, name: 'Mk7' }, { year: 2019, name: 'Mk8' }]} }
     yield { id: 5, make: 'Mazda', model: '323', year: 2004, details: { revisions: [{ year: 1963, name: '1gen' }, { year: 1967, name: '2gen' }, { year: 1977, name: 'FA4' }, { year: 1980, name: 'BD' }, { year: 1985, name: 'BF' }, { year: 1989, name: 'BG' }, { year: 1994, name: 'BH' }, { year: 1998, name: 'BJ' }]} }
 }
 
 async function * asyncIterator() {
-    yield { id: 1, make: 'Toyota', model: 'Corolla', year: 1990, details: { revisions: [{ year: 1966, name: 'E10' }, { year: 1970, name: 'E20' }, { year: 1974, name: 'E30-E60' }, { year: 1979, name: 'E70' }, { year: 1983, name: 'E80' }, { year: 1987, name: 'E90' }, { year: 1991, name: 'E100' }, { year: 1995, name: 'E110' }, { year: 2000, name: 'E120-130' }, { year: 2006, name: 'E140-150' }, { year: 2012, name: 'E160-180' }, { year: 2018, name: 'E210' }]} }
+    yield { id: 1, make: 'Toyota', optional: 'yes', model: 'Corolla', year: 1990, details: { revisions: [{ year: 1966, name: 'E10' }, { year: 1970, name: 'E20' }, { year: 1974, name: 'E30-E60' }, { year: 1979, name: 'E70' }, { year: 1983, name: 'E80' }, { year: 1987, name: 'E90' }, { year: 1991, name: 'E100' }, { year: 1995, name: 'E110' }, { year: 2000, name: 'E120-130' }, { year: 2006, name: 'E140-150' }, { year: 2012, name: 'E160-180' }, { year: 2018, name: 'E210' }]} }
     yield { id: 2, make: 'Nissan', model: 'Leaf', year: 2019, details: { revisions: [{ year: 2010, name: 'MY2011' }, { year: 2013, name: 'MY2013' }, { year: 2016, name: 'MY2016' }, { year: 2017, name: 'MY2017' }]} }
-    yield { id: 3, make: 'Nissan', model: 'Qashqai', year: 2009, details: { revisions: [{ year: 2006, name: 'J10' }, { year: 2010, name: 'J10-2' }, { year: 2013, name: 'J11' }, { year: 2017, name: 'J11-2' }]} }
-    yield { id: 4, make: 'Volkswagen', model: 'Golf', year: 1999, details: { revisions: [{ year: 1974, name: 'Mk1' }, { year: 1983, name: 'Mk2' }, { year: 1991, name: 'Mk3' }, { year: 1997, name: 'Mk4' }, { year: 2003, name: 'Mk5' }, { year: 2008, name: 'Mk6' }, { year: 2012, name: 'Mk7' }, { year: 2019, name: 'Mk8' }]} }
+    yield { id: 3, make: 'Nissan', optional: null, model: 'Qashqai', year: 2009, details: { revisions: [{ year: 2006, name: 'J10' }, { year: 2010, name: 'J10-2' }, { year: 2013, name: 'J11' }, { year: 2017, name: 'J11-2' }]} }
+    yield { id: 4, make: 'Volkswagen', optional: 'yes', model: 'Golf', year: 1999, details: { revisions: [{ year: 1974, name: 'Mk1' }, { year: 1983, name: 'Mk2' }, { year: 1991, name: 'Mk3' }, { year: 1997, name: 'Mk4' }, { year: 2003, name: 'Mk5' }, { year: 2008, name: 'Mk6' }, { year: 2012, name: 'Mk7' }, { year: 2019, name: 'Mk8' }]} }
     yield { id: 5, make: 'Mazda', model: '323', year: 2004, details: {  revisions: [{ year: 1963, name: '1gen' }, { year: 1967, name: '2gen' }, { year: 1977, name: 'FA4' }, { year: 1980, name: 'BD' }, { year: 1985, name: 'BF' }, { year: 1989, name: 'BG' }, { year: 1994, name: 'BH' }, { year: 1998, name: 'BJ' }]} }
 }
 
@@ -435,6 +435,15 @@ describe('When using enumerable for record type', () => {
                 cars.push(car)
             
             chai.expect(cars.length).to.equal(1)
+        })
+
+        it('should iterate using optional values', () => {
+            let cars = []
+            
+            for(let car of new jsEnumerable.Enumerable(iterator()).where(`contains(optional, 'es')`))
+                cars.push(car)
+            
+            chai.expect(cars.length).to.equal(2)
         })
         
         it('should iterate using where cars having models for over 40 years since 1970 (javascript)', () => {
