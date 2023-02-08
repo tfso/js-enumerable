@@ -3,7 +3,7 @@ import { Repository } from './../repository/repository'
 
 import { IEnumerable, Entity, EntityRecord } from './types'
 
-export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
+export default abstract class Base<TEntity extends Entity> implements IEnumerable<TEntity> {
     private iterableName: string | null = null
     private items: Iterable<TEntity> | AsyncIterable<TEntity> | null = null
     
@@ -23,7 +23,7 @@ export default abstract class Base<TEntity> implements IEnumerable<TEntity> {
     
     abstract slice(begin: string | number, end?: number): this
     
-    abstract includes(entity: Partial<TEntity>, fromIndex?: number): this
+    abstract includes<TRecord extends EntityRecord<TEntity>>(entity: Partial<TRecord>, fromIndex?: number): this
 
     abstract where(predicate: string): this
     abstract where(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): this

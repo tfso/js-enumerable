@@ -10,6 +10,8 @@
         ],
         "downlevelIteration": false,
         "useUnknownInCatchVariables": false,
+        "exactOptionalPropertyTypes": false,
+        "strictNullChecks": true,
         "skipLibCheck": true,
         "module": "commonjs",
         "moduleResolution": "node",

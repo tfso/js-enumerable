@@ -5,7 +5,7 @@ import { Entity, EntityRecord } from './types'
 import { RemapVisitor } from './peg/remapvisitor'
 import { RewriteVisitor } from './peg/rewritevisitor'
 
-export class Enumerable<TEntity> extends Base<TEntity> {
+export class Enumerable<TEntity extends Entity> extends Base<TEntity> {
     constructor(items?: Array<TEntity>)
     constructor(items?: Iterable<TEntity>)
     constructor(items?: AsyncIterable<TEntity>)
@@ -55,8 +55,8 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      * Returns all elements that matches the partially entity, exact match
      * @param entity
      */
-    public includes(entity: Partial<TEntity>): this {
-        this.operators.push(includeOperator(entity))
+    public includes<TRecord extends EntityRecord<TEntity>>(entity: Partial<TRecord>): this {
+        this.operators.push(<any>includeOperator(entity))
 
         return this
     }
@@ -165,7 +165,7 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      * @param rewrites array of rewrite from a identifier name to a new one, with a possibility convert the value as well
      */
     public rewrite(...rewrites: { from: string, to?: string, convert?: (value: any) => any }[]): this
-    public rewrite(...rewrites: { from: string, to?: string, convert: (value: any) => any }[]): this {
+    public rewrite(...rewrites: { from: string, to?: string, convert: (value: any) => any }[]): any {
         let visitor = new RewriteVisitor(...rewrites)
 
         for(let item of this.operators) {
