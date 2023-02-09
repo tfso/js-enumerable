@@ -43,6 +43,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TFSO_TOKEN }}
           FONT_AWESOME_TOKEN: ${{ secrets.FONT_AWESOME_TOKEN }}
           CUSTOM_TAG: ${{ needs.setup.outputs.version }}
+          NODE_VERSION: 16
 
       - name: upload package
         uses: actions/upload-artifact@v3

@@ -29,6 +29,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TFSO_TOKEN }}
           FONT_AWESOME_TOKEN: ${{ secrets.FONT_AWESOME_TOKEN }}
+          NODE_VERSION: 16
           TRUNCATE_PRERELEASE: true
 
   tag:
