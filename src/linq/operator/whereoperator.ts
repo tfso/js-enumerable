@@ -405,7 +405,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
     }
 }
 
-function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' {
+function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in' {
     if(LogicalExpression.instanceof(expression)) {
         switch(expression.operator) {
             case LogicalOperatorType.Equal:
@@ -425,6 +425,9 @@ function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | 
 
             case LogicalOperatorType.LesserOrEqual:
                 return '<='
+            
+            case LogicalOperatorType.In:
+                return 'in'
         }
 
         throw new Error(`Logical operator '${expression.operator}' is unknown`)

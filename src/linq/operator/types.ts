@@ -23,14 +23,14 @@ type LingIterator<T extends Entity> = {
 export type LinqOperator<T extends Entity = Entity> = 
     (LinqOperatorSkip | LinqOperatorTake | LinqOperatorSlice | LinqOperatorIncludes<T> | LinqOperatorWhere<T> | LinqOperatorOrderBy<T> | LinqOperatorSelect) & (LinqEvaluator<T> | LingIterator<T>)
 
-type NullExpression = { type: 'null', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: any }
-type StringExpression = { type: 'string', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: any, wildcard: 'none' | 'left' | 'right' | 'both' }
-type NumberExpression = { type: 'number', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: number }
-type BigIntExpression = { type: 'bigint', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: bigint | number }
-type RecordExpression = { type: 'record', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: Record<string, any> }
-type DateExpression = { type: 'date', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: Date }
-type BooleanExpression = { type: 'boolean', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: boolean }
-type ArrayExpression = { type: 'array', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: Array<any> }
-type InExpression = { type: 'expression', operator: 'any' | 'all', property: string, value: IterableIterator<WhereExpression> }
+type NullExpression = { type: 'null', operator: '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in', property: string, value: any }
+type StringExpression = { type: 'string', operator: '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in', property: string, value: any, wildcard: 'none' | 'left' | 'right' | 'both' }
+type NumberExpression = { type: 'number', operator: '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in', property: string, value: number }
+type BigIntExpression = { type: 'bigint', operator: '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in', property: string, value: bigint | number }
+type RecordExpression = { type: 'record', operator: '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in', property: string, value: Record<string, any> }
+type DateExpression = { type: 'date', operator: '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in', property: string, value: Date }
+type BooleanExpression = { type: 'boolean', operator: '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in', property: string, value: boolean }
+type ArrayExpression = { type: 'array', operator: '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in', property: string, value: Array<any> }
+type CollectionExpression = { type: 'expression', operator: 'any' | 'all', property: string, value: IterableIterator<WhereExpression> }
 
-export type WhereExpression = NullExpression | StringExpression | NumberExpression | BigIntExpression | RecordExpression | DateExpression | BooleanExpression | ArrayExpression | InExpression
+export type WhereExpression = NullExpression | StringExpression | NumberExpression | BigIntExpression | RecordExpression | DateExpression | BooleanExpression | ArrayExpression | CollectionExpression
