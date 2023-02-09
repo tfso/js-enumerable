@@ -73,7 +73,7 @@ jobs:
       - name: extract npm tag
         id: npmpublish
         run: |
-          echo "${PRERELEASE}" | sed 's/[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/::set-output name=tag::\1/'
+          echo "tag=$(echo "${PRERELEASE}" | sed 's/v\?[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/\1/')" >> $GITHUB_OUTPUT
         env:
           PRERELEASE: ${{ needs.build.outputs.version }}
 
@@ -103,7 +103,7 @@ jobs:
       - name: extract npm tag
         id: npmpublish
         run: |
-          echo "${PRERELEASE}" | sed 's/[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/::set-output name=tag::\1/'
+          echo "tag=$(echo "${PRERELEASE}" | sed 's/v\?[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/\1/')" >> $GITHUB_OUTPUT
         env:
           PRERELEASE: ${{ needs.build.outputs.version }}
 
