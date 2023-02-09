@@ -32,7 +32,6 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    name: download package
     needs: setup
     steps:
       - name: build npm package

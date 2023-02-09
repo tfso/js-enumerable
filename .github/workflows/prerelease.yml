@@ -32,7 +32,6 @@ jobs:
   build:
     if: needs.setup.outputs.prerelease
     runs-on: ubuntu-latest
-    name: download package
     needs: setup
     outputs:
       version: ${{ needs.setup.outputs.version }}
