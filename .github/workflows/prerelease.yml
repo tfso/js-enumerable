@@ -111,6 +111,6 @@ jobs:
 
       - name: publish prerelease version
         run: |
-          npm publish --tag ${{ steps.npmpublish.outputs.tag }}
+          npm publish --access public --tag ${{ steps.npmpublish.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
