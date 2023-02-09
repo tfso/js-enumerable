@@ -55,7 +55,7 @@ jobs:
 
   publish-npm:
     runs-on: ubuntu-latest
-    name: publish
+    name: publish to npm
     needs: build
     steps:
       - name: download package
@@ -85,7 +85,7 @@ jobs:
 
   publish-github:
     runs-on: ubuntu-latest
-    name: publish
+    name: publish to github
     needs: build
     permissions:
       packages: write
