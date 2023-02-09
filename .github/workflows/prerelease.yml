@@ -1,9 +1,9 @@
-name: (Release) Package
+name: (Prerelease) Package
 
 on:
-  push:
-    tags:
-      - 'v[0-9]+\.[0-9]+\.[0-9]+' # only full releases, eg v1.0.1
+    push:
+        tags:
+            - 'v[0-9]+\.[0-9]+\.[0-9]+-*' # only preleases, eg v1.0.1-beta.1
 
 env:
   FILES: | 
@@ -16,12 +16,11 @@ env:
 
 jobs:
   setup:
-    environment: prod
     runs-on: ubuntu-latest
     name: find version
     outputs:
-        version: v${{ steps.semver.outputs.fullversion }}
-        prerelease: ${{ steps.semver.outputs.prerelease }}
+      version: v${{ steps.semver.outputs.fullversion }}
+      prerelease: ${{ steps.semver.outputs.prerelease }}
     steps:
       - name: extract tag version
         id: semver
@@ -31,9 +30,12 @@ jobs:
           version_extractor_regex: 'refs\/tags\/v(.*)$'
 
   build:
+    if: needs.setup.outputs.prerelease
     runs-on: ubuntu-latest
     name: download package
     needs: setup
+    outputs:
+      version: ${{ needs.setup.outputs.version }}
     steps:
       - name: build npm package
         uses: tfso/action-helpers/npm-build@v1
@@ -52,33 +54,14 @@ jobs:
           retention-days: 7
 
   publish-npm:
-    name: publish to npm
-    needs: build
     runs-on: ubuntu-latest
+    name: publish
+    needs: build
     steps:
-      - name: download artifact
+      - name: download package
         uses: actions/download-artifact@v3
-
-      - name: setup
-        uses: actions/setup-node@v1
         with:
-          node-version: 12
-          registry-url: https://registry.npmjs.org/
-          scope: "@tfso"
-          
-      - name: publish
-        run: |
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish-github:
-    name: publish to github
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: download artifact
-        uses: actions/download-artifact@v3
+          name: package
 
       - name: setup
         uses: actions/setup-node@v3
@@ -87,8 +70,45 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@tfso'
 
-      - name: publish
+      - name: extract npm tag
+        id: npmpublish
         run: |
-          npm publish
+          echo "${PRERELEASE}" | sed 's/[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/::set-output name=tag::\1/'
+        env:
+          PRERELEASE: ${{ needs.build.outputs.version }}
+
+      - name: publish prerelease version
+        run: |
+          npm publish --access public --tag ${{ steps.npmpublish.outputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-github:
+    runs-on: ubuntu-latest
+    name: publish
+    needs: build
+    steps:
+      - name: download package
+        uses: actions/download-artifact@v3
+        with:
+          name: package
+
+      - name: setup
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@tfso'
+
+      - name: extract npm tag
+        id: npmpublish
+        run: |
+          echo "${PRERELEASE}" | sed 's/[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/::set-output name=tag::\1/'
+        env:
+          PRERELEASE: ${{ needs.build.outputs.version }}
+
+      - name: publish prerelease version
+        run: |
+          npm publish --tag ${{ steps.npmpublish.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
