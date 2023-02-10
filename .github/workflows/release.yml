@@ -55,10 +55,13 @@ jobs:
     name: publish to npm
     needs: build
     runs-on: ubuntu-latest
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-    if: ${{ env.NPM_TOKEN }}
+    continue-on-error: true
     steps:
+      - name: check npm
+        if: ${{ !secrets.NPM_TOKEN }}
+        run: |
+            exit 1
+
       - name: download artifact
         uses: actions/download-artifact@v3
         with:
