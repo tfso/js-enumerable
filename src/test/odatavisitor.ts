@@ -1,4 +1,4 @@
-﻿import * as assert from 'assert'
+import * as assert from 'assert'
 import * as Expr from './../linq/peg/expressionvisitor'
 import { ODataVisitor } from './../linq/peg/odatavisitor'
 
@@ -82,7 +82,7 @@ describe('When using OData for ExpressionVisitor', () => {
         assert.equal((<Expr.LiteralExpression>expr).value, true)
     })
 
-    it('should evaluate a expression with contains', () => {
+    it('should evaluate a expression with contains where it is false', () => {
         let reduced = reducer.parseOData('contains(stringhavingdate, \'bc\')'),
             expr = reducer.evaluate(reduced, vars)
 
