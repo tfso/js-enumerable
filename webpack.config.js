@@ -2,6 +2,7 @@
 const webpack = require('webpack');
 
 module.exports = {
+    mode: 'production',
     entry: {
         lib: [
             'core-js/modules/es.symbol.async-iterator',
