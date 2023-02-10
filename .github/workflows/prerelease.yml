@@ -53,43 +53,35 @@ jobs:
           path: ${{ env.FILES }}
           retention-days: 7
 
-  publish-npm:
-    runs-on: ubuntu-latest
-    name: publish to npm
-    needs: build
-    continue-on-error: true
-    env: 
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-    steps:
-      - name: check npm
-        if: ${{ !env.NPM_TOKEN }}
-        run: |
-            exit 1
+  # publish-npm:
+  #   runs-on: ubuntu-latest
+  #   name: publish to npm
+  #   needs: build
+  #   steps:
+  #     - name: download package
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: package
 
-      - name: download package
-        uses: actions/download-artifact@v3
-        with:
-          name: package
+  #     - name: setup
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
+  #         registry-url: https://registry.npmjs.org/
+  #         scope: '@tfso'
 
-      - name: setup
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
-          scope: '@tfso'
+  #     - name: extract npm tag
+  #       id: npmpublish
+  #       run: |
+  #         echo "tag=$(echo "${PRERELEASE}" | sed 's/v\?[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/\1/')" >> $GITHUB_OUTPUT
+  #       env:
+  #         PRERELEASE: ${{ needs.build.outputs.version }}
 
-      - name: extract npm tag
-        id: npmpublish
-        run: |
-          echo "tag=$(echo "${PRERELEASE}" | sed 's/v\?[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/\1/')" >> $GITHUB_OUTPUT
-        env:
-          PRERELEASE: ${{ needs.build.outputs.version }}
-
-      - name: publish prerelease version
-        run: |
-          npm publish --access public --tag ${{ steps.npmpublish.outputs.tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #     - name: publish prerelease version
+  #       run: |
+  #         npm publish --access public --tag ${{ steps.npmpublish.outputs.tag }}
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-github:
     runs-on: ubuntu-latest
