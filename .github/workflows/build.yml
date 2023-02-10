@@ -1,3 +1,5 @@
+name: Build
+
 on: 
   push:
     branches:
@@ -5,58 +7,42 @@ on:
     tags-ignore:
       - '*.*'
 
-name: build
+  workflow_dispatch:
+    inputs:
+      deploy:
+        type: boolean
+        required: true
+        description: Deploy package
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.npm.outputs.version }}
+      prerelease: ${{ steps.npm.outputs.prerelease }}
+      deploy: ${{ steps.npm.outputs.deploy }}    
+    steps:
+      - name: build npm package
+        uses: tfso/action-helpers/npm-build@v1
+        id: npm
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TFSO_TOKEN }}
+          FONT_AWESOME_TOKEN: ${{ secrets.FONT_AWESOME_TOKEN }}
+          NODE_VERSION: 16
+          TRUNCATE_PRERELEASE: true
+
+  tag:
+    if: needs.build.outputs.deploy == 'true' || github.event.inputs.deploy == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    name: push tag
     steps:
       - name: checkout
-        uses: actions/checkout@v2
-      - name: setup
-        uses: actions/setup-node@v1
+        uses: actions/checkout@v3
+
+      - name: push tag
+        uses: tfso/action-helpers/tag@v1
         with:
-          node-version: 12
-      - name: extract package version
-        id: semver_package
-        uses: Saionaro/extract-package-version@v1.0.6
-      - name: extract semantic version
-        id: semver 
-        uses: booxmedialtd/ws-action-parse-semver@v1
-        with:
-          input_string: ${{ steps.semver_package.outputs.version }}
-      - name: extract npm tag
-        id: npmpublish
-        run: |
-          echo "${PRERELEASE}" | sed 's/[0-9]*\.[0-9]*\.[0-9]*\-\([^.+]*\).*/::set-output name=tag::\1/'
-        env: 
-          PRERELEASE: ${{steps.semver.outputs.fullversion}}           
-      - name: extracted version
-        run: |
-          echo "## npm"
-          echo "version: ${{ steps.semver_package.outputs.version }}"
-          echo "tag: ${{ steps.npmpublish.outputs.tag }}"
-          echo ""
-          echo "## tag"
-          echo "version: ${{ steps.semver.outputs.fullversion }}"
-          echo "major: ${{ steps.semver.outputs.major }}"
-          echo "minor: ${{ steps.semver.outputs.minor }}"
-          echo "patch: ${{ steps.semver.outputs.patch }}"
-          echo "prerelease: ${{ steps.semver.outputs.prerelease }}"
-          echo "build: ${{ steps.semver.outputs.build }}"
-      - name: build project
-        run: |
-          npm ci
-          npm run build
-        env:
-            CI: true
-            NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-            NPM_TFSO_TOKEN: ${{secrets.NPM_TFSO_TOKEN}}
-      - name: run tests
-        run: |
-          npm run lint
-          npm test
-        env:
-            CI: true
-            NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-            NPM_TFSO_TOKEN: ${{secrets.NPM_TFSO_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.TFSO_REPO_TAG }}
+          tag: ${{ needs.build.outputs.version }}
