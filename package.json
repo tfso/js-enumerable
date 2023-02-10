@@ -8,9 +8,6 @@
     "test": "tsc && node node_modules/mocha/bin/_mocha --require ts-node/register --require lib/test/setup/mocha-require.js --exclude src/test/index.ts --recursive src/test/**/*.ts",
     "lint": "node node_modules/eslint/bin/eslint --ignore-pattern lib/ --ext .ts ./",
     "build": "tsc && webpack",
-    "preversion": "npm test",
-    "version": "npm run build",
-    "postversion": "git push --tags",
     "analyze": "webpack --profile --json > ./stats.json && webpack-bundle-analyzer ./stats.json",
     "browserify": "browserify src/test/index.ts -p [ tsify --noImplicitAny ] > lib/mocha-bundle.js"
   },
