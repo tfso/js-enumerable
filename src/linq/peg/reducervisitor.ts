@@ -170,10 +170,24 @@ export class ReducerVisitor extends ExpressionVisitor {
                     return new LiteralExpression(leftValue < rightValue)
                 case LogicalOperatorType.LesserOrEqual:
                     return new LiteralExpression(leftValue <= rightValue)
+                case LogicalOperatorType.In:
+                    if(typeof rightValue == 'object' && Array.isArray(rightValue)) {
+                        return new LiteralExpression(rightValue.includes(leftValue))
+                    }
+                    break
             }
         }
 
         switch(expression.operator) {
+            case LogicalOperatorType.In:
+                if(left.type == ExpressionType.Literal && right.type == ExpressionType.Array) {
+                    const leftValue = (<LiteralExpression>left).value
+                    const rightValue = (<ArrayExpression>right).elements
+
+                    return new LiteralExpression(rightValue.some(expr => expr.type == ExpressionType.Literal ? (<LiteralExpression>expr).value === leftValue : false))
+                }
+                break
+
             case LogicalOperatorType.And:
                 if(left.type == ExpressionType.Literal && (<LiteralExpression>left).value === true) return right
                 if(right.type == ExpressionType.Literal && (<LiteralExpression>right).value === true) return left
@@ -264,7 +278,12 @@ export class ReducerVisitor extends ExpressionVisitor {
             }
 
             case ExpressionType.Array:
-                return new ArrayExpression((<IArrayExpression>expression).elements.map(v => this.evaluate(v, scope, global)))
+                const elements = (<IArrayExpression>expression).elements.map(v => this.evaluate(v, scope, global))
+
+                if(elements.every(expr => expr.type == ExpressionType.Literal))
+                    return new LiteralExpression(elements.map(expr => (<LiteralExpression>expr).value))
+                
+                return new ArrayExpression(elements)
 
             case ExpressionType.Object:
                 return new ObjectExpression((<IObjectExpression>expression).properties.map(el => <IObjectProperty>{ key: this.evaluate(el.key, scope, global), value: this.evaluate(el.value, scope, global) }))
