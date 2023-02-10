@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     name: publish to npm
     needs: build
-    if: secrets.NPM_TOKEN
+    if: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: download package
         uses: actions/download-artifact@v3
