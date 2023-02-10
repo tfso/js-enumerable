@@ -1,3 +1,5 @@
+name: Build
+
 on: 
   push:
     branches:
@@ -5,17 +7,42 @@ on:
     tags-ignore:
       - '*.*'
 
-name: build
+  workflow_dispatch:
+    inputs:
+      deploy:
+        type: boolean
+        required: true
+        description: Deploy package
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.npm.outputs.version }}
+      prerelease: ${{ steps.npm.outputs.prerelease }}
+      deploy: ${{ steps.npm.outputs.deploy }}    
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: build npm package
+        uses: tfso/action-helpers/npm-build@v1
+        id: npm
         with:
-          node-version: 12
-      - run: npm ci
-      - run: npm test
-      - run: npm run lint
-      - run: npm run build
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TFSO_TOKEN }}
+          FONT_AWESOME_TOKEN: ${{ secrets.FONT_AWESOME_TOKEN }}
+          NODE_VERSION: 16
+          TRUNCATE_PRERELEASE: true
+
+  tag:
+    if: needs.build.outputs.deploy == 'true' || github.event.inputs.deploy == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    name: push tag
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: push tag
+        uses: tfso/action-helpers/tag@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.TFSO_REPO_TAG }}
+          tag: ${{ needs.build.outputs.version }}
