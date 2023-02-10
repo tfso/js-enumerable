@@ -21,7 +21,7 @@ import { IObjectExpression, ObjectExpression, IObjectProperty } from './expressi
 import { ILambdaExpression, LambdaExpression } from './expression/lambdaexpression'
 
 export class ExpressionVisitor implements IExpressionVisitor {
-    protected _rawExpression: { expression: string, parameters: Array<string>, fn: ((...args: Array<any>) => any) }
+    //protected _rawExpression: { expression: string, parameters: Array<string>, fn: ((...args: Array<any>) => any) }
     private _expressionStack: ExpressionStack
 
     constructor() {
@@ -36,7 +36,7 @@ export class ExpressionVisitor implements IExpressionVisitor {
     public parse(type: 'javascript', lambda: (it: any, ...param: Array<any>) => boolean, ...params: Array<any>): ReturnType<typeof parse>
     public parse(type: 'javascript', predicate: string): ReturnType<typeof parse>
     public parse(type: 'odata' | 'javascript', predicate: any, ...params: Array<any>): ReturnType<typeof parse> {
-        let { original, expression } = parse(<any>type, predicate)
+        let { original, expression } = parse(<any>type, predicate) ?? { }
 
         return {
             type, 

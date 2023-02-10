@@ -28,7 +28,7 @@ describe('When using ExpressionVisitor', () => {
 
                 assert.ok(expr.type == Expr.ExpressionType.Method, 'Expected a MethodExpression')
                 assert.ok((<Expr.IMethodExpression>expr).name == 'any', 'Expected method name \'any\'')
-                assert.ok((<Expr.IMethodExpression>expr).caller.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
+                assert.ok((<Expr.IMethodExpression>expr).caller?.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
                 assert.ok((<Expr.IIdentifierExpression>(<Expr.IMethodExpression>expr).caller).name == 'Countries', 'Expected name \'Countries\' of identifier as caller')
                 assert.ok((<Expr.IMethodExpression>expr).parameters.length == 1, 'Expected one argument')
                 assert.ok((<Expr.IMethodExpression>expr).parameters[0].type == Expr.ExpressionType.Lambda, 'Expected a lambda expression as first argument')
@@ -62,7 +62,7 @@ describe('When using ExpressionVisitor', () => {
                 assert.ok(expr.type == Expr.ExpressionType.Method, 'Expected a MethodExpression')
                 assert.ok((<Expr.IMethodExpression>expr).name == 'indexOf', 'Expected method name \'indexOf\'')
                 assert.ok((<Expr.IMethodExpression>expr).parameters.length == 1, 'Expected one argument')
-                assert.ok((<Expr.IMethodExpression>expr).caller.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
+                assert.ok((<Expr.IMethodExpression>expr).caller?.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
             })
 
             it('should return a method expression when having lambda expression as argument', () => {
@@ -73,7 +73,7 @@ describe('When using ExpressionVisitor', () => {
 
                 assert.ok(expr.type == Expr.ExpressionType.Method, 'Expected a MethodExpression')
                 assert.ok((<Expr.IMethodExpression>expr).name == 'every', 'Expected method name \'indexOf\'')
-                assert.ok((<Expr.IMethodExpression>expr).caller.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
+                assert.ok((<Expr.IMethodExpression>expr).caller?.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
                 assert.ok((<Expr.IIdentifierExpression>(<Expr.IMethodExpression>expr).caller).name == 'ar', 'Expected name \'ar\' of identifier as caller')
                 assert.ok((<Expr.IMethodExpression>expr).parameters.length == 1, 'Expected one argument')
                 assert.ok((<Expr.IMethodExpression>expr).parameters[0].type == Expr.ExpressionType.Lambda, 'Expected a lambda expression as first argument')
@@ -88,11 +88,11 @@ describe('When using ExpressionVisitor', () => {
                 assert.ok(expr.type == Expr.ExpressionType.Method, 'Expected a MethodExpression')
                 assert.ok((<Expr.IMethodExpression>expr).name == 'toString', 'Expected method name \'toString\'')
                 assert.ok((<Expr.IMethodExpression>expr).parameters.length == 0, 'Expected zero arguments')
-                assert.ok((<Expr.IMethodExpression>expr).caller.type == Expr.ExpressionType.Method, 'Expected a new method as caller')
+                assert.ok((<Expr.IMethodExpression>expr).caller?.type == Expr.ExpressionType.Method, 'Expected a new method as caller')
 
                 assert.ok((<Expr.IMethodExpression>((<Expr.IMethodExpression>expr).caller)).name == 'indexOf', 'Expected method name \'indexOf\'')
                 assert.ok((<Expr.IMethodExpression>((<Expr.IMethodExpression>expr).caller)).parameters.length == 1, 'Expected one argument')
-                assert.ok((<Expr.IMethodExpression>((<Expr.IMethodExpression>expr).caller)).caller.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
+                assert.ok((<Expr.IMethodExpression>((<Expr.IMethodExpression>expr).caller))?.caller?.type == Expr.ExpressionType.Identifier, 'Expected a identifier as caller')
             })
         })
     })

@@ -2,9 +2,6 @@
 import { IExpression, Expression, ExpressionType } from './expression'
 
 export class LambdaExpression extends Expression implements ILambdaExpression {
-    private _expression: string;
-    private _parameters: Array<string> 
-
     constructor(public parameters: Array<IExpression>, public expression: IExpression) {
         super(ExpressionType.Lambda)
     }

@@ -1,10 +1,11 @@
 import Base from './base'
-import { skipOperator, takeOperator, sliceOperator, includeOperator, orderByOperator, whereOperator, selectOperator, LinqType } from './operator'
+import { skipOperator, takeOperator, sliceOperator, includeOperator, orderByOperator, whereOperator, selectOperator, LinqType, LinqOperator } from './operator'
 import { Entity, EntityRecord } from './types'
 
 import { RemapVisitor } from './peg/remapvisitor'
+import { RewriteVisitor } from './peg/rewritevisitor'
 
-export class Enumerable<TEntity> extends Base<TEntity> {
+export class Enumerable<TEntity extends Entity> extends Base<TEntity> {
     constructor(items?: Array<TEntity>)
     constructor(items?: Iterable<TEntity>)
     constructor(items?: AsyncIterable<TEntity>)
@@ -54,8 +55,8 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      * Returns all elements that matches the partially entity, exact match
      * @param entity
      */
-    public includes(entity: Partial<TEntity>): this {
-        this.operators.push(includeOperator(entity))
+    public includes<TRecord extends EntityRecord<TEntity>>(entity: Partial<TRecord>): this {
+        this.operators.push(<any>includeOperator(entity))
 
         return this
     }
@@ -71,8 +72,8 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      * @param parameters any javascript parameters has to be declared
      */
     public where(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): this
-    public where(): this {
-        this.operators.push(whereOperator.call(null, ...arguments))
+    public where(predicate: any, ...param: any[]): this {
+        this.operators.push(<LinqOperator<TEntity>>whereOperator(predicate, ...param))
         
         return this
     }
@@ -123,7 +124,12 @@ export class Enumerable<TEntity> extends Base<TEntity> {
      * A remapper of identifier names, members is seperated with dot.
      * @param remapper Function that returns the new name of the identifier
      */
-    public remap<TRecord extends EntityRecord<TEntity>, M extends (name: K) => K | string, K extends keyof TRecord, T extends string>(remapper: M): Enumerable<Record<ReturnType<M>, any>>
+    public remap<TRecord extends EntityRecord<TEntity>, M extends (name: K) => T | string, K extends keyof TRecord, T extends string>(remapper: M): Enumerable<Record<ReturnType<M>, any>>
+    /**
+     * A remapper of identifier names, members is seperated with dot.
+     * @param remapper Function that returns the new name of the identifier
+     */
+    public remap<TRecord extends Record<string, any>>(remapper: (name: string) => string): Enumerable<TRecord>
     /**
      * A remapper of values that corresponds to a identifier name
      * @param remapper Function that returns the new value
@@ -141,6 +147,39 @@ export class Enumerable<TEntity> extends Base<TEntity> {
                 case LinqType.OrderBy:
                     if(remapper.length == 1)
                         item.property = remapper(item.property)
+                    break
+            }
+        }
+
+        return this
+    }
+
+    public rewrite<TRecord extends EntityRecord<TEntity>, M extends { from: K, to: T, convert?: (value: any) => any }, K extends keyof TRecord, T extends string>(...rewrites: M[]): Enumerable<Record<M['to'] | keyof Omit<TRecord, M['from']>, any>>
+    /**
+     * A rewrite of previous where/orderBy to a new identifier name, where members is seperated with dot.
+     * @param rewrites array of rewrite from a identifier name to a new one, with a possibility convert the value as well
+     */
+    public rewrite<TRecord extends Record<string, any>>(...rewrites: { from: string, to?: string, convert?: (value: any) => any }[]): Enumerable<TRecord>
+    /**
+     * A rewrite of previous where/orderBy to a new identifier name, where members is seperated with dot.
+     * @param rewrites array of rewrite from a identifier name to a new one, with a possibility convert the value as well
+     */
+    public rewrite(...rewrites: { from: string, to?: string, convert?: (value: any) => any }[]): this
+    public rewrite(...rewrites: { from: string, to?: string, convert: (value: any) => any }[]): any {
+        let visitor = new RewriteVisitor(...rewrites)
+
+        for(let item of this.operators) {
+            switch(item.type) {
+                case LinqType.Where:
+                    item.expression = visitor.visit(item.expression)
+                    break
+
+                case LinqType.OrderBy:
+                    for(const rewrite of rewrites) {
+                        if(rewrite.to && rewrite.from === item.property) {
+                            item.property = rewrite.to
+                        }
+                    }
                     break
             }
         }

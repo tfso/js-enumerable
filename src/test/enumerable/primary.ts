@@ -1,7 +1,7 @@
 import { Enumerable, IEnumerable } from './../../linq'
 
 /* eslint-disable-next-line */
-if(jsEnumerable == null) {
+if(jsEnumerable! == null) {
     /* eslint-disable-next-line */
     var jsEnumerable: { Enumerable: typeof Enumerable } = require('./../../index')
 }
