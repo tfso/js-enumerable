@@ -1,6 +1,6 @@
 ﻿import * as assert from 'assert'
 
-import { isLambdaExpression, isBinaryExpression, isMemberExpression, isIdentifierExpression, isLogicalExpression } from '../linq/peg/expression'
+import { isLambdaExpression, isBinaryExpression, isMemberExpression, isIdentifierExpression, isLogicalExpression, isArrayExpression } from '../linq/peg/expression'
 import { isLiteralExpression } from '../linq/peg/expression/expression'
 
 import * as Expr from '../linq/peg/expressionvisitor'
@@ -60,6 +60,22 @@ describe('When using Rewrite for ExpressionVisitor', () => {
         const literalExpr = isLiteralExpression(logicalExpr?.right) ? logicalExpr?.right : undefined
 
         chai.expect(literalExpr?.value).to.equal(2.5 * 2)
+    })
+
+    it('should be able to rewrite member name and corresponding value by visiting and in expression', () => {
+        const expression = new Expr.ExpressionVisitor().parseOData('mynumber in (1, 2, 3)')
+        const rewrite = new RewriteVisitor({ from: 'mynumber', to: 'number', convert: (value) => value * 2 })
+        const rewriteExpression = rewrite.visit(expression)
+
+        const logicalExpr = isLogicalExpression(rewriteExpression) ? rewriteExpression : undefined
+        const identifierExpr = isIdentifierExpression(logicalExpr?.left) ? logicalExpr?.left : undefined
+    
+        chai.expect(identifierExpr?.name).to.equal('number')
+
+        const arrayExpr = isArrayExpression(logicalExpr?.right) ? logicalExpr?.right : undefined
+        const values = arrayExpr?.elements.map(expr => expr.type == Expr.ExpressionType.Literal ? (<Expr.LiteralExpression>expr).value : null)
+
+        chai.expect(values).to.have.members([1*2, 2*2, 3*2])
     })
 
     it('should be able to rewrite member with scoping', () => {

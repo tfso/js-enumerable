@@ -5,5 +5,6 @@ export {
     isLambdaExpression, 
     isBinaryExpression,
     isMemberExpression,
-    isIdentifierExpression
+    isIdentifierExpression,
+    isArrayExpression
 } from './expression'
