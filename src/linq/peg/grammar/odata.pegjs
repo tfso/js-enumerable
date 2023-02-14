@@ -122,7 +122,7 @@ RelationalExpression
     }
 
 InExpression 
-	 = first:AdditiveExpression rest:(('IN'i __) AdditiveExpression)*
+    = first:AdditiveExpression rest:(('IN'i __) AdditiveExpression)*
     {
       return buildTree(first, rest, function(result, element) {
         return {
@@ -347,7 +347,7 @@ StringLiteral
     { return { type: 'Literal', value: chars.map(l => l[0] == undefined ? l[1] : l[0] + l[1]).join('').replace(/\\(["'\\])|'(')/g, '$1$2') } }
 
 ArrayLiteral
-	= LPAR __ elements:(first:Expression rest:(COMMA __ Expression)* { return buildList(first, rest, 2)})? (COMMA __)? __ RPAR __
+    = LPAR __ elements:(first:Expression rest:(COMMA __ Expression)* { return buildList(first, rest, 2)})? (COMMA __)? __ RPAR __
     { return { type: 'ArrayLiteral', elements: elements } }
 
 Escape
