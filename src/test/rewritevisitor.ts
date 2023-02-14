@@ -144,8 +144,8 @@ describe('When using Rewrite for ExpressionVisitor', () => {
 
     it('should be able to rewrite members with the same destination', () => {
         const rewrite = new RewriteVisitor(
-            { from: 'myfirst', to: 'number', convert: (value) => value * 2 },
-            { from: 'mysecond', to: 'number', convert: (value) => value + 2 }
+            { from: 'myfirst', to: 'mynumber', convert: (value) => value * 2 },
+            { from: 'mysecond', to: 'mynumber', convert: (value) => value + 2 }
         )
         const expression = rewrite.parseLambda('myfirst >= 2.5 && mysecond <= 3.5')
 
@@ -155,14 +155,14 @@ describe('When using Rewrite for ExpressionVisitor', () => {
         const leftIdentifier = isIdentifierExpression(left?.left) ? left?.left : undefined
         const leftLiteral = isLiteralExpression(left?.right) ? left?.right : undefined
             
-        chai.expect(leftIdentifier?.name).to.equal('number')
+        chai.expect(leftIdentifier?.name).to.equal('mynumber')
         chai.expect(leftLiteral?.value).to.equal(2.5 * 2)
 
         const right = isLogicalExpression(logicalExpr?.right) ? logicalExpr?.right : undefined
         const rightIdentifier = isIdentifierExpression(right?.left) ? right?.left : undefined
         const rightLiteral = isLiteralExpression(right?.right) ? right?.right : undefined
             
-        chai.expect(rightIdentifier?.name).to.equal('number')
+        chai.expect(rightIdentifier?.name).to.equal('mynumber')
         chai.expect(rightLiteral?.value).to.equal(3.5 + 2)
     })
 

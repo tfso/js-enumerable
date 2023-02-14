@@ -51,44 +51,46 @@ describe('When using JavascriptVisitor', () => {
         assert.equal((<Expr.LiteralExpression>expr).value, 'ABC')
     })
 
-    it('should evaluate in operator using constant with primary array where it is true', () => {
-        let reduced = reducer.parseLambda(it => it.array.includes(13)),
-            expr = reducer.evaluate(reduced, vars)
+    describe('for IN operator', () => {
+        it('should evaluate in operator using constant with primary array where it is true', () => {
+            let reduced = reducer.parseLambda(it => it.array.includes(13)),
+                expr = reducer.evaluate(reduced, vars)
 
-        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
-        assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
-    })
+            assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+            assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
+        })
 
-    it('should evaluate in operator using variable with primary array where it is true', () => {
-        let reduced = reducer.parseLambda(it => it.array.includes(it.number)),
-            expr = reducer.evaluate(reduced, vars)
+        it('should evaluate in operator using variable with primary array where it is true', () => {
+            let reduced = reducer.parseLambda(it => it.array.includes(it.number)),
+                expr = reducer.evaluate(reduced, vars)
 
-        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
-        assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
-    })
+            assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+            assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
+        })
 
-    it('should evaluate in operator using variable with number array where it is true', () => {
-        let reduced = reducer.parseLambda(it => [1,3,5,7].includes(it.number)),
-            expr = reducer.evaluate(reduced, vars)
+        it('should evaluate in operator using variable with number array where it is true', () => {
+            let reduced = reducer.parseLambda(it => [1, 3, 5, 7].includes(it.number)),
+                expr = reducer.evaluate(reduced, vars)
 
-        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
-        assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
-    })
+            assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+            assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
+        })
 
-    it('should evaluate in operator using variable with complex array where it is true', () => {
-        let reduced = reducer.parseLambda(`it => [1,3,3+2,7].includes(it.number)`),
-            expr = reducer.evaluate(reduced, vars)
+        it('should evaluate in operator using variable with complex array where it is true', () => {
+            let reduced = reducer.parseLambda(`it => [1,3,3+2,7].includes(it.number)`),
+                expr = reducer.evaluate(reduced, vars)
 
-        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
-        assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
-    })
+            assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+            assert.ok((<Expr.ILiteralExpression>expr).value == true, 'Expected a literal of value true')
+        })
 
-    it('should evaluate in operator using variable with number array where it is false', () => {
-        let reduced = reducer.parseLambda(it => [1,2,4,8].includes(it.number)),
-            expr = reducer.evaluate(reduced, vars)
+        it('should evaluate in operator using variable with number array where it is false', () => {
+            let reduced = reducer.parseLambda(it => [1, 2, 4, 8].includes(it.number)),
+                expr = reducer.evaluate(reduced, vars)
 
-        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
-        assert.ok((<Expr.ILiteralExpression>expr).value == false, 'Expected a literal of value false')
+            assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+            assert.ok((<Expr.ILiteralExpression>expr).value == false, 'Expected a literal of value false')
+        })
     })
 
     // it("should evaluate a expression with date as type", () => {
