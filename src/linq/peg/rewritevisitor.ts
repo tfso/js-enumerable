@@ -6,7 +6,7 @@ import { ILogicalExpression } from './expression/logicalexpression'
 import { IMethodExpression } from './expression/methodexpression'
 import { ILambdaExpression, LambdaExpression } from './expression/lambdaexpression'
 
-import { ExpressionVisitor } from './expressionvisitor'
+import { ArrayExpression, ExpressionVisitor, IArrayExpression } from './expressionvisitor'
 
 import { parse } from './parser'
 
@@ -106,6 +106,29 @@ export class RewriteVisitor extends ExpressionVisitor {
         }
 
         return new LiteralExpression(expression.value)
+    }
+
+    public visitArray(expression: IArrayExpression): IExpression {
+        const parent = this.stack.peek()
+        const parentIdentifier = this.findIdentifier(parent) ?? undefined
+
+        if(parentIdentifier) {
+            const { propertyName: parentName } = this.getPropertyName(undefined, parentIdentifier)
+            
+            if(parentName) {
+                const rewrite = this.findRewrite(parentName)
+
+                if(rewrite?.convert) {
+                    return new ArrayExpression(
+                        expression
+                            .elements
+                            .map(expr => expr.type == ExpressionType.Literal ? new LiteralExpression(rewrite.convert!((<LiteralExpression>expr).value)) : expr)
+                    )
+                }
+            }
+        }
+
+        return new ArrayExpression(expression.elements)
     }
 
     public visitIdentifier(expression: IIdentifierExpression): IExpression {

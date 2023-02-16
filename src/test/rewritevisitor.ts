@@ -1,6 +1,6 @@
 ﻿import * as assert from 'assert'
 
-import { isLambdaExpression, isBinaryExpression, isMemberExpression, isIdentifierExpression, isLogicalExpression } from '../linq/peg/expression'
+import { isLambdaExpression, isBinaryExpression, isMemberExpression, isIdentifierExpression, isLogicalExpression, isArrayExpression } from '../linq/peg/expression'
 import { isLiteralExpression } from '../linq/peg/expression/expression'
 
 import * as Expr from '../linq/peg/expressionvisitor'
@@ -60,6 +60,22 @@ describe('When using Rewrite for ExpressionVisitor', () => {
         const literalExpr = isLiteralExpression(logicalExpr?.right) ? logicalExpr?.right : undefined
 
         chai.expect(literalExpr?.value).to.equal(2.5 * 2)
+    })
+
+    it('should be able to rewrite member name and corresponding value by visiting and in expression', () => {
+        const expression = new Expr.ExpressionVisitor().parseOData('mynumber in (1, 2, 3)')
+        const rewrite = new RewriteVisitor({ from: 'mynumber', to: 'number', convert: (value) => value * 2 })
+        const rewriteExpression = rewrite.visit(expression)
+
+        const logicalExpr = isLogicalExpression(rewriteExpression) ? rewriteExpression : undefined
+        const identifierExpr = isIdentifierExpression(logicalExpr?.left) ? logicalExpr?.left : undefined
+    
+        chai.expect(identifierExpr?.name).to.equal('number')
+
+        const arrayExpr = isArrayExpression(logicalExpr?.right) ? logicalExpr?.right : undefined
+        const values = arrayExpr?.elements.map(expr => expr.type == Expr.ExpressionType.Literal ? (<Expr.LiteralExpression>expr).value : null)
+
+        chai.expect(values).to.have.members([1*2, 2*2, 3*2])
     })
 
     it('should be able to rewrite member with scoping', () => {
@@ -128,8 +144,8 @@ describe('When using Rewrite for ExpressionVisitor', () => {
 
     it('should be able to rewrite members with the same destination', () => {
         const rewrite = new RewriteVisitor(
-            { from: 'myfirst', to: 'number', convert: (value) => value * 2 },
-            { from: 'mysecond', to: 'number', convert: (value) => value + 2 }
+            { from: 'myfirst', to: 'mynumber', convert: (value) => value * 2 },
+            { from: 'mysecond', to: 'mynumber', convert: (value) => value + 2 }
         )
         const expression = rewrite.parseLambda('myfirst >= 2.5 && mysecond <= 3.5')
 
@@ -139,14 +155,14 @@ describe('When using Rewrite for ExpressionVisitor', () => {
         const leftIdentifier = isIdentifierExpression(left?.left) ? left?.left : undefined
         const leftLiteral = isLiteralExpression(left?.right) ? left?.right : undefined
             
-        chai.expect(leftIdentifier?.name).to.equal('number')
+        chai.expect(leftIdentifier?.name).to.equal('mynumber')
         chai.expect(leftLiteral?.value).to.equal(2.5 * 2)
 
         const right = isLogicalExpression(logicalExpr?.right) ? logicalExpr?.right : undefined
         const rightIdentifier = isIdentifierExpression(right?.left) ? right?.left : undefined
         const rightLiteral = isLiteralExpression(right?.right) ? right?.right : undefined
             
-        chai.expect(rightIdentifier?.name).to.equal('number')
+        chai.expect(rightIdentifier?.name).to.equal('mynumber')
         chai.expect(rightLiteral?.value).to.equal(3.5 + 2)
     })
 

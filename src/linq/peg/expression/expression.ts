@@ -207,4 +207,8 @@ export function isLiteralExpression(expression?: IExpression): expression is ILi
     return expression?.type == ExpressionType.Literal ?? false
 }
 
+export function isArrayExpression(expression?: IExpression): expression is IArrayExpression {
+    return expression?.type == ExpressionType.Array ?? false
+}
+
 export { IExpression, ExpressionType }

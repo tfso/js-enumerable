@@ -42,11 +42,12 @@
 			"lib": true,
 			"coverage": true
 		},
-		"mochaExplorer.files": "src/test/*.ts",
+		"mochaExplorer.files": "src/test/**/*.ts",
 		"mochaExplorer.require": [
 			"ts-node/register",
 			"./src/test/setup/mocha-require.ts"
 		],
+		"mochaExplorer.ignore": "src/test/index.ts",
 		"mocha.files.glob": "src/test/**/*.ts",
 		"mocha.requires": [
 			"ts-node/register",

@@ -51,28 +51,33 @@ jobs:
           path: ${{ env.FILES }}
           retention-days: 7
 
-  publish-npm:
-    name: publish to npm
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: package
+  # publish-npm:
+  #   name: publish to npm
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: check npm
+  #       if: ${{ !env.NPM_TOKEN }}
+  #       run: |
+  #           exit 1
 
-      - name: setup
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
-          scope: "@tfso"
+  #     - name: download artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: package
+
+  #     - name: setup
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 16
+  #         registry-url: https://registry.npmjs.org/
+  #         scope: "@tfso"
           
-      - name: publish
-        run: |
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #     - name: publish
+  #       run: |
+  #         npm publish --access public
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-github:
     name: publish to github

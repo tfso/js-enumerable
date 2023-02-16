@@ -280,6 +280,9 @@ export function transform(expression: Record<string, any>): IExpression {
 
                 case '>=': // greater or equal
                     return new LogicalExpression(LogicalOperatorType.GreaterOrEqual, transform(expression.left), transform(expression.right))
+
+                case 'in': // in
+                    return new LogicalExpression(LogicalOperatorType.In, transform(expression.left), transform(expression.right))
             }
             break
 

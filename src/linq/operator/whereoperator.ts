@@ -111,57 +111,65 @@ function * visitExpression(type: 'odata' | 'javascript', it: string, expression:
                 property = getPropertyName(leaf.left)?.name.join('.') ?? '',
                 operator = getOperator(leaf)
                 
-            switch(typeof value) {
-                case 'string':
+            if(operator == 'in') {
+                if(Array.isArray(value))
                     yield {
-                        type: 'string', property, operator, value, wildcard: getWildcard(leaf.right)
+                        type: 'array', property, operator, value
                     }
-                    break
+            }
+            else {
+                switch(typeof value) {
+                    case 'string':
+                        yield {
+                            type: 'string', property, operator, value, wildcard: getWildcard(leaf.right)
+                        }
+                        break
 
-                case 'bigint':
-                    yield {
-                        type: 'bigint', property, operator, value
-                    }
-                    break
+                    case 'bigint':
+                        yield {
+                            type: 'bigint', property, operator, value
+                        }
+                        break
 
-                case 'number':
-                    yield {
-                        type: 'number', property, operator, value
-                    }
-                    break
+                    case 'number':
+                        yield {
+                            type: 'number', property, operator, value
+                        }
+                        break
 
-                case 'boolean':
-                    yield {
-                        type: 'boolean', property, operator, value
-                    }
-                    break
-                
-                case 'object':
-                    if(value == null) {
+                    case 'boolean':
+                        yield {
+                            type: 'boolean', property, operator, value
+                        }
+                        break
+                    
+                    case 'object':
+                        if(value == null) {
+                            yield {
+                                type: 'null', property, operator, value
+                            }
+                        }
+                        else if(typeof value.getTime == 'function' && value.getTime() >= 0) {
+                            yield {
+                                type: 'date', property, operator, value
+                            }
+                        }
+                        else if(Array.isArray(value) == true) {
+                            yield {
+                                type: 'array', property, operator, value
+                            }
+                        }
+
+                        break
+
+                    case 'undefined':
                         yield {
                             type: 'null', property, operator, value
                         }
-                    }
-                    else if(typeof value.getTime == 'function' && value.getTime() >= 0) {
-                        yield {
-                            type: 'date', property, operator, value
-                        }
-                    }
-                    else if(Array.isArray(value) == true) {
-                        yield {
-                            type: 'array', property, operator, value
-                        }
-                    }
 
-                    break
-
-                case 'undefined':
-                    yield {
-                        type: 'null', property, operator, value
-                    }
-
-                default:
-                    
+                    default:
+                        
+                }
             }
         }
         else if(MethodExpression.instanceof(leaf)) {
@@ -405,7 +413,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
     }
 }
 
-function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' {
+function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in' {
     if(LogicalExpression.instanceof(expression)) {
         switch(expression.operator) {
             case LogicalOperatorType.Equal:
@@ -425,6 +433,9 @@ function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | 
 
             case LogicalOperatorType.LesserOrEqual:
                 return '<='
+            
+            case LogicalOperatorType.In:
+                return 'in'
         }
 
         throw new Error(`Logical operator '${expression.operator}' is unknown`)

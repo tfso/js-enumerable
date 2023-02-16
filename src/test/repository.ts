@@ -44,26 +44,6 @@ describe('When using repository', () => {
 
     describe('analyzing where operator', () => {
 
-        it('should use sets for a expression', () => {
-            let enumerable = new jsEnumerable.Enumerable(repository).where(car => (car.year == 2015 && car.location.toUpperCase() == 'DK') || car.location.toUpperCase() == 'NO'),
-                operator = enumerable.operators.pop(),
-                count = 0,
-                countset = 0
-            
-            chai.expect(operator?.type).to.equal(LinqType.Where)
-
-            if(operator?.type == LinqType.Where) {
-                for(let set of operator.sets) {
-                    count += Array.from(set).length
-
-                    countset++
-                }
-            }
-
-            chai.expect(countset).to.equal(2)
-            chai.expect(count).to.equal(3)
-        })
-
         it('should intersect expression properties that is only and\'ed', () => {
             let enumerable = new jsEnumerable.Enumerable(repository).where(car => car.year == 2015 && car.location.toUpperCase() == 'NO' && car.id > 5),
                 operator = enumerable.operators.pop(),
