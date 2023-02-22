@@ -112,10 +112,11 @@ function * visitExpression(type: 'odata' | 'javascript', it: string, expression:
                 operator = getOperator(leaf)
                 
             if(operator == 'in') {
-                if(Array.isArray(value))
-                    yield {
-                        type: 'array', property, operator, value
-                    }
+                const values = Array.isArray(value) ? value : [value]
+
+                yield {
+                    type: 'array', property, operator, value: values
+                }
             }
             else {
                 switch(typeof value) {
