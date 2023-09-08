@@ -178,7 +178,7 @@ export class ODataTranslator implements IExpressionVisitor<string> {
                 return `${left} ne ${right}`
 
             case LogicalOperatorType.In:
-                return `${left} in ${right}`
+                return `${left} in ${right.replace(/^\[(.*)\]$/, '($1)')}`
         }
 
         return '' //expression
