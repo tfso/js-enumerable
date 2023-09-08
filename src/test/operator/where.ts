@@ -76,7 +76,7 @@ describe('When using operator', () => {
                 if(operator.type !== LinqType.Where)
                     throw new Error('expecting where operator')
 
-                expect(operator.expression.toString()).to.equal(`(car) => (car.year in [2021])`)
+                expect(operator.expression.toString()).to.equal(`(car) => car.year in [2021]`)
 
                 const intersection = Array.from(operator.intersection)
 
