@@ -176,6 +176,9 @@ export class ODataTranslator implements IExpressionVisitor<string> {
 
             case LogicalOperatorType.NotEqual:
                 return `${left} ne ${right}`
+
+            case LogicalOperatorType.In:
+                return `${left} in ${right}`
         }
 
         return '' //expression
