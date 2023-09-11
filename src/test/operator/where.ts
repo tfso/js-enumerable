@@ -70,6 +70,26 @@ describe('When using operator', () => {
                 expect(inExpr.value).to.have.members([2021, 2020, 2019])
             })
 
+            it('should use intersection correct for an in expression with single element', () => {
+                const operator = whereOperator<Car>(car => [2021].includes(car.year))
+
+                if(operator.type !== LinqType.Where)
+                    throw new Error('expecting where operator')
+
+                expect(operator.expression.toString()).to.equal(`(car) => car.year in [2021]`)
+
+                const intersection = Array.from(operator.intersection)
+
+                expect(intersection.length).to.equal(1)
+
+                const inExpr = intersection[0]
+
+                expect(inExpr.operator).to.equal('in')
+                expect(inExpr.property).to.equal('year')
+                expect(inExpr.type).to.equal('array')
+                expect(inExpr.value).to.have.members([2021])
+            })
+
             it('should use intersection correct for an in expression with nested object', () => {
                 const operator = whereOperator<Car>(car => car.location == 'NO' && ['toyota', 'ford'].includes(car.type.make))
 
@@ -145,6 +165,26 @@ describe('When using operator', () => {
                 expect(inExpr.property).to.equal('year')
                 expect(inExpr.type).to.equal('array')
                 expect(inExpr.value).to.have.members([2021, 2020, 2019])
+            })
+
+            it('should use intersection correct for an in expression with single element', () => {
+                const operator = whereOperator<Car>(`year in (2021)`)
+
+                if(operator.type !== LinqType.Where)
+                    throw new Error('expecting where operator')
+
+                expect(operator.expression.toString()).to.equal(`year in 2021`)
+
+                const intersection = Array.from(operator.intersection)
+
+                expect(intersection.length).to.equal(1)
+
+                const inExpr = intersection[0]
+
+                expect(inExpr.operator).to.equal('in')
+                expect(inExpr.property).to.equal('year')
+                expect(inExpr.type).to.equal('array')
+                expect(inExpr.value).to.have.members([2021])
             })
 
             it('should use intersection correct for an in expression with nested object', () => {

@@ -171,20 +171,24 @@ export class ReducerVisitor extends ExpressionVisitor {
                 case LogicalOperatorType.LesserOrEqual:
                     return new LiteralExpression(leftValue <= rightValue)
                 case LogicalOperatorType.In:
-                    if(typeof rightValue == 'object' && Array.isArray(rightValue)) {
-                        return new LiteralExpression(rightValue.includes(leftValue))
-                    }
-                    break
+                    const values = Array.isArray(rightValue) ? rightValue : [rightValue]
+                    return new LiteralExpression(values.includes(leftValue))
             }
         }
 
         switch(expression.operator) {
             case LogicalOperatorType.In:
-                if(left.type == ExpressionType.Literal && right.type == ExpressionType.Array) {
+                if(left.type == ExpressionType.Literal && (right.type == ExpressionType.Array || right.type == ExpressionType.Literal)) {
                     const leftValue = (<LiteralExpression>left).value
-                    const rightValue = (<ArrayExpression>right).elements
+                    const rightValues: IExpression[] = []
 
-                    return new LiteralExpression(rightValue.some(expr => expr.type == ExpressionType.Literal ? (<LiteralExpression>expr).value === leftValue : false))
+                    if(right.type == ExpressionType.Array)
+                        rightValues.push(...(<ArrayExpression>right).elements)
+
+                    else if(right.type == ExpressionType.Literal)
+                        rightValues.push((<LiteralExpression>right).value)
+
+                    return new LiteralExpression(rightValues.some(expr => expr.type == ExpressionType.Literal ? (<LiteralExpression>expr).value === leftValue : false))
                 }
                 break
 
