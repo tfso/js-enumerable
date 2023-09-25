@@ -61,10 +61,12 @@ export class ODataTranslator implements IExpressionVisitor<string> {
                     return 'null'
                 
                 if(expression.value instanceof Date) {
-                    if(expression.value.getHours() == 0 && expression.value.getMinutes() == 0 && expression.value.getSeconds() == 0 && expression.value.getMilliseconds() == 0)
-                        return `${expression.value.getFullYear()}-${expression.value.getMonth()}-${expression.value.getDate()}`
+                    const [year, month, day, hours, minutes, seconds, milliseconds] = [expression.value.getUTCFullYear(), expression.value.getUTCMonth() + 1, expression.value.getUTCDate(), expression.value.getUTCHours(), expression.value.getUTCMinutes(), expression.value.getUTCSeconds(), expression.value.getUTCMilliseconds()]
+
+                    if(hours == 0 && minutes == 0 && seconds == 0 && milliseconds == 0)
+                        return `${year.toString()}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}Z`
                     
-                    return `${expression.value.getFullYear()}-${expression.value.getMonth()}-${expression.value.getDate()}T${expression.value.getHours()}:${expression.value.getMinutes()}:${expression.value.getSeconds()}`
+                    return `${year.toString()}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}Z`
                 }
 
                 return ''
