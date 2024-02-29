@@ -261,13 +261,22 @@ Primary
     / QualifiedIdentifier
     / TemplateLiteral
     / Literal
-    
+
 ParExpression
     = LPAR __ expr:Expression RPAR __
     { return expr; }
 
 QualifiedIdentifier
-    = !ReservedWord qual:Identifier args:Arguments
+    = !ReservedWord left:(ArrayLiteral / Identifier) DOT 'includes' LPAR __ right:(Primary) __ RPAR
+    { 
+    	return {
+        	type: 'RelationalExpression',
+            operator: 'in',
+            left: left,
+            right: right
+        }
+    }    
+    / !ReservedWord qual:Identifier args:Arguments
     { 
       return {
       	type: 'CallExpression', 

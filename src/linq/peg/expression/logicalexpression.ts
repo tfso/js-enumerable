@@ -45,6 +45,7 @@ export class LogicalExpression extends Expression implements ILogicalExpression 
                     case LogicalOperatorType.Lesser: return '<'
                     case LogicalOperatorType.LesserOrEqual: return '<='
                     case LogicalOperatorType.NotEqual: return '!='
+                    case LogicalOperatorType.In: return 'in'
                 }
             }
 

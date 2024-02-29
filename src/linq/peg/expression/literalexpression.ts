@@ -16,6 +16,9 @@ export class LiteralExpression extends Expression implements ILiteralExpression 
                 return `"${new String(this.value).toString().replace(/"/g, '\"')}"`
 
             case 'object':
+                if(Array.isArray(this.value))
+                    return `[${this.value.map(element => JSON.stringify(element)).join(', ')}]`
+
                 return JSON.stringify(this.value)
 
             default:

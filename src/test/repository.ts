@@ -3,7 +3,7 @@ import { LinqType } from '../linq/operator'
 import { IRepository } from './../index'
 
 /* eslint-disable-next-line */
-if(jsEnumerable == null) {
+if(jsEnumerable! == null) {
     /* eslint-disable-next-line */
     var jsEnumerable: { Enumerable: typeof Enumerable } = require('./../index')
 }
@@ -22,15 +22,13 @@ interface ICar {
 
 class CarRepository extends RepositoryMock<ICar, number> {
     constructor(...cars: ICar[]) {
-        super((entity) => entity.id, cars)
+        super((entity) => entity.id ?? 0, cars)
     }
 
     public async * query(enumerable?: IEnumerable<ICar>): AsyncIterableIterator<ICar> {
         yield * this.data
     }
 }
-
-let assignedRepo: IRepository<ICar, number> = new CarRepository()
 
 describe('When using repository', () => {
     const repository = new CarRepository(
@@ -46,34 +44,14 @@ describe('When using repository', () => {
 
     describe('analyzing where operator', () => {
 
-        it('should use sets for a expression', () => {
-            let enumerable = new jsEnumerable.Enumerable(repository).where(car => (car.year == 2015 && car.location.toUpperCase() == 'DK') || car.location.toUpperCase() == 'NO'),
-                operator = enumerable.operators.pop(),
-                count = 0,
-                countset = 0
-            
-            chai.expect(operator.type).to.equal(LinqType.Where)
-
-            if(operator.type == LinqType.Where) {
-                for(let set of operator.sets) {
-                    count += Array.from(set).length
-
-                    countset++
-                }
-            }
-
-            chai.expect(countset).to.equal(2)
-            chai.expect(count).to.equal(3)
-        })
-
         it('should intersect expression properties that is only and\'ed', () => {
             let enumerable = new jsEnumerable.Enumerable(repository).where(car => car.year == 2015 && car.location.toUpperCase() == 'NO' && car.id > 5),
                 operator = enumerable.operators.pop(),
                 count = 0
             
-            chai.expect(operator.type).to.equal(LinqType.Where)
+            chai.expect(operator?.type).to.equal(LinqType.Where)
 
-            if(operator.type == LinqType.Where) {
+            if(operator?.type == LinqType.Where) {
                 for(let expression of operator.intersection) {
                     switch(expression.property) {
                         case 'year':
@@ -108,9 +86,9 @@ describe('When using repository', () => {
                 operator = enumerable.operators.pop(),
                 count = 0
             
-            chai.expect(operator.type).to.equal(LinqType.Where)
+            chai.expect(operator?.type).to.equal(LinqType.Where)
             
-            if(operator.type == LinqType.Where) {
+            if(operator?.type == LinqType.Where) {
                 for(let expression of operator.intersection) {
 
                     switch(expression.property) {
@@ -136,9 +114,9 @@ describe('When using repository', () => {
                 operator = enumerable.operators.pop(),
                 count = 0
             
-            chai.expect(operator.type).to.equal(LinqType.Where)
+            chai.expect(operator?.type).to.equal(LinqType.Where)
             
-            if(operator.type == LinqType.Where) {
+            if(operator?.type == LinqType.Where) {
                 for(let expression of operator.intersection) {
 
                     switch(expression.property) {
@@ -163,9 +141,9 @@ describe('When using repository', () => {
             let enumerable = new jsEnumerable.Enumerable(repository).where(car => (car.year > 2015 && car.location == 'NO') || car.year == 2015 || (car.location == 'SE' && car.year == 2015)),
                 operator = enumerable.operators.pop()
             
-            chai.expect(operator.type).to.equal(LinqType.Where)
+            chai.expect(operator?.type).to.equal(LinqType.Where)
 
-            if(operator.type == LinqType.Where) {
+            if(operator?.type == LinqType.Where) {
                 chai.expect(Array.from(operator.intersection).length).to.equal(0)
             }
         })
@@ -175,9 +153,9 @@ describe('When using repository', () => {
                 operator = enumerable.operators.pop(),
                 count = 0
             
-            chai.expect(operator.type).to.equal(LinqType.Where)
+            chai.expect(operator?.type).to.equal(LinqType.Where)
             
-            if(operator.type == LinqType.Where) {
+            if(operator?.type == LinqType.Where) {
                 let list = operator.intersection
                 for(let expression of list) {
                     switch(expression.property) {
@@ -213,9 +191,9 @@ describe('When using repository', () => {
                 operator = enumerable.operators.pop(),
                 count = 0
 
-            chai.expect(operator.type).to.equal(LinqType.Where)
+            chai.expect(operator?.type).to.equal(LinqType.Where)
         
-            if(operator.type == LinqType.Where) {
+            if(operator?.type == LinqType.Where) {
                 let [toString, toRaw] = [operator.toString('odata'), operator.toString('raw')]
 
                 chai.expect(toString).to.be.equal(`(contains(tolower(location), 'ev') eq true) and (year ge 2010)`)

@@ -17,8 +17,9 @@ export class JavascriptVisitor extends ReducerVisitor {
     
     public visitMethod(expression: IMethodExpression): IExpression {
         let parameters: IExpression[] = expression.parameters.map((arg) => arg.accept(this)),
-            caller: IExpression = expression.caller ? expression.caller.accept(this) : null,
-            name: string = expression.name
+            caller: IExpression | null = expression.caller ? expression.caller.accept(this) : null,
+            name: string = expression.name,
+            call: (...params: any[]) => any
 
         if(caller) {
             let value: any = undefined,
@@ -64,7 +65,9 @@ export class JavascriptVisitor extends ReducerVisitor {
                                 case 'tan':
                                 case 'tanh':
                                 case 'trunc':
-                                    return new LiteralExpression(Math[name].call(null, ...params))
+                                    call = Math[name].bind(Math)
+
+                                    return new LiteralExpression(call(...params))
                             }
                     }
 
@@ -100,7 +103,9 @@ export class JavascriptVisitor extends ReducerVisitor {
                                 case 'toString':
                                 case 'toUpperCase':
                                 case 'trim':
-                                    return new LiteralExpression(String.prototype[name].call(value, ...params))
+                                    call = String.prototype[name].bind(value)
+
+                                    return new LiteralExpression(call(...params))
 
                                 default:
                                     break
@@ -113,7 +118,9 @@ export class JavascriptVisitor extends ReducerVisitor {
                                 case 'toExponential':
                                 case 'toFixed':
                                 case 'toPrecision':
-                                    return new LiteralExpression(Number.prototype[name].call(value, ...params))    
+                                    call = Number.prototype[name].bind(this)
+
+                                    return new LiteralExpression(call(...params))    
 
                                 case 'isNaN':
                                 case 'isFinite':
@@ -123,7 +130,9 @@ export class JavascriptVisitor extends ReducerVisitor {
                                 case 'parseInt':
                                 case 'toLocaleString':
                                 case 'toString':
-                                    return new LiteralExpression(Number[name].call(value, ...params))
+                                    call = Number[name].bind(this)
+
+                                    return new LiteralExpression(call(...params))
                             }
                             break
 
@@ -135,15 +144,13 @@ export class JavascriptVisitor extends ReducerVisitor {
                                 break
 
                             break
-
-
                     }
 
                     break
             }
         }
 
-        return new MethodExpression(name, parameters, caller)
+        return new MethodExpression(name, parameters, caller ?? undefined)
     }
 
     public static evaluate(predicate: (it: Record<string, any>, ...param: Array<any>) => any, it: Record<string, any>): any

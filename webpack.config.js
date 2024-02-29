@@ -2,6 +2,7 @@
 const webpack = require('webpack');
 
 module.exports = {
+    mode: 'production',
     entry: {
         lib: [
             'core-js/modules/es.symbol.async-iterator',
@@ -36,6 +37,7 @@ module.exports = {
                     presets: [
                         ['@babel/preset-env', {
                             useBuiltIns: 'usage',
+                            modules: 'commonjs',
                             corejs: 3,
                             targets: { chrome: 58, ie: 11 }
                         }],

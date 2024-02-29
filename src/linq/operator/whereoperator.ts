@@ -10,8 +10,8 @@ import { LiteralExpression } from './../peg/expression/literalexpression'
 
 import { ODataTranslator } from './../peg/translator/odatatranslator'
 
-export function whereOperator<TEntity extends Entity>(predicate: string): LinqOperator<TEntity>
 export function whereOperator<TEntity extends Entity>(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): LinqOperator<TEntity>
+export function whereOperator<TEntity extends Entity>(predicate: string): LinqOperator<TEntity>
 export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
     let predicate: any = arguments[0],
         parameters: Array<any> = [],
@@ -26,7 +26,7 @@ export function whereOperator<TEntity extends Entity>(): LinqOperator<TEntity> {
 
     switch(typeof predicate) {
         case 'string':
-            ({ type, expression, original } = new ODataVisitor().parse('odata', predicate))
+            ({ type, expression, original } = new ODataVisitor().parse('odata', predicate)) 
 
             validate = (entity: TEntity) => ODataVisitor.evaluate(expression, entity) === true
             scopeName = ''
@@ -111,57 +111,66 @@ function * visitExpression(type: 'odata' | 'javascript', it: string, expression:
                 property = getPropertyName(leaf.left)?.name.join('.') ?? '',
                 operator = getOperator(leaf)
                 
-            switch(typeof value) {
-                case 'string':
-                    yield {
-                        type: 'string', property, operator, value, wildcard: getWildcard(leaf.right)
-                    }
-                    break
+            if(operator == 'in') {
+                const values = Array.isArray(value) ? value : [value]
 
-                case 'bigint':
-                    yield {
-                        type: 'bigint', property, operator, value
-                    }
-                    break
+                yield {
+                    type: 'array', property, operator, value: values
+                }
+            }
+            else {
+                switch(typeof value) {
+                    case 'string':
+                        yield {
+                            type: 'string', property, operator, value, wildcard: getWildcard(leaf.right)
+                        }
+                        break
 
-                case 'number':
-                    yield {
-                        type: 'number', property, operator, value
-                    }
-                    break
+                    case 'bigint':
+                        yield {
+                            type: 'bigint', property, operator, value
+                        }
+                        break
 
-                case 'boolean':
-                    yield {
-                        type: 'boolean', property, operator, value
-                    }
-                    break
-                
-                case 'object':
-                    if(value == null) {
+                    case 'number':
+                        yield {
+                            type: 'number', property, operator, value
+                        }
+                        break
+
+                    case 'boolean':
+                        yield {
+                            type: 'boolean', property, operator, value
+                        }
+                        break
+                    
+                    case 'object':
+                        if(value == null) {
+                            yield {
+                                type: 'null', property, operator, value
+                            }
+                        }
+                        else if(typeof value.getTime == 'function' && value.getTime() >= 0) {
+                            yield {
+                                type: 'date', property, operator, value
+                            }
+                        }
+                        else if(Array.isArray(value) == true) {
+                            yield {
+                                type: 'array', property, operator, value
+                            }
+                        }
+
+                        break
+
+                    case 'undefined':
                         yield {
                             type: 'null', property, operator, value
                         }
-                    }
-                    else if(typeof value.getTime == 'function' && value.getTime() >= 0) {
-                        yield {
-                            type: 'date', property, operator, value
-                        }
-                    }
-                    else if(Array.isArray(value) == true) {
-                        yield {
-                            type: 'array', property, operator, value
-                        }
-                    }
 
-                    break
-
-                case 'undefined':
-                    yield {
-                        type: 'null', property, operator, value
-                    }
-
-                default:
-                    
+                    default:
+                        
+                }
             }
         }
         else if(MethodExpression.instanceof(leaf)) {
@@ -175,7 +184,7 @@ function * visitExpression(type: 'odata' | 'javascript', it: string, expression:
                             if(LambdaExpression.instanceof(lambda)) 
                                 yield {
                                     type: 'expression',
-                                    property: getPropertyName(leaf.caller)?.name.join('.'),
+                                    property: getPropertyName(leaf.caller ?? null)?.name.join('.'),
                                     operator: leaf.name,
                                     value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
                                 }
@@ -193,7 +202,7 @@ function * visitExpression(type: 'odata' | 'javascript', it: string, expression:
                             if(LambdaExpression.instanceof(lambda)) 
                                 yield {
                                     type: 'expression',
-                                    property: getPropertyName(leaf.caller)?.name.join('.'),
+                                    property: getPropertyName(leaf.caller ?? null)?.name.join('.'),
                                     operator: leaf.name == 'some' ? 'any' : 'all',
                                     value: visitIntersection(type, getPropertyName(lambda.parameters[0])?.name.join('.'), lambda.expression)
                                 }
@@ -209,7 +218,7 @@ function * visitExpression(type: 'odata' | 'javascript', it: string, expression:
 /***
  * Analyzing expression and returns normalized expressions, where usable expressions is LogicalExpression (unknown at left) or MethodExpression
  */
-function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<IExpression> {
+function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpression | null): IterableIterator<IExpression> {
     if(expression === null)
         return null
 
@@ -378,7 +387,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                             case 'any':
                             case 'all':
                             default: 
-                                let caller = visitLeaf(type, it, expression.caller).next()
+                                let caller = visitLeaf(type, it, expression.caller ?? null).next()
 
                                 yield new MethodExpression(expression.name, expression.parameters, caller.value)
                                 break
@@ -392,7 +401,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
 
                 case 'javascript':
                     if(MethodExpression.instanceof(expression)) {
-                        let caller = visitLeaf(type, it, expression.caller).next()
+                        let caller = visitLeaf(type, it, expression.caller ?? null).next()
 
                         yield new MethodExpression(expression.name, expression.parameters, caller.value)
                     }
@@ -405,7 +414,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
     }
 }
 
-function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' {
+function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in' {
     if(LogicalExpression.instanceof(expression)) {
         switch(expression.operator) {
             case LogicalOperatorType.Equal:
@@ -425,10 +434,15 @@ function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | 
 
             case LogicalOperatorType.LesserOrEqual:
                 return '<='
+            
+            case LogicalOperatorType.In:
+                return 'in'
         }
+
+        throw new Error(`Logical operator '${expression.operator}' is unknown`)
     }
 
-    return null
+    throw new Error(`Expression type '${expression.type}' is unknown`)
 }
 
 function getPropertyValue(expression: IExpression): any {
@@ -473,9 +487,8 @@ function getWildcard(expression: IExpression): 'none' | 'left' | 'right' | 'both
     }
 }
 
-function getPropertyName(expression: IExpression): { name: string[], method?: IExpression } {
-    
-    switch(expression.type) {
+function getPropertyName(expression: IExpression | null): { name: string[], method?: IExpression } {
+    switch(expression?.type) {
         case ExpressionType.Identifier:
             return {
                 name: [(<IIdentifierExpression>expression).name]
@@ -492,6 +505,7 @@ function getPropertyName(expression: IExpression): { name: string[], method?: IE
                     name: [identifier.name, ...child.name]
                 }
             }
+            break
 
         case ExpressionType.Method:
             let method = <IMethodExpression>expression
@@ -500,7 +514,9 @@ function getPropertyName(expression: IExpression): { name: string[], method?: IE
                 name: method.caller ? [...getPropertyName(method.caller).name] : [],
                 method: expression
             }
+    }
 
-            break
+    return {
+        name: []
     }
 }

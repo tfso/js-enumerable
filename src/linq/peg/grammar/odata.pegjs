@@ -107,7 +107,7 @@ EqualityExpression
     }
 
 RelationalExpression
-    = first:AdditiveExpression rest:((LE __ / GE __ / LT __ / GT __) AdditiveExpression )*
+    = first:InExpression rest:((LE __ / GE __ / LT __ / GT __) InExpression )*
     {
       return buildTree(first, rest, function(result, element) {
       	let map = { 'le': '<=', 'ge': '>=', 'lt': '<', 'gt': '>' }
@@ -115,6 +115,19 @@ RelationalExpression
         return {
           type: 'RelationalExpression',
           operator: map[element[0][0].toLowerCase()],
+          left:  result,
+          right: element[1]
+        };
+      });
+    }
+
+InExpression 
+    = first:AdditiveExpression rest:(('IN'i __) AdditiveExpression)*
+    {
+      return buildTree(first, rest, function(result, element) {
+        return {
+          type: 'RelationalExpression',
+          operator: 'in',
           left:  result,
           right: element[1]
         };
@@ -254,6 +267,7 @@ Literal
       FloatLiteral
       / IntegerLiteral          // May be a prefix of FloatLiteral
       / StringLiteral
+      / ArrayLiteral
       / "true"  !LetterOrDigit
       { return { type: 'BooleanLiteral', value: true }; }
       / "false" !LetterOrDigit
@@ -331,6 +345,10 @@ HexDigit
 StringLiteral
     = "\'" chars:(Escape / !['\\\n\r] . )* "\'"                   
     { return { type: 'Literal', value: chars.map(l => l[0] == undefined ? l[1] : l[0] + l[1]).join('').replace(/\\(["'\\])|'(')/g, '$1$2') } }
+
+ArrayLiteral
+    = LPAR __ elements:(first:Expression rest:(COMMA __ Expression)* { return buildList(first, rest, 2)})? (COMMA __)? __ RPAR __
+    { return { type: 'ArrayLiteral', elements: elements } }
 
 Escape
     = "''" 

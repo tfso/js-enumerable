@@ -8,7 +8,8 @@ export enum LogicalOperatorType {
     GreaterOrEqual, // >=
     Lesser,         // <
     Greater,        // >
-    Equal           // ==
+    Equal,          // ==
+    In              // in
 }
 
 export interface ILogicalExpression extends IExpression {

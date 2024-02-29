@@ -39,7 +39,7 @@ export function selectOperator<T extends EntityRecord<Entity>, TResult extends P
 }
 
 
-function reselect(keys: string[], object: Record<string, any>): Record<string, any> {
+function reselect(keys: string[], object: Record<string, any>): Record<string, any> | null {
     if(!keys || keys.length == 0)
         return null
 

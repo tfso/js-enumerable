@@ -1,16 +1,16 @@
 import { IEnumerable } from './../../linq'
 import { Repository } from './../../repository'
 
-export abstract class RepositoryMock<Entity, EntityId> extends Repository<Entity, EntityId> {
-    public constructor(public getEntityId: (entity: Partial<Entity>) => EntityId, public readonly data: Array<Entity>) {
+export abstract class RepositoryMock<TEntity extends Record<string, any>, EntityId> extends Repository<TEntity, EntityId> {
+    public constructor(public getEntityId: (entity: Partial<TEntity>) => EntityId, public readonly data: Array<TEntity>) {
         super()
     }
 
-    public async * query(enumerable?: IEnumerable<Entity>, meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterableIterator<Entity> {
+    public async * query(enumerable?: IEnumerable<TEntity>, meta?: Partial<{ etag: string, continuationToken: string }>): AsyncIterableIterator<TEntity> {
         yield * this.data
     }
 
-    public async create(entity: Entity) {
+    public async create(entity: TEntity) {
         if(await this.read(this.getEntityId(entity)) != null)
             throw new Error('409 Duplicate')
 
@@ -19,11 +19,11 @@ export abstract class RepositoryMock<Entity, EntityId> extends Repository<Entity
         return entity
     }
 
-    public async read(id: EntityId): Promise<Entity> {
-        return this.data.find(item => this.equality(id, this.getEntityId(item)))
+    public async read(id: EntityId): Promise<TEntity | null> {
+        return this.data.find(item => this.equality(id, this.getEntityId(item))) ?? null
     }
 
-    public async update(entity: Partial<Entity>): Promise<Entity> {
+    public async update(entity: Partial<TEntity>): Promise<TEntity | null> {
         const id = this.getEntityId(entity)
         const idx: number = this.data.findIndex(item => this.equality(id, this.getEntityId(item)))
 

@@ -30,7 +30,7 @@ type BigIntExpression = { type: 'bigint', operator: '==' | '!=' | '>' | '>=' | '
 type RecordExpression = { type: 'record', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: Record<string, any> }
 type DateExpression = { type: 'date', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: Date }
 type BooleanExpression = { type: 'boolean', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: boolean }
-type ArrayExpression = { type: 'array', operator: '==' | '!=' | '>' | '>=' | '<' | '<=', property: string, value: Array<any> }
-type InExpression = { type: 'expression', operator: 'any' | 'all', property: string, value: IterableIterator<WhereExpression> }
+type ArrayExpression = { type: 'array', operator: '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in', property: string, value: Array<any> }
+type CollectionExpression = { type: 'expression', operator: 'any' | 'all', property: string, value: IterableIterator<WhereExpression> }
 
-export type WhereExpression = NullExpression | StringExpression | NumberExpression | BigIntExpression | RecordExpression | DateExpression | BooleanExpression | ArrayExpression | InExpression
+export type WhereExpression = NullExpression | StringExpression | NumberExpression | BigIntExpression | RecordExpression | DateExpression | BooleanExpression | ArrayExpression | CollectionExpression

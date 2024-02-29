@@ -19,7 +19,7 @@ export class ExpressionStack implements IExpressionStack {
         this.count = this.count + 1
     }
 
-    public pop(): IExpression {
+    public pop(): IExpression | undefined {
         if(this.count > 0) {
             this.count = this.count - 1
         }
