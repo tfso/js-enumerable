@@ -247,7 +247,9 @@ export class ReducerVisitor extends ExpressionVisitor {
 
                 
                 // this object
-                if(isRecord(currentScope) && identifier.name in currentScope && (value = currentScope[identifier.name]) !== undefined) {
+                if(isRecord(currentScope) && identifier.name in currentScope) {
+                    value = currentScope[identifier.name]
+                    
                     if(value == null)
                         return new LiteralExpression(null)
 
