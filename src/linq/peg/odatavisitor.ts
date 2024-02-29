@@ -33,7 +33,10 @@ export class ODataVisitor extends ReducerVisitor {
         let getParams = (expression: IMethodExpression, ...typeofs: Array<string>) => {
             let params: Array<any> | undefined,
                 getType = (t: any) => {
-                    if(typeof t == 'object') {
+                    if(t == null)
+                        return 'undefined'
+
+                    if(t != null && typeof t == 'object') {
                         if(t.getTime && t.getTime() >= 0)
                             return 'date'
                     }
@@ -45,7 +48,7 @@ export class ODataVisitor extends ReducerVisitor {
                 if(parameters.every(expression => expression.type == ExpressionType.Literal) == true) {
                     params = parameters.map(expr => (<LiteralExpression>expr).value)
 
-                    if(new RegExp('^' + typeofs.map(t => t.endsWith('?') ? '(' + t.slice(0, -1) + ')?' : t).join(';') + ';?$').test(params.map(p => getType(p)).join(';') + ';') == false)
+                    if(new RegExp('^' + typeofs.map(t => t.endsWith('?') ? `(${t.slice(0, -1)})?` : `(${t})`).join(';') + ';?$').test(params.map(p => getType(p)).join(';') + ';') == false)
                         throw new TypeError(params.map(p => getType(p)).join(', '))
                 }
                 else if((parameters.length == typeofs.length) == false) {
@@ -62,28 +65,44 @@ export class ODataVisitor extends ReducerVisitor {
         switch(expression.name) {
             // String Functions
             case 'substringof': // bool substringof(string po, string p1)
-                if((params = getParams(expression, 'string', 'string')) != null)
+                if((params = getParams(expression, 'string|undefined', 'string')) != null) {
+                    if(params[0] == null)
+                        return new LiteralExpression(false)
+
                     return new LiteralExpression(String(params[0]).indexOf(String(params[1])) >= 0)
+                }
 
                 break
 
             case 'endswith': // bool endswith(string p0, string p1)
-                if((params = getParams(expression, 'string', 'string')) != null)
+                if((params = getParams(expression, 'string|undefined', 'string')) != null) {
+                    if(params[0] == null)
+                        return new LiteralExpression(false)
+                    
                     return new LiteralExpression(String(params[0]).endsWith(String(params[1])))
-
+                }
                 break
 
             case 'startswith': // bool startswith(string p0, string p1)
-                if((params = getParams(expression, 'string', 'string')) != null)
+                if((params = getParams(expression, 'string|undefined', 'string')) != null) {
+                    if(params[0] == null)
+                        return new LiteralExpression(false)
+
                     return new LiteralExpression(String(params[0]).startsWith(String(params[1])))
+                }
 
                 break
 
             case 'contains': // bool contains(string p0, string p1)
-                if((params = getParams(expression, 'string', 'string')) != null)
+                if((params = getParams(expression, 'string|undefined', 'string')) != null) {
+                    if(params[0] == null)
+                        return new LiteralExpression(false)
+                    
                     return new LiteralExpression(String(params[0]).indexOf(String(params[1])) >= 0)
-
+                }
+                
                 break
+
             case 'length': // int length(string p0)
                 if((params = getParams(expression, 'string')) != null)
                     return new LiteralExpression(String(params[0]).length)
@@ -109,14 +128,22 @@ export class ODataVisitor extends ReducerVisitor {
                 break
                     
             case 'tolower': // string tolower(string p0)
-                if((params = getParams(expression, 'string')) != null)
+                if((params = getParams(expression, 'string|undefined')) != null) {
+                    if(params[0] == null)
+                        return new LiteralExpression(params[0])
+
                     return new LiteralExpression(String(params[0]).toLowerCase())
+                }
 
                 break
 
             case 'toupper': // string toupper(string p0)
-                if((params = getParams(expression, 'string')) != null)
+                if((params = getParams(expression, 'string|undefined')) != null) {
+                    if(params[0] == null)
+                        return new LiteralExpression(params[0])
+                 
                     return new LiteralExpression(String(params[0]).toUpperCase())
+                }
 
                 break
 

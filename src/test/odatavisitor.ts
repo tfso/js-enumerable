@@ -7,6 +7,8 @@ describe('When using OData for ExpressionVisitor', () => {
         vars = { 
             number: 5, 
             stringhavingdate: '2018-05-30Z', 
+            stringthatisnull: '' || null,
+            stringthatisundefined: '' || undefined,
             string: 'abc',
             decimal: 5.50, 
             dateonly: new Date('2020-01-28Z'), 
@@ -89,7 +91,23 @@ describe('When using OData for ExpressionVisitor', () => {
 
         assert.equal(expr.type, Expr.ExpressionType.Literal)
         assert.equal((<Expr.LiteralExpression>expr).value, false)
-    })    
+    })
+
+    it('should evaluate a expression with contains where property may be null', () => {
+        let reduced = reducer.parseOData('contains(stringthatisnull, \'bc\')'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.equal(expr.type, Expr.ExpressionType.Literal)
+        assert.equal((<Expr.LiteralExpression>expr).value, false)
+    })  
+
+    it('should evaluate a expression with contains where property may be undefined', () => {
+        let reduced = reducer.parseOData('contains(stringthatisundefined, \'bc\')'),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.equal(expr.type, Expr.ExpressionType.Literal)
+        assert.equal((<Expr.LiteralExpression>expr).value, false)
+    })
 
     it('should evaluate a expression with date as type (v4)', () => {
         let reduced = reducer.parseOData('date ge 2017-05-01Z'),
