@@ -51,7 +51,7 @@ export class ODataTranslator implements IExpressionVisitor<string> {
                 return `${expression.value}`
 
             case 'string':
-                return `'${expression.value.replace(/'/g, '\'')}'`
+                return `'${expression.value.replace(/'/g, '\'\'')}'`
 
             case 'boolean':
                 return expression.value ? 'true' : 'false'
