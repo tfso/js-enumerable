@@ -77,7 +77,7 @@
 	},
 	"extensions": {
 		"recommendations": [
-			"maty.vscode-mocha-sidebar", "eamodio.toggle-excluded-files"
+			"maty.vscode-mocha-sidebar", "eamodio.toggle-excluded-files", "PeggyJS.peggy-language"
 		]
 	}
 }
