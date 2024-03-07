@@ -272,8 +272,8 @@ QualifiedIdentifier
     	return {
         	type: 'RelationalExpression',
             operator: 'in',
-            left: left,
-            right: right
+            left: right,
+            right: left
         }
     }    
     / !ReservedWord qual:Identifier args:Arguments
