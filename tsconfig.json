@@ -11,6 +11,7 @@
         "downlevelIteration": false,
         "useUnknownInCatchVariables": false,
         "exactOptionalPropertyTypes": false,
+        "allowJs": true,
         "strictNullChecks": true,
         "skipLibCheck": true,
         "module": "commonjs",

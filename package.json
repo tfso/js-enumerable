@@ -9,7 +9,10 @@
     "lint": "node node_modules/eslint/bin/eslint --ignore-pattern lib/ --ext .ts ./",
     "build": "tsc && webpack",
     "analyze": "webpack --profile --json > ./stats.json && webpack-bundle-analyzer ./stats.json",
-    "browserify": "browserify src/test/index.ts -p [ tsify --noImplicitAny ] > lib/mocha-bundle.js"
+    "browserify": "browserify src/test/index.ts -p [ tsify --noImplicitAny ] > lib/mocha-bundle.js",
+    "grammar": "npm run grammar:javascript && npm run grammar:odata",
+    "grammar:javascript": "pegjs -O size -o ./src/linq/peg/parser/javascript-parser.js ./src/linq/peg/grammar/javascript.pegjs",
+    "grammar:odata": "pegjs -O size -o ./src/linq/peg/parser/odata-parser.js ./src/linq/peg/grammar/odata.pegjs"
   },
   "author": "Nicolai Gjærum",
   "license": "MIT",
@@ -29,6 +32,7 @@
     "@types/node": "^16.6.2",
     "@typescript-eslint/eslint-plugin": "^5",
     "@typescript-eslint/parser": "^5",
+    "pegjs": "^0.10.0",
     "babel-loader": "^8.2.3",
     "babelify": "^10.0.0",
     "chai": "^4.3.7",
