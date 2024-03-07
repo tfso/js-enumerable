@@ -14,10 +14,8 @@ import { ITemplateLiteralExpression, TemplateLiteralExpression } from '../expres
 import { IObjectExpression, ObjectExpression, IObjectProperty } from '../expression/objectexpression'
 import { ILambdaExpression, LambdaExpression } from '../expression/lambdaexpression'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const ODataParser = require('./odata-parser')
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const JavascriptParser = require('./javascript-parser')
+import * as ODataParser from './odata-parser'
+import * as JavascriptParser from './javascript-parser'
 
 type ReturnExpression = { 
     type: 'odata' | 'javascript'
