@@ -343,8 +343,8 @@ HexDigit
     = [a-f] / [A-F] / [0-9]
 
 StringLiteral
-    = "'" chars:(Escape / ![\\'\n\r] . )* "'"                   
-    { return { type: 'Literal', value: chars.map(l => l[0] || l[1]).join('').replace(/\\\\/g, '\\') } }
+    = "'" chars:(Escape / !['\n\r] . )* "'"                   
+    { return { type: 'Literal', value: chars.map(l => l[0] || l[1]).join('') } }
 
 ArrayLiteral
     = LPAR __ elements:(first:Expression rest:(COMMA __ Expression)* { return buildList(first, rest, 2)})? (COMMA __)? __ RPAR __

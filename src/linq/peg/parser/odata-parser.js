@@ -231,7 +231,7 @@ function peg$parse(input, options) {
   var peg$r11 = /^[+\-]/;
   var peg$r12 = /^[pP]/;
   var peg$r13 = /^[0-9A-Fa-f]/;
-  var peg$r14 = /^[\\'\n\r]/;
+  var peg$r14 = /^['\n\r]/;
   var peg$r15 = /^[btnfr"'\\]/;
   var peg$r16 = /^[0-3]/;
 
@@ -266,7 +266,7 @@ function peg$parse(input, options) {
   var peg$e28 = peg$classExpectation(["+", "-"], false, false);
   var peg$e29 = peg$classExpectation(["p", "P"], false, false);
   var peg$e30 = peg$classExpectation([["0", "9"], ["A", "F"], ["a", "f"]], false, false);
-  var peg$e31 = peg$classExpectation(["\\", "'", "\n", "\r"], false, false);
+  var peg$e31 = peg$classExpectation(["'", "\n", "\r"], false, false);
   var peg$e32 = peg$anyExpectation();
   var peg$e33 = peg$literalExpectation("''", false);
   var peg$e34 = peg$literalExpectation("\\", false);
@@ -438,7 +438,7 @@ function peg$parse(input, options) {
   var peg$f26 = function(value) { return { type: 'DateLiteral', value: flattenArray(value).join('') }; };
   var peg$f27 = function(first, value, last) { return { type: 'DateLiteral', value: flattenArray(value).join('') }; };
   var peg$f28 = function() { return { type: 'NumberLiteral', value: text() }; };
-  var peg$f29 = function(chars) { return { type: 'Literal', value: chars.map(l => l[0] || l[1]).join('').replace(/\\\\/g, '\\') } };
+  var peg$f29 = function(chars) { return { type: 'Literal', value: chars.map(l => l[0] || l[1]).join('') } };
   var peg$f30 = function(first, rest) { return buildList(first, rest, 2)};
   var peg$f31 = function(elements) { return { type: 'ArrayLiteral', elements: elements } };
   var peg$currPos = options.peg$currPos | 0;
