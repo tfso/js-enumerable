@@ -36,5 +36,33 @@ describe('When using Translator', () => {
 
             chai.expect(odata).to.equal(`(contains(customer/name, 'kalle') eq true) or (contains(customer/no, '54'))`)
         })
+
+        it('should handle escape of character \'', () => {
+            let expr = visitor.parseOData(`contains(customer/name, 'ka''e')`)
+            let odata = translator.visit(expr)
+
+            chai.expect(odata).to.equal(`contains(customer/name, 'ka''e')`)
+        })
+
+        it('should handle escape of character \\', () => {
+            let expr = visitor.parseOData(`contains(customer/name, 'ka\\e')`)
+            let odata = translator.visit(expr)
+
+            chai.expect(odata).to.equal(`contains(customer/name, 'ka\\e')`)
+        })  
+
+        it('should handle escape of character \\ twice', () => {
+            let expr = visitor.parseOData(`contains(customer/name, 'ka\\\\e')`)
+            let odata = translator.visit(expr)
+
+            chai.expect(odata).to.equal(`contains(customer/name, 'ka\\\\e')`)
+        })              
+
+        it('should handle unicode if that is a thing', () => {
+            let expr = visitor.parseOData(`contains(customer/name, 'ka\\u1128')`)
+            let odata = translator.visit(expr)
+
+            chai.expect(odata).to.equal(`contains(customer/name, 'ka\\u1128')`)
+        })
     })
 })

@@ -131,7 +131,6 @@ describe('When using OData for ExpressionVisitor', () => {
         assert.equal((<Expr.LiteralExpression>expr).value, true)
     })
 
-
     it('should evaluate a expression with date as string', () => {
         let reduced = reducer.parseOData('date ge datetime\'2017-05-01Z\''),
             expr = reducer.evaluate(reduced, vars)
@@ -252,6 +251,14 @@ describe('When using OData for ExpressionVisitor', () => {
 
         assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
         assert.ok((<Expr.ILiteralExpression>expr).value == false, 'Expected a literal of value true')
+    })
+
+    it('should handle escaping of special character \\', () => {
+        let reduced = reducer.parseOData(`contains(string, '\\\\')`),
+            expr = reducer.evaluate(reduced, vars)
+
+        assert.ok(expr.type == Expr.ExpressionType.Literal, 'Expected a literal')
+        assert.ok((<Expr.ILiteralExpression>expr).value == false, 'Expected a literal of value false')
     })
 
     describe('for IN operator', () => {  
