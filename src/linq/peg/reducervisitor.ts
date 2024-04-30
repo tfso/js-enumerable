@@ -233,6 +233,9 @@ export class ReducerVisitor extends ExpressionVisitor {
                     if(isRecord(scope))
                         Object.assign(newScope, { [scopeName]: scope })
                 } 
+                else {
+                    Object.assign(newScope, scope ?? {}) 
+                }
 
                 let result = this.evaluate((<ILambdaExpression>expression).expression, newScope, Object.assign({}, global, newScope))
                 
