@@ -71,7 +71,7 @@ export class Enumerable<TEntity extends Entity> extends Base<TEntity> {
      * @param predicate javascript expression
      * @param parameters any javascript parameters has to be declared
      */
-    public where(predicate: (it: TEntity, ...param: any[]) => boolean, ...param: any[]): this
+    public where(predicate: (it: Required<TEntity>, ...param: any[]) => boolean, ...param: any[]): this
     public where(predicate: any, ...param: any[]): this {
         this.operators.push(<LinqOperator<TEntity>>whereOperator(predicate, ...param))
         
