@@ -29,7 +29,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TFSO_TOKEN }}
           FONT_AWESOME_TOKEN: ${{ secrets.FONT_AWESOME_TOKEN }}
-          NODE_VERSION: 16
+          NODE_VERSION: 20
           TRUNCATE_PRERELEASE: true
 
   tag:
@@ -39,10 +39,10 @@ jobs:
     name: push tag
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: push tag
         uses: tfso/action-helpers/tag@v1
         with:
-          GITHUB_TOKEN: ${{ secrets.TFSO_REPO_TAG }}
+          GITHUB_TOKEN: ${{ secrets.TFSO_GITHUB_TOKEN_SELECTIVE }}
           tag: ${{ needs.build.outputs.version }}

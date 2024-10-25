@@ -42,10 +42,10 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TFSO_TOKEN }}
           FONT_AWESOME_TOKEN: ${{ secrets.FONT_AWESOME_TOKEN }}
           CUSTOM_TAG: ${{ needs.setup.outputs.version }}
-          NODE_VERSION: 16
+          NODE_VERSION: 20
 
       - name: upload package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: package
           path: ${{ env.FILES }}
@@ -62,14 +62,14 @@ jobs:
   #           exit 1
 
   #     - name: download artifact
-  #       uses: actions/download-artifact@v3
+  #       uses: actions/download-artifact@v4
   #       with:
   #         name: package
 
   #     - name: setup
-  #       uses: actions/setup-node@v1
+  #       uses: actions/setup-node@v4
   #       with:
-  #         node-version: 16
+  #         node-version: 20
   #         registry-url: https://registry.npmjs.org/
   #         scope: "@tfso"
           
@@ -87,14 +87,14 @@ jobs:
       packages: write
     steps:
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: package
 
       - name: setup
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
           registry-url: 'https://npm.pkg.github.com'
           scope: '@tfso'
 
