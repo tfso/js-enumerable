@@ -44,5 +44,5 @@ jobs:
       - name: push tag
         uses: tfso/action-helpers/tag@v1
         with:
-          GITHUB_TOKEN: ${{ secrets.TFSO_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TFSO_GITHUB_TOKEN_SELECTIVE }}
           tag: ${{ needs.build.outputs.version }}
