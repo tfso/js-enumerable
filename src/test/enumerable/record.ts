@@ -110,6 +110,15 @@ describe('When using enumerable for record type', () => {
             chai.expect(ar).to.deep.equal([1990, 1999, 2004, 2009, 2019])
         })
 
+        it('should async iterate using where and orderBy', async () => {
+            let ar = []
+            
+            for await(let car of new jsEnumerable.Enumerable(asyncIterator()).where(it => it.year >= 2004).orderBy('year'))
+                ar.push(car.year)
+
+            chai.expect(ar).to.deep.equal([2004, 2009, 2019])
+        })
+
         it('should async iterate using select with property keys', async () => {
             let car = await new jsEnumerable.Enumerable(asyncIterator()).select('make', 'year').firstAsync()
 
@@ -393,6 +402,15 @@ describe('When using enumerable for record type', () => {
                 ar.push(car.year)
 
             chai.expect(ar).to.deep.equal([1990, 1999, 2004, 2009, 2019])
+        })
+
+        it('should iterate using where and orderBy', async () => {
+            let ar = []
+            
+            for(let car of new jsEnumerable.Enumerable(iterator()).where(it => it.year >= 2004).orderBy('year'))
+                ar.push(car.year)
+
+            chai.expect(ar).to.deep.equal([2004, 2009, 2019])
         })
 
         it('should iterate using select with property keys', () => {

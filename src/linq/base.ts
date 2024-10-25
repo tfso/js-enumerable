@@ -107,15 +107,11 @@ export default abstract class Base<TEntity extends Entity> implements IEnumerabl
 
             if(operator) {
                 if('evaluate' in operator) {
-                    switch(idx) {
-                        case 0: generator = items; break
-                        default: generator = iterate(items, operators, idx - 1)
-                    }
-
+                    generator = iterate(items, operators, idx - 1)
                     evaluate = operator.evaluate()
                 }
                 else {
-                    generator = operator.asyncIterator(items)
+                    generator = iterate(operator.asyncIterator(items), operators, idx - 1)
                 }
             }
             else {
@@ -139,12 +135,9 @@ export default abstract class Base<TEntity extends Entity> implements IEnumerabl
             }
         }
 
-        let iterator = iterate(this.items instanceof Repository ? this.items[Symbol.asyncIterator](this) : this.items[Symbol.asyncIterator](), this.operators),
-            result: IteratorResult<TEntity>
+        let iterator = iterate(this.items instanceof Repository ? this.items[Symbol.asyncIterator](this) : this.items[Symbol.asyncIterator](), this.operators)
 
-        while (!(result = await Promise.resolve(iterator.next())).done) {
-            yield result.value
-        }
+        yield * iterator
     }
 
     protected * getIterator(): IterableIterator<TEntity> {
@@ -161,15 +154,11 @@ export default abstract class Base<TEntity extends Entity> implements IEnumerabl
 
             if(operator) {
                 if('evaluate' in operator) {
-                    switch(idx) {
-                        case 0: generator = items; break
-                        default: generator = iterate(items, operators, idx - 1)
-                    }
-
+                    generator = iterate(items, operators, idx - 1)
                     evaluate = operator.evaluate()
                 }
                 else {
-                    generator = operator.iterator(items)
+                    generator = iterate(operator.iterator(items), operators, idx - 1)
                 }
             }
             else {
@@ -193,12 +182,9 @@ export default abstract class Base<TEntity extends Entity> implements IEnumerabl
             }
         }
 
-        let iterator = iterate(this.items[Symbol.iterator](), this.operators),
-            result: IteratorResult<TEntity>
-
-        while (!(result = iterator.next()).done) {
-            yield result.value
-        }
+        let iterator = iterate(this.items[Symbol.iterator](), this.operators)
+        
+        yield * iterator
     }
 
     [Symbol.iterator](): IterableIterator<TEntity> {
