@@ -133,6 +133,14 @@ export function transform(expression: Record<string, any>): IExpression {
 
         case 'MemberExpression':
             switch(expression.property.type) {
+                case 'RelationalExpression':
+                    // didn't manage to get this to work in the pegjs grammar, so we do it here
+                    return new LogicalExpression(
+                        LogicalOperatorType.In, 
+                        transform(expression.property.left),
+                        new MemberExpression(transform(expression.object), transform(expression.property.right))
+                    )
+                
                 case 'CallExpression':
                     child = transform(expression.property);
                     (<MethodExpression>child).caller = transform(expression.object)

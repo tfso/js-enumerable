@@ -107,11 +107,11 @@ function * visitIntersection(type: 'odata' | 'javascript', it: string, expressio
 function * visitExpression(type: 'odata' | 'javascript', it: string, expression: IExpression): IterableIterator<WhereExpression> {
     for(let leaf of visitLeaf(type, it, expression)) {
         if(LogicalExpression.instanceof(leaf)) {
-            let value = getPropertyValue(leaf.right),
-                property = getPropertyName(leaf.left)?.name.join('.') ?? '',
+            let value = getPropertyValue(leaf),
+                property = getPropertyName(leaf)?.name.join('.') ?? '',
                 operator = getOperator(leaf)
                 
-            if(operator == 'in') {
+            if(operator == 'in' || operator == 'all') {
                 const values = Array.isArray(value) ? value : [value]
 
                 yield {
@@ -302,6 +302,10 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
                 case LogicalOperatorType.LesserOrEqual: // 5 <= 2 == 2 >= 5
                     yield new LogicalExpression(LogicalOperatorType.GreaterOrEqual, right.value, left.value)
                     break
+                case LogicalOperatorType.In:
+                    if([ExpressionType.Literal, ExpressionType.Array].includes(left.value.type))
+                        yield new LogicalExpression(LogicalOperatorType.In, left.value, right.value)
+                    break
             }
         } 
         else {
@@ -414,7 +418,7 @@ function * visitLeaf(type: 'odata' | 'javascript', it: string, expression: IExpr
     }
 }
 
-function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in' {
+function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | '<=' | 'in' | 'all' {
     if(LogicalExpression.instanceof(expression)) {
         switch(expression.operator) {
             case LogicalOperatorType.Equal:
@@ -436,7 +440,12 @@ function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | 
                 return '<='
             
             case LogicalOperatorType.In:
-                return 'in'
+                if([ExpressionType.Literal, ExpressionType.Array].includes(expression.right.type)) {
+                    return 'in'
+                } 
+                else {
+                    return 'all'
+                }
         }
 
         throw new Error(`Logical operator '${expression.operator}' is unknown`)
@@ -447,6 +456,14 @@ function getOperator(expression: IExpression): '==' | '!=' | '>' | '>=' | '<' | 
 
 function getPropertyValue(expression: IExpression): any {
     switch(expression.type) {
+        case ExpressionType.Logical:
+            if([ExpressionType.Literal, ExpressionType.Array].includes((<ILogicalExpression>expression).right.type)) {
+                return getPropertyValue((<ILogicalExpression>expression).right)
+            } 
+            else  {
+                return getPropertyValue((<ILogicalExpression>expression).left)
+            }
+
         case ExpressionType.Array:
             return (<IArrayExpression>expression).elements.map(expr => getPropertyValue(expr))
 
@@ -489,6 +506,14 @@ function getWildcard(expression: IExpression): 'none' | 'left' | 'right' | 'both
 
 function getPropertyName(expression: IExpression | null): { name: string[], method?: IExpression } {
     switch(expression?.type) {
+        case ExpressionType.Logical:
+            if([ExpressionType.Literal, ExpressionType.Array].includes((<ILogicalExpression>expression).right.type)) {
+                return getPropertyName((<ILogicalExpression>expression).left)
+            } 
+            else  {
+                return getPropertyName((<ILogicalExpression>expression).right)
+            }
+
         case ExpressionType.Identifier:
             return {
                 name: [(<IIdentifierExpression>expression).name]

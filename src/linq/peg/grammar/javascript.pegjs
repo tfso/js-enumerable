@@ -292,7 +292,7 @@ QualifiedIdentifier
         index: expr
       };
     }
-    / !ReservedWord first:(Identifier / StringLiteral / TemplateLiteral) rest:(DOT QualifiedIdentifier)*
+    / !ReservedWord first:(Identifier / StringLiteral / TemplateLiteral) rest:(DOT QualifiedIdentifier)+
     {
        return buildTree(first, rest, function(result, element) {
         return {
