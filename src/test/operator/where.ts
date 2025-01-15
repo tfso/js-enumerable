@@ -7,6 +7,7 @@ type Car = {
     type: { 
         make: string
         model: string
+        years: number[]
     }
     year: number
     years: number[]
@@ -56,6 +57,26 @@ describe('When using operator', () => {
                 const intersection = Array.from(operator.intersection)
 
                 expect(intersection.length).to.equal(1)
+            })
+
+            it('an expression with nested object', () => {
+                const operator = whereOperator<Car>(car => car.type.make == 'toyota')
+
+                if(operator.type !== LinqType.Where)
+                    throw new Error('expecting where operator')
+
+                expect(operator.expression.toString()).to.equal(`(car) => car.type.make == "toyota"`)
+
+                const intersection = Array.from(operator.intersection)
+
+                expect(intersection.length).to.equal(1)
+
+                const expression = intersection[0]
+
+                expect(expression.operator).to.equal('==')
+                expect(expression.property).to.equal('type.make')
+                expect(expression.type).to.equal('string')
+                expect(expression.value).to.equal('toyota')
             })
 
             it('an expression using multiple ands', () => {
@@ -175,6 +196,27 @@ describe('When using operator', () => {
                 expect(secondInExpr.type).to.equal('array')
                 expect(secondInExpr.value).to.have.members([2020])
             })
+
+            it('an in expression for nested array property', () => {
+                const operator = whereOperator<Car>(car => car.type.years.includes(2019))
+
+                if(operator.type !== LinqType.Where)
+                    throw new Error('expecting where operator')
+
+                expect(operator.expression.toString()).to.equal(`(car) => 2019 in car.type.years`)
+
+                const intersection = Array.from(operator.intersection)
+
+                expect(intersection.length).to.equal(1)
+
+                const inExpr = intersection[0]
+
+                expect(inExpr.operator).to.equal('all')
+                expect(inExpr.property).to.equal('type.years')
+                expect(inExpr.type).to.equal('array')
+                expect(inExpr.value).to.have.members([2019])
+            })
+
         })
 
         describe('for odata', () => {

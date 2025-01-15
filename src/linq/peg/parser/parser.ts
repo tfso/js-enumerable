@@ -161,18 +161,44 @@ export function transform(expression: Record<string, any>): IExpression {
                     } 
                     while (true)
 
-                    if(current.property.type == 'CallExpression') {
-                        // we want stacked memberexpressions as caller for handyness
-                        child = transform(current.property);
+                    switch(current.property.type) {
+                        case 'RelationalExpression':
+                            const object = stack.shift()
 
-                        (<MethodExpression>child).caller = stack.reduceRight((caller, member) => {
-                            if(caller == null)
-                                return member
-                            else 
-                                return new MemberExpression(member, caller)
-                        })
+                            if(!object)
+                                throw new Error('Object of member expression is null')
+                            
+                            if(current.property.right.type != 'Identifier')
+                                throw new Error('Member property is not an Identifier in a RelationalExpression, but is ' + current.property.right.type)
+                            
+                            const property = [...stack, transform(current.property.right)].reduceRight((caller, member) => {
+                                if(caller == null)
+                                    return member
+                                else 
+                                    return new MemberExpression(member, caller)
+                            })
 
-                        return child
+                            return new LogicalExpression(
+                                LogicalOperatorType.In,
+                                transform(current.property.left),
+                                new MemberExpression(
+                                    object, 
+                                    property
+                                )
+                            )
+
+                        case 'CallExpression':
+                            // we want stacked memberexpressions as caller for handyness
+                            child = transform(current.property);
+
+                            (<MethodExpression>child).caller = stack.reduceRight((caller, member) => {
+                                if(caller == null)
+                                    return member
+                                else 
+                                    return new MemberExpression(member, caller)
+                            })
+
+                            return child
                     }
 
                     // fall through
